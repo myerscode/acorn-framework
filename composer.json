@@ -1,0 +1,45 @@
+{
+    "name": "myerscode/acorn-framework",
+    "description": "A framework for creating powerful PHP CLI applications",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Fred Myerscough",
+            "email": "oniice@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "adbario/php-dot-notation": "^2.2",
+        "league/booboo": "^2.0",
+        "league/container": "^3.3",
+        "league/event": "^2.2",
+        "psr/log": "^1.1",
+        "symfony/console": "^5.1",
+        "symfony/event-dispatcher": "^5.1",
+        "symfony/filesystem": "^5.1",
+        "symfony/finder": "^5.1",
+        "symfony/process": "^5.1",
+        "myerscode/utilities-bags": "^1.1",
+        "myerscode/utilities-strings": "^1.2",
+        "phpoption/phpoption": "^1.7",
+        "symfony/serializer": "^5.1"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Myerscode\\Acorn\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "tests": "./vendor/bin/phpunit --testdox tests"
+    }
+}
