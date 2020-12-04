@@ -12,6 +12,7 @@ use Myerscode\Acorn\Framework\Events\Bus;
 use Myerscode\Acorn\Framework\Events\Planner;
 use Myerscode\Acorn\Framework\Exception\Handler as ErrorHandler;
 use Myerscode\Acorn\Framework\Helpers\Files\FileService;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Kernel
 {
@@ -52,7 +53,12 @@ class Kernel
         $input = $this->container->manager()->get('input');
         $output = $this->container->manager()->get('output');
 
-        return $this->application->run($input, $output);
+        try {
+            return $this->application->run($input, $output);
+        } catch (CommandNotFoundException $exception) {
+            $output->writeln($exception->getMessage());
+        }
+        return 1;
     }
 
     /**
@@ -109,7 +115,7 @@ class Kernel
         foreach ($directoryService->filesIn($commandDirectory) as $file) {
             /** @var  $file \Symfony\Component\Finder\SplFileInfo */
             $commandClass = $directoryService->getFullyQualifiedClassname($file->getRealPath());
-        
+
             if (is_subclass_of($commandClass, Command::class, true)) {
                 $this->application->add($this->container->manager()->get($commandClass));
             }

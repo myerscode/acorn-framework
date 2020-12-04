@@ -33,10 +33,12 @@ class Application extends SymfonyApplication
      * @var Container
      */
     private Container $container;
+
     /**
      * @var Bus
      */
     private Bus $event;
+
 
     public function __construct(Container $container, Bus $event)
     {
@@ -72,8 +74,15 @@ class Application extends SymfonyApplication
 
         $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event) {
             $command = $event->getCommand();
-            $event->getOutput()->writeln(sprintf('Error running command <info>%s</info>', $command->getName()));
-            $this->event->emit(CommandErrorEvent::class, $event);
+
+            if ($command) {
+                $event->getOutput()->writeln(sprintf('Error running command <info>%s</info>', $command->getName()));
+                $this->event->emit(CommandErrorEvent::class, $event);
+            } else {
+                $event->getOutput()->writeln(sprintf('Acorn has encountered error from an unknown command.'));
+                $this->event->emit(CommandErrorEvent::class, $event);
+            }
+
         });
 
         $this->setDispatcher($dispatcher);
