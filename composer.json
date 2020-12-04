@@ -23,7 +23,8 @@
         "myerscode/utilities-bags": "^1.1",
         "myerscode/utilities-strings": "^1.2",
         "phpoption/phpoption": "^1.7",
-        "symfony/serializer": "^5.1"
+        "symfony/serializer": "^5.1",
+        "symfony/var-dumper": "^5.2"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
