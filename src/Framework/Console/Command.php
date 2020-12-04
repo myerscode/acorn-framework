@@ -6,14 +6,14 @@ use League\Container\Container as DependencyManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-abstract class AcornCommand extends Command implements LoggerAwareInterface
+abstract class Command extends SymfonyCommand implements LoggerAwareInterface
 {
 
     use LoggerAwareTrait;

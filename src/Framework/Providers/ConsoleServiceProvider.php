@@ -4,7 +4,7 @@ namespace Myerscode\Acorn\Framework\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
-use Myerscode\Acorn\Framework\Console\AcornCommand;
+use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Bus;
@@ -22,7 +22,7 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
      * @var array
      */
     protected $provides = [
-        AcornCommand::class,
+        Command::class,
         'input',
         Input::class,
         'output',
@@ -47,7 +47,7 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
     public function boot()
     {
         $this->getContainer()
-            ->inflector(AcornCommand::class)
+            ->inflector(Command::class)
             ->invokeMethod('setContainer', [$this->getContainer()]);
     }
 }

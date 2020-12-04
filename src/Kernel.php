@@ -4,7 +4,7 @@ namespace Myerscode\Acorn;
 
 use League\CLImate\CLImate;
 use Myerscode\Acorn\Foundation\CoreEventRegister;
-use Myerscode\Acorn\Framework\Console\AcornCommand;
+use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Events\AcornEvent;
 use Myerscode\Acorn\Framework\Events\AcornEventListener;
 use Myerscode\Acorn\Framework\Events\AcornEventRegister;
@@ -109,8 +109,8 @@ class Kernel
         foreach ($directoryService->filesIn($commandDirectory) as $file) {
             /** @var  $file \Symfony\Component\Finder\SplFileInfo */
             $commandClass = $directoryService->getFullyQualifiedClassname($file->getRealPath());
-
-            if (is_subclass_of($commandClass, AcornCommand::class, true)) {
+        
+            if (is_subclass_of($commandClass, Command::class, true)) {
                 $this->application->add($this->container->manager()->get($commandClass));
             }
         }

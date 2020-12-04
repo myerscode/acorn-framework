@@ -5,7 +5,7 @@ namespace Myerscode\Acorn;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
-use Myerscode\Acorn\Framework\Console\AcornCommand;
+use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Events\Bus;
 use Myerscode\Acorn\Framework\Exception\AppConfigException;
 use Myerscode\Acorn\Framework\Helpers\Files\FileService;
@@ -81,7 +81,8 @@ class Application extends SymfonyApplication
 
     public function add(SymfonyCommand $command)
     {
-        if ($command instanceof AcornCommand || $command instanceof LoggerAwareInterface) {
+
+        if ($command instanceof Command || $command instanceof LoggerAwareInterface) {
             $command->setLogger($this->logger());
         }
 
