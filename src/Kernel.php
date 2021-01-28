@@ -2,16 +2,14 @@
 
 namespace Myerscode\Acorn;
 
-use League\CLImate\CLImate;
-use Myerscode\Acorn\Foundation\CoreEventRegister;
 use Myerscode\Acorn\Framework\Console\Command;
-use Myerscode\Acorn\Framework\Events\AcornEvent;
-use Myerscode\Acorn\Framework\Events\AcornEventListener;
-use Myerscode\Acorn\Framework\Events\AcornEventRegister;
-use Myerscode\Acorn\Framework\Events\Bus;
-use Myerscode\Acorn\Framework\Events\Planner;
+use Myerscode\Acorn\Framework\Console\Input;
+use Myerscode\Acorn\Framework\Console\Output;
+use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Framework\Events\Event;
+use Myerscode\Acorn\Framework\Events\Listener;
 use Myerscode\Acorn\Framework\Exception\Handler as ErrorHandler;
-use Myerscode\Acorn\Framework\Helpers\Files\FileService;
+use Myerscode\Acorn\Framework\Helpers\FileService;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Kernel
@@ -50,8 +48,9 @@ class Kernel
      */
     public function run(): int
     {
-        $input = $this->container->manager()->get('input');
-        $output = $this->container->manager()->get('output');
+        $input = $this->container->manager()->get(Input::class);
+
+        $output = $this->container->manager()->get(Output::class);
 
         try {
             return $this->application->run($input, $output);
@@ -70,11 +69,11 @@ class Kernel
     }
 
     /**
-     * @return Bus
+     * @return Dispatcher
      */
-    public function eventBus(): Bus
+    public function eventBus(): Dispatcher
     {
-        return $this->container->manager()->get(Bus::class);
+        return $this->container->manager()->get(Dispatcher::class);
     }
 
     /**
@@ -83,22 +82,38 @@ class Kernel
     protected function bindAppEvents(): void
     {
 
-        $planner = $this->container->manager()->get(Planner::class);
-
-        $planner->bindEventsFromRegister(new CoreEventRegister);
-
-        $eventsDirectory = $this->container->manager()->get('basePath') .'/Listeners';
+        $coreEventListenersDirectory = __DIR__ . '/Core/Listeners';
+        $appEventListenersDirectory = $this->container->manager()->get('basePath') .'/Listeners';
 
         /**
-         * @var $directoryService FileService
+         * @var $fileService FileService
          */
-        $directoryService = $this->container->manager()->get(FileService::class);
+        $fileService = $this->container->manager()->get(FileService::class);
 
-        foreach ($directoryService->filesIn($eventsDirectory) as $file) {
-            /** @var  $file \Symfony\Component\Finder\SplFileInfo */
-            $eventRegisterClass = $directoryService->getFullyQualifiedClassname($file->getRealPath());
-            if (is_subclass_of($eventRegisterClass, AcornEventListener::class, true)) {
-                $planner->bindEventFromListener($this->container->manager()->get($eventRegisterClass));
+        $eventDiscoveryDirs = [
+            $coreEventListenersDirectory,
+            $appEventListenersDirectory
+        ];
+
+        foreach ($eventDiscoveryDirs as $directory) {
+            foreach ($fileService->using($directory)->files() as $file) {
+                /** @var  $file \Symfony\Component\Finder\SplFileInfo */
+                $eventRegisterClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
+                if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
+                    $listener = $this->container->manager()->get($eventRegisterClass);
+                    $listensFor = $listener->listensFor();
+                    $events = [];
+                    if (is_string($listensFor)) {
+                        $events = [$listensFor];
+                    } elseif (is_array($listensFor)) {
+                        $events = $listensFor;
+                    }
+                    foreach ($events as $event) {
+                        if (is_subclass_of($event, Event::class, true)) {
+                            $this->eventBus()->addListener($event, $listener);
+                        }
+                    }
+                }
             }
         }
     }
@@ -108,13 +123,13 @@ class Kernel
         $commandDirectory = $this->container->manager()->get('basePath') .'/Commands';
 
         /**
-         * @var $directoryService FileService
+         * @var $fileService FileService
          */
-        $directoryService = $this->container->manager()->get(FileService::class);
+        $fileService = $this->container->manager()->get(FileService::class);
 
-        foreach ($directoryService->filesIn($commandDirectory) as $file) {
+        foreach ($fileService->using($commandDirectory)->files() as $file) {
             /** @var  $file \Symfony\Component\Finder\SplFileInfo */
-            $commandClass = $directoryService->getFullyQualifiedClassname($file->getRealPath());
+            $commandClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
 
             if (is_subclass_of($commandClass, Command::class, true)) {
                 $this->application->add($this->container->manager()->get($commandClass));

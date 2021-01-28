@@ -9,26 +9,26 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^7.4||^8.0",
         "adbario/php-dot-notation": "^2.2",
         "league/booboo": "^2.0",
         "league/container": "^3.3",
-        "league/event": "^2.2",
+        "myerscode/utilities-bags": "^1.1",
+        "myerscode/utilities-files": "^1.0",
+        "myerscode/utilities-strings": "^1.2",
+        "phpoption/phpoption": "^1.7",
         "psr/log": "^1.1",
         "symfony/console": "^5.1",
         "symfony/event-dispatcher": "^5.1",
         "symfony/filesystem": "^5.1",
         "symfony/finder": "^5.1",
         "symfony/process": "^5.1",
-        "myerscode/utilities-bags": "^1.1",
-        "myerscode/utilities-strings": "^1.2",
-        "phpoption/phpoption": "^1.7",
         "symfony/serializer": "^5.1",
         "symfony/var-dumper": "^5.2"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
-        "phpunit/phpunit": "^9"
+        "phpunit/phpunit": "^9.0"
     },
     "autoload": {
         "psr-4": {
@@ -40,7 +40,14 @@
             "Tests\\": "tests/"
         }
     },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
     "scripts": {
-        "tests": "./vendor/bin/phpunit --testdox tests"
+        "tests": "vendor/bin/phpunit --testdox --colors=always",
+        "test-coverage": "vendor/bin/phpunit --testdox --coverage-html .reports/coverage",
+        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12"
     }
 }

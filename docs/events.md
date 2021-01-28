@@ -1,12 +1,28 @@
 # Events
 
-You probably want to emit events when things happen
+You probably want to emit events when things happen within your application!
+Acorn has a convenient way to dispatch events within your command controllers.
+
+
+## Dispatch Events
+
+You can create an event object, and dispatch if for listeners to consume.
+
+```php
+$event = new AppEvent();
+
+disaptch($event);
+```
 
 ## Emitting events
 
-Bus::emit('acorn.build.before');
+Alternatively - if may just want to emit the event, for subscribers to respond too.
 
-Bus::emit(BeforeBuildEvent:class);
+```php
+emit('acorn.build.before');
+
+emit(BeforeBuildEvent:class);
+```
 
 ## Listening for events
 

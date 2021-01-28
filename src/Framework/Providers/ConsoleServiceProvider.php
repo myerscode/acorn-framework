@@ -7,8 +7,6 @@ use League\Container\ServiceProvider\BootableServiceProviderInterface;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
-use Myerscode\Acorn\Framework\Events\Bus;
-use Myerscode\Acorn\Framework\Events\Emitter;
 
 class ConsoleServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
@@ -23,10 +21,10 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
      */
     protected $provides = [
         Command::class,
-        'input',
         Input::class,
-        'output',
         Output::class,
+        'input',
+        'output',
     ];
 
     /**
@@ -37,10 +35,10 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
      */
     public function register()
     {
-        $input = $this->getContainer()->add(Input::class);
-        $this->getContainer()->add('input', $input);
-        $output = $this->getContainer()->add(Output::class);
-        $this->getContainer()->add('output', $output);
+        $input = $this->getContainer()->add(Input::class, new Input);
+        $this->getContainer()->add('input',Input::class);
+        $output = $this->getContainer()->add(Output::class, new Output);
+        $this->getContainer()->add('output', Output::class);
 
     }
 

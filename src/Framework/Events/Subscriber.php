@@ -2,12 +2,11 @@
 
 namespace Myerscode\Acorn\Framework\Events;
 
-class AcornEventRegister
+class Subscriber implements SubscriberInterface
 {
-
     protected array $events = [];
 
-    public function getEvents(): array
+    public function getSubscribedEvents(): array
     {
         return $this->events;
     }

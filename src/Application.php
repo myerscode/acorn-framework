@@ -7,9 +7,8 @@ use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Output;
-use Myerscode\Acorn\Framework\Events\Bus;
+use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Exception\AppConfigException;
-use Myerscode\Acorn\Framework\Helpers\Files\FileService;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -35,14 +34,11 @@ class Application extends SymfonyApplication
      */
     private Container $container;
 
-    /**
-     * @var Bus
-     */
-    private Bus $event;
+    private Dispatcher $event;
 
     private Output $output;
 
-    public function __construct(Container $container, Bus $event)
+    public function __construct(Container $container, Dispatcher $event)
     {
         parent::__construct('Acorn');
 
@@ -53,41 +49,29 @@ class Application extends SymfonyApplication
 
         $this->container = $container;
 
-        $this->output = $container->manager()->get('output');
+        $this->output = $container->manager()->get(Output::class);
 
         $this->createLogger();
 
         $this->bindCommandEvents();
+
+
     }
 
     protected function bindCommandEvents()
     {
         $dispatcher = new EventDispatcher;
 
-
         $dispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event) {
-            $command = $event->getCommand();
-            $this->output->verbose(sprintf('Before running command <info>%s</info>', $command->getName()));
             $this->event->emit(CommandBeforeEvent::class, $event);
         });
 
         $dispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event) {
-            $command = $event->getCommand();
-            $this->output->verbose(sprintf('After running command <info>%s</info>', $command->getName()));
             $this->event->emit(CommandAfterEvent::class, $event);
         });
 
         $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event) {
-            $command = $event->getCommand();
-
-            if ($command) {
-                $this->output->verbose(sprintf('Error running command <info>%s</info>', $command->getName()));
-                $this->event->emit(CommandErrorEvent::class, $event);
-            } else {
-                $this->output->verbose(sprintf('Acorn has encountered error from an unknown command.'));
-                $this->event->emit(CommandErrorEvent::class, $event);
-            }
-
+            $this->event->emit(CommandErrorEvent::class, $event);
         });
 
         $this->setDispatcher($dispatcher);
