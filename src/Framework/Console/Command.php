@@ -194,4 +194,72 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
 
         return $helper->ask($this->input, $this->output, $question);
     }
+
+    /**
+     * Determine if the given argument is present.
+     *
+     * @param  string|int  $name
+     *
+     * @return bool
+     */
+    public function hasArgument($name): bool
+    {
+        return $this->input->hasArgument($name);
+    }
+
+    /**
+     * Get the value of a command argument.
+     *
+     * @param  string  $key
+     *
+     * @return string|array|null
+     */
+    public function argument(string $key)
+    {
+        return $this->input->getArgument($key);
+    }
+
+    /**
+     * Get all of the arguments passed to the command.
+     *
+     * @return array
+     */
+    public function arguments(): array
+    {
+        return $this->arguments();
+    }
+
+    /**
+     * Determine if the given option is present.
+     *
+     * @param  string  $name
+     *
+     * @return bool
+     */
+    public function hasOption(string $name): bool
+    {
+        return $this->input->hasOption($name);
+    }
+
+    /**
+     * Get the value of a command option.
+     *
+     * @param  string|null  $key
+     *
+     * @return string|null
+     */
+    public function option(string $key): ?string
+    {
+        return $this->input->getOption($key);
+    }
+
+    /**
+     * Get all of the options passed to the command.
+     *
+     * @return array
+     */
+    public function options(): array
+    {
+        return $this->input->getOptions();
+    }
 }
