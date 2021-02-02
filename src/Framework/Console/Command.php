@@ -226,7 +226,7 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      */
     public function arguments(): array
     {
-        return $this->arguments();
+        return $this->input->getArguments();
     }
 
     /**
