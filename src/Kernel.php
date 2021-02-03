@@ -34,9 +34,10 @@ class Kernel
     protected function setup()
     {
         $this->setupLogging();
+
         $this->container = new Container();
 
-        $this->container->manager()->add('basePath', $this->basePath);
+        $this->setupPaths();
 
         $this->bindAppEvents();
 
@@ -51,6 +52,22 @@ class Kernel
     protected function setupLogging()
     {
         $this->errorHandler = new ErrorHandler();
+    }
+
+    protected function setupPaths()
+    {
+        $cwd = getcwd();
+
+        $this->container->manager()->add('basePath', $this->basePath);
+
+        $paths = [
+            'executing.dir.base' => $cwd,
+            'executing.dir.app' => $cwd . '/app',
+            'framework.dir.listeners' => __DIR__.'/Foundation/Listeners',
+            'app.dir.listeners' => $this->basePath.'/Listeners',
+        ];
+
+        $this->container->manager()->add('paths', new DotUtility($paths));
     }
 
     /**
@@ -92,8 +109,8 @@ class Kernel
     protected function bindAppEvents(): void
     {
 
-        $coreEventListenersDirectory = __DIR__ . '/Core/Listeners';
-        $appEventListenersDirectory = $this->container->manager()->get('basePath') .'/Listeners';
+        $appEventListenersDirectory = path('app.dir.listeners');
+        $coreEventListenersDirectory = path('framework.dir.listeners');
 
         /**
          * @var $fileService FileService

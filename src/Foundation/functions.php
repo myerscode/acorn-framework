@@ -34,3 +34,20 @@ if (!function_exists('dispatch')) {
         return Container::getInstance()->get(Dispatcher::class)->dispatch($event);
     }
 }
+
+if (!function_exists('path')) {
+    /**
+     * @param  string  $path
+     *
+     * @return array|string|null
+     */
+    function path(string $path)
+    {
+        /**
+         * @var $pathCollection \Myerscode\Utilities\Bags\DotUtility
+         */
+        $pathCollection = Container::getInstance()->manager()->get('paths');
+
+        return $pathCollection->get($path);
+    }
+}
