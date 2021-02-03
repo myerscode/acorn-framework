@@ -10,6 +10,10 @@ use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
 use Myerscode\Acorn\Framework\Exception\Handler as ErrorHandler;
 use Myerscode\Acorn\Framework\Helpers\FileService;
+use Myerscode\Utilities\Bags\DotUtility;
+use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
+use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Kernel
@@ -61,9 +65,13 @@ class Kernel
         $this->container->manager()->add('basePath', $this->basePath);
 
         $paths = [
+            'base' => $this->basePath,
             'executing.dir.base' => $cwd,
             'executing.dir.app' => $cwd . '/app',
+            'framework.dir.events' => __DIR__.'/Foundation/Events',
             'framework.dir.listeners' => __DIR__.'/Foundation/Listeners',
+            'app.dir.commands' => $this->basePath.'/Commands',
+            'app.dir.events' => $this->basePath.'/Events',
             'app.dir.listeners' => $this->basePath.'/Listeners',
         ];
 
@@ -84,6 +92,7 @@ class Kernel
         } catch (CommandNotFoundException $exception) {
             $output->writeln($exception->getMessage());
         }
+
         return 1;
     }
 
@@ -119,7 +128,7 @@ class Kernel
 
         $eventDiscoveryDirs = [
             $coreEventListenersDirectory,
-            $appEventListenersDirectory
+            $appEventListenersDirectory,
         ];
 
         foreach ($eventDiscoveryDirs as $directory) {
@@ -147,7 +156,7 @@ class Kernel
 
     protected function loadCommands()
     {
-        $commandDirectory = $this->container->manager()->get('basePath') .'/Commands';
+        $commandDirectory = path('app.dir.commands');
 
         /**
          * @var $fileService FileService
@@ -156,10 +165,13 @@ class Kernel
 
         foreach ($fileService->using($commandDirectory)->files() as $file) {
             /** @var  $file \Symfony\Component\Finder\SplFileInfo */
-            $commandClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
-
-            if (is_subclass_of($commandClass, Command::class, true)) {
-                $this->application->add($this->container->manager()->get($commandClass));
+            try {
+                $commandClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
+                if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
+                    $this->application->add($this->container->manager()->get($commandClass));
+                }
+            } catch (FileFormatExpection | ReflectionException $e) {
+                // TODO log output in -vvv mode
             }
         }
     }
