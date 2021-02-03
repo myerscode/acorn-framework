@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Framework\Events;
+namespace Tests\Framework\Queue;
 
 use Myerscode\Acorn\Framework\Queue\ListenerPriorityQueue;
 use PHPUnit\Framework\TestCase;
