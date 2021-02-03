@@ -25,6 +25,8 @@ class Container
         );
 
         $this->loadServiceProviders();
+
+        static::$instance = $this;
     }
 
     /**
