@@ -211,12 +211,17 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      * Get the value of a command argument.
      *
      * @param  string  $key
+     * @param  string|null  $default
      *
      * @return string|array|null
      */
-    public function argument(string $key)
+    public function argument(string $key, string $default = null)
     {
-        return $this->input->getArgument($key);
+        if ($this->hasArgument($key)) {
+            return $this->input->getArgument($key);
+        }
+
+        return $default;
     }
 
     /**
@@ -245,12 +250,16 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      * Get the value of a command option.
      *
      * @param  string|null  $key
+     * @param  string|null  $default
      *
      * @return string|null
      */
-    public function option(string $key): ?string
+    public function option(string $key, string $default = null): ?string
     {
-        return $this->input->getOption($key);
+        if ($this->hasOption($key)) {
+            return $this->input->getOption($key);
+        }
+        return $default;
     }
 
     /**
