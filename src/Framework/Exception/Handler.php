@@ -2,20 +2,25 @@
 
 namespace Myerscode\Acorn\Framework\Exception;
 
-use League\BooBoo\BooBoo;
-use League\BooBoo\Formatter\CommandLineFormatter;
-use League\BooBoo\Handler\LogHandler;
-use Psr\Log\NullLogger;
+use Myerscode\Acorn\Framework\Log\NullLogger;
+use Psr\Log\LoggerInterface;
+use Whoops\Handler\PlainTextHandler;
+use Whoops\Run as ErrorHandler;
 
 class Handler
 {
-    private BooBoo $handler;
+    protected ErrorHandler $handler;
 
-    function __construct()
+    function __construct(LoggerInterface $logger = null)
     {
-        $this->handler = new BooBoo($formatters = [], $handler = []);
-        $this->handler->pushFormatter(new CommandLineFormatter);
-        $this->handler->pushHandler(new LogHandler(new NullLogger()));
+        $this->handler = new ErrorHandler();
+        $errorLogger = $logger ?? new NullLogger();
+        $this->handler->pushHandler(new PlainTextHandler($errorLogger));
         $this->handler->register();
+    }
+
+    public function errorHandler(): ErrorHandler
+    {
+        return $this->handler;
     }
 }

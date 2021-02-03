@@ -21,6 +21,8 @@ class Kernel
 
     private Container $container;
 
+    private ErrorHandler $errorHandler;
+
     private Application $application;
 
     public function __construct(string $basePath = '')
@@ -31,7 +33,7 @@ class Kernel
 
     protected function setup()
     {
-        new ErrorHandler();
+        $this->setupLogging();
         $this->container = new Container();
 
         $this->container->manager()->add('basePath', $this->basePath);
@@ -41,6 +43,14 @@ class Kernel
         $this->application = new Application($this->container(), $this->eventBus());
 
         $this->loadCommands();
+    }
+
+    /**
+     * Configuring log output and setup the apps error handler,
+     */
+    protected function setupLogging()
+    {
+        $this->errorHandler = new ErrorHandler();
     }
 
     /**
