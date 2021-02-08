@@ -4,10 +4,10 @@ namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\Exception\EventConfigException;
 use Myerscode\Acorn\Framework\Events\NamedEvent;
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 use Tests\Resources\TestEvent;
 
-class EventTest extends TestCase
+class EventTest extends BaseTestCase
 {
     public function testEventHasName()
     {

@@ -2,13 +2,13 @@
 
 namespace Tests\Framework\Events;
 
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 use Tests\Resources\TestEmptyListener;
 use Tests\Resources\TestEvent;
 use Tests\Resources\TestListener;
 use Tests\Resources\TestMultiEventListener;
 
-class ListenerTest extends TestCase
+class ListenerTest extends BaseTestCase
 {
     public function testListenerReturnsEventsToSubscribeTo()
     {

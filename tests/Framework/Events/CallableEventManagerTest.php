@@ -4,9 +4,9 @@ namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 
-class CallableEventManagerTest extends TestCase
+class CallableEventManagerTest extends BaseTestCase
 {
 
     public function testFindCallable()

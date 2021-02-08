@@ -3,11 +3,11 @@
 namespace Tests\Framework\Queue;
 
 use Myerscode\Acorn\Framework\Queue\ListenerPriorityQueue;
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 use Tests\Resources\TestEmptyListener;
 use Tests\Resources\TestListener;
 
-class QueueTest extends TestCase
+class QueueTest extends BaseTestCase
 {
 
     public function testQueueCanGetAllItemsItContains()

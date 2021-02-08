@@ -4,9 +4,9 @@ namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\CallableListener;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidCallableConstructException;
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 
-class CallableListenerTest extends TestCase
+class CallableListenerTest extends BaseTestCase
 {
 
     public function testCallableListenerAcceptsClosures()
