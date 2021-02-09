@@ -204,7 +204,7 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      */
     public function hasArgument($name): bool
     {
-        return $this->input->hasArgument($name);
+        return $this->input->hasArgument($name) && !is_null($this->input->getArgument($name));
     }
 
     /**
@@ -243,7 +243,7 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      */
     public function hasOption(string $name): bool
     {
-        return $this->input->hasOption($name);
+        return $this->input->hasOption($name) && !is_null($this->input->getOption($name));
     }
 
     /**
