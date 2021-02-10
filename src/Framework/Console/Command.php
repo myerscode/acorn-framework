@@ -3,28 +3,25 @@
 namespace Myerscode\Acorn\Framework\Console;
 
 use League\Container\Container as DependencyManager;
-use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-abstract class Command extends SymfonyCommand implements LoggerAwareInterface
+abstract class Command extends SymfonyCommand
 {
 
     use LoggerAwareTrait;
 
     /**
-     * @var InputInterface
+     * @var Input
      */
     protected $input;
 
     /**
-     * @var OutputInterface
+     * @var Output
      */
     protected $output;
 
@@ -49,6 +46,11 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
         return $this;
     }
 
+    public function getContainer(): DependencyManager
+    {
+        return $this->container;
+    }
+
     /**
      * What to run when the command is executed
      *
@@ -67,17 +69,6 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
         $this->input = $input;
         $this->output = $output;
     }
-
-    /**
-     * Return logger instance.
-     *
-     * @return LoggerInterface
-     */
-    protected function logger()
-    {
-        return $this->logger;
-    }
-
 
     /**
      * {@inheritdoc}
@@ -99,100 +90,13 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
      *
      * @throws \Exception
      */
-    protected function call($commandName, $parameters = [])
+    protected function call(string $commandName, array $parameters = []): int
     {
         $command = $this->getApplication()->find($commandName);
         $parameters = array_merge($parameters, ['command' => $commandName]);
         $arrayInput = new ArrayInput($parameters);
 
         return $command->run($arrayInput, $this->output);
-    }
-
-    /**
-     * Proxy method of OutputInterface::writeln.
-     *
-     * @param  string|iterable  $messages
-     * @param  int  $options
-     *
-     * @return mixed
-     * @see \Symfony\Component\Console\Output\OutputInterface::writeln
-     *
-     */
-    private function line($messages, $options = 0)
-    {
-        return $this->output->writeln($messages, $options);
-    }
-
-    /**
-     * Writeln with info color style.
-     *
-     * @param  string  $message
-     * @param  int  $options
-     */
-    protected function info(string $message, $options = 0)
-    {
-        $this->line("<info>{$message}</info>", $options);
-    }
-
-    /**
-     * Writeln with comment color style.
-     *
-     * @param  string  $message
-     * @param  int  $options
-     */
-    protected function comment(string $message, $options = 0)
-    {
-        $this->line("<comment>{$message}</comment>", $options);
-    }
-
-    /**
-     * Writeln with question color style.
-     *
-     * @param  string  $message
-     * @param  int  $options
-     */
-    protected function question(string $message, $options = 0)
-    {
-        $this->line("<question>{$message}</question>", $options);
-    }
-
-    /**
-     * Writeln with error color style.
-     *
-     * @param  string  $message
-     * @param  int  $options
-     */
-    protected function error(string $message, $options = 0)
-    {
-        $this->line("<error>{$message}</error>", $options);
-    }
-
-    /**
-     * @param  array  $header
-     * @param  array  $rows
-     */
-    protected function table(array $header = [], array $rows = [])
-    {
-        $table = new Table($this->output);
-        $table->setHeaders($header)->setRows($rows);
-
-        return $table;
-    }
-
-    /**
-     * Confirm the question.
-     *
-     * @param  string  $question  Question content
-     * @param  bool  $default  Default return value
-     *
-     * @return bool
-     */
-    protected function confirm(string $question, bool $default = true)
-    {
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion($question, $default);
-
-        return $helper->ask($this->input, $this->output, $question);
     }
 
     /**
@@ -259,6 +163,7 @@ abstract class Command extends SymfonyCommand implements LoggerAwareInterface
         if ($this->hasOption($key)) {
             return $this->input->getOption($key);
         }
+
         return $default;
     }
 

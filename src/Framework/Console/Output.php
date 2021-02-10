@@ -2,11 +2,16 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
-class Output extends ConsoleOutput
+class Output extends SymfonyStyle
 {
+
+    public function line(string $message): void
+    {
+        $this->writeln($message);
+    }
 
     /**
      * Write a verbose message that is only output when the -v is present
