@@ -7,6 +7,7 @@ use League\Container\ServiceProvider\BootableServiceProviderInterface;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class ConsoleServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
@@ -35,11 +36,14 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
      */
     public function register()
     {
-        $input = $this->getContainer()->add(Input::class, new Input);
-        $this->getContainer()->add('input',Input::class);
-        $output = $this->getContainer()->add(Output::class, new Output);
-        $this->getContainer()->add('output', Output::class);
-
+        $this->getContainer()->add(Input::class);
+        $this->getContainer()->add('input', function () {
+            return $this->getContainer()->get(Input::class);
+        });
+        $this->getContainer()->add(Output::class)->addArguments([Input::class, ConsoleOutput::class]);
+        $this->getContainer()->add('output', function () {
+            return $this->getContainer()->get(Output::class);
+        });
     }
 
     public function boot()
