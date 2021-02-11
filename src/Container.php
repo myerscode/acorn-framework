@@ -20,9 +20,11 @@ class Container
     public function __construct()
     {
         $this->container = new DependencyManager;
-        $this->container->delegate(
-            (new ReflectionContainer())->cacheResolutions()
-        );
+        $this->container
+            ->delegate(
+                (new ReflectionContainer())->cacheResolutions()
+            )
+            ->defaultToShared();
 
         $this->loadServiceProviders();
 
@@ -49,6 +51,7 @@ class Container
      * @param  string  $id
      *
      * @return array|mixed|object
+     * @see DependencyManager::get()
      */
     public function get(string $id)
     {
