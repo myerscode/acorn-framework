@@ -8,7 +8,6 @@ use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Acorn\Framework\Exception\Handler as ErrorHandler;
 use Myerscode\Acorn\Framework\Helpers\FileService;
 use Myerscode\Utilities\Bags\DotUtility;
 use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
@@ -25,8 +24,6 @@ class Kernel
 
     private Container $container;
 
-    private ErrorHandler $errorHandler;
-
     private Application $application;
 
     public function __construct(string $basePath = '')
@@ -37,8 +34,6 @@ class Kernel
 
     protected function setup()
     {
-        $this->setupLogging();
-
         $this->container = new Container();
 
         $this->setupPaths();
@@ -48,14 +43,6 @@ class Kernel
         $this->application = new Application($this->container(), $this->eventBus());
 
         $this->loadCommands();
-    }
-
-    /**
-     * Configuring log output and setup the apps error handler,
-     */
-    protected function setupLogging()
-    {
-        $this->errorHandler = new ErrorHandler();
     }
 
     protected function setupPaths()

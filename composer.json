@@ -10,8 +10,6 @@
     ],
     "require": {
         "php": "^7.4||^8.0",
-        "adbario/php-dot-notation": "^2.2",
-        "filp/whoops": "^2.9",
         "league/container": "^3.3",
         "myerscode/utilities-bags": "^1.1",
         "myerscode/utilities-files": "^1.0",

@@ -55,7 +55,6 @@ class Application extends SymfonyApplication
 
         $this->bindCommandEvents();
 
-
     }
 
     protected function bindCommandEvents()
