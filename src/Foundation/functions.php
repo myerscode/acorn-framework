@@ -41,13 +41,17 @@ if (!function_exists('path')) {
      *
      * @return array|string|null
      */
-    function path(string $path)
+    function path(string $path = null)
     {
         /**
          * @var $pathCollection \Myerscode\Utilities\Bags\DotUtility
          */
         $pathCollection = Container::getInstance()->manager()->get('paths');
 
-        return $pathCollection->get($path);
+        if ($path) {
+            return $pathCollection->get($path);
+        }
+
+        return $pathCollection->toArray();
     }
 }
