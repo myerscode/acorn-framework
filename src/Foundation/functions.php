@@ -21,10 +21,10 @@ if (!function_exists('container')) {
     }
 }
 
-if (!function_exists('emmit')) {
-    function emmit($eventName, $params = null)
+if (!function_exists('emit')) {
+    function emit($eventName, $params = null)
     {
-        return Container::getInstance()->get(Dispatcher::class)->emit($eventName, $params );
+        return Container::getInstance()->get(Dispatcher::class)->emit($eventName, $params);
     }
 }
 
