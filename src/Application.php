@@ -8,7 +8,7 @@ use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
-use Myerscode\Acorn\Framework\Exception\AppConfigException;
+use Myerscode\Acorn\Framework\Exceptions\AppConfigException;
 use Myerscode\Acorn\Framework\Log\NullLogger;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -54,7 +54,6 @@ class Application extends SymfonyApplication
         $this->createLogger();
 
         $this->bindCommandEvents();
-
     }
 
     protected function bindCommandEvents()

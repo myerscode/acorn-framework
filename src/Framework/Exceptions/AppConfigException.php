@@ -1,6 +1,6 @@
 <?php
 
-namespace Myerscode\Acorn\Framework\Exception;
+namespace Myerscode\Acorn\Framework\Exceptions;
 
 use LogicException;
 
