@@ -55,3 +55,13 @@ if (!function_exists('path')) {
         return $pathCollection->toArray();
     }
 }
+
+if (!function_exists('output')) {
+    /**
+     * @return Myerscode\Acorn\Framework\Console\Output
+     */
+    function output()
+    {
+        return Container::getInstance()->manager()->get('output');
+    }
+}
