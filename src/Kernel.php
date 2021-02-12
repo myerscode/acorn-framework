@@ -136,9 +136,7 @@ class Kernel
                         $events = $listensFor;
                     }
                     foreach ($events as $event) {
-                        if (is_subclass_of($event, Event::class, true)) {
-                            $this->eventBus()->addListener($event, $listener);
-                        }
+                        $this->eventBus()->addListener($event, $listener);
                     }
                 }
             }
