@@ -6,11 +6,10 @@ use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
-use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Acorn\Framework\Helpers\FileService;
 use Myerscode\Utilities\Bags\DotUtility;
 use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
+use Myerscode\Utilities\Files\Utility as FileService;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
@@ -112,20 +111,15 @@ class Kernel
         $appEventListenersDirectory = path('app.dir.listeners');
         $coreEventListenersDirectory = path('framework.dir.listeners');
 
-        /**
-         * @var $fileService FileService
-         */
-        $fileService = $this->container->manager()->get(FileService::class);
-
         $eventDiscoveryDirs = [
             $coreEventListenersDirectory,
             $appEventListenersDirectory,
         ];
 
         foreach ($eventDiscoveryDirs as $directory) {
-            foreach ($fileService->using($directory)->files() as $file) {
+            foreach (FileService::make($directory)->files() as $file) {
                 /** @var  $file \Symfony\Component\Finder\SplFileInfo */
-                $eventRegisterClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
+                $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                 if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
                     $listener = $this->container->manager()->get($eventRegisterClass);
                     $listensFor = $listener->listensFor();
