@@ -2,12 +2,12 @@
 
 namespace Myerscode\Acorn;
 
+use Myerscode\Acorn\Framework\Config\Factory as ConfigFactory;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Utilities\Bags\DotUtility;
 use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
 use Myerscode\Utilities\Files\Utility as FileService;
 use ReflectionClass;
@@ -27,15 +27,15 @@ class Kernel
 
     public function __construct(string $basePath = '')
     {
+        $this->container = new Container();
         $this->setBasePath($basePath);
         $this->setup();
     }
 
     protected function setup()
     {
-        $this->container = new Container();
 
-        $this->setupPaths();
+        $this->buildConfig();
 
         $this->bindAppEvents();
 
@@ -44,28 +44,13 @@ class Kernel
         $this->loadCommands();
     }
 
-    protected function setupPaths()
+    protected function buildConfig()
     {
-        $cwd = getcwd();
-
-        $this->container->manager()->add('basePath', $this->basePath);
-
-        $paths = [
+        $this->container->add('config', ConfigFactory::make([
             'base' => $this->basePath,
-            'executing.dir.base' => $cwd,
-            'executing.dir.app' => $cwd.'/app',
-            'executing.dir.commands' => $cwd.'/app/Commands',
-            'executing.dir.events' => $cwd.'/app/Events',
-            'executing.dir.listeners' => $cwd.'/app/Listeners',
-            'framework.dir.commands' => __DIR__.'/Foundation/Commands',
-            'framework.dir.events' => __DIR__.'/Foundation/Events',
-            'framework.dir.listeners' => __DIR__.'/Foundation/Listeners',
-            'app.dir.commands' => $this->basePath.'/Commands',
-            'app.dir.events' => $this->basePath.'/Events',
-            'app.dir.listeners' => $this->basePath.'/Listeners',
-        ];
-
-        $this->container->manager()->add('paths', new DotUtility($paths));
+            'src' => __DIR__,
+            'cwd' => getcwd(),
+        ]));
     }
 
     /**
@@ -84,6 +69,14 @@ class Kernel
         }
 
         return 1;
+    }
+
+    /**
+     * @return Application
+     */
+    public function application(): Application
+    {
+        return $this->application;
     }
 
     /**
@@ -107,13 +100,9 @@ class Kernel
      */
     protected function bindAppEvents(): void
     {
-
-        $appEventListenersDirectory = path('app.dir.listeners');
-        $coreEventListenersDirectory = path('framework.dir.listeners');
-
         $eventDiscoveryDirs = [
-            $coreEventListenersDirectory,
-            $appEventListenersDirectory,
+            config('app.dir.listeners'),
+            config('framework.dir.listeners'),
         ];
 
         foreach ($eventDiscoveryDirs as $directory) {
@@ -139,17 +128,11 @@ class Kernel
 
     protected function loadCommands()
     {
-        $commandDirectory = path('app.dir.commands');
+        $commandDirectory = config('app.dir.commands');
 
-        /**
-         * @var $fileService FileService
-         */
-        $fileService = $this->container->manager()->get(FileService::class);
-
-        foreach ($fileService->using($commandDirectory)->files() as $file) {
-            /** @var  $file \Symfony\Component\Finder\SplFileInfo */
+        foreach (FileService::make($commandDirectory)->files() as $file) {
             try {
-                $commandClass = $fileService->using($file->getRealPath())->fullyQualifiedClassname();
+                $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                 if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                     $this->application->add($this->container->manager()->get($commandClass));
                 }
@@ -162,5 +145,6 @@ class Kernel
     protected function setBasePath(string $basePath)
     {
         $this->basePath = rtrim($basePath, '\/');
+        $this->container->add('basePath', $this->basePath);
     }
 }
