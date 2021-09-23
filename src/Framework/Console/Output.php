@@ -5,7 +5,7 @@ namespace Myerscode\Acorn\Framework\Console;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class Output extends SymfonyStyle
+class Output extends SymfonyStyle implements ConsoleOutputInterface
 {
 
     public function line(string $message): void

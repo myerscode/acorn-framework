@@ -15,19 +15,10 @@ abstract class Command extends SymfonyCommand
 
     use LoggerAwareTrait;
 
-    /**
-     * @var Input
-     */
-    protected $input;
+    protected InputInterface $input;
 
-    /**
-     * @var Output
-     */
-    protected $output;
+    protected OutputInterface $output;
 
-    /**
-     * @var DependencyManager
-     */
     protected DependencyManager $container;
 
     /**

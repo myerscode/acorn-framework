@@ -4,6 +4,8 @@ namespace Myerscode\Acorn;
 
 use Myerscode\Acorn\Framework\Config\Factory as ConfigFactory;
 use Myerscode\Acorn\Framework\Console\Command;
+use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
+use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
@@ -53,19 +55,28 @@ class Kernel
         ]));
     }
 
+
+    public function input(): ConsoleInputInterface
+    {
+        return $this->container->manager()->get(Input::class);
+    }
+
+    public function output(): ConsoleOutputInterface
+    {
+        return $this->container->manager()->get(Output::class);
+    }
+
     /**
      * Runs the core application
      */
     public function run(): int
     {
-        $input = $this->container->manager()->get(Input::class);
-
-        $output = $this->container->manager()->get(Output::class);
-
         try {
-            return $this->application->run($input, $output);
+            return $this->application->run($this->input(), $this->output());
         } catch (CommandNotFoundException $exception) {
-            $output->writeln($exception->getMessage());
+            $this->output()->warning($exception->getMessage());
+        } catch (\Exception $exception) {
+            $this->output()->error($exception->getMessage());
         }
 
         return 1;
