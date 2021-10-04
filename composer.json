@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": "^7.4||^8.0",
+        "php": "^8.0",
         "league/container": "^3.3",
         "myerscode/config": "^1.0",
         "myerscode/utilities-bags": "^1.1",
