@@ -15,16 +15,25 @@ class ContainerTest extends BaseTestCase
 
     public function testContainerCreatesItself()
     {
-        $container = new Container();
-
-        $this->assertEquals($container, Container::getInstance());
+        $this->assertInstanceOf(Container::class, Container::getInstance());
     }
 
-    public function testContainerCanGetInatances()
+    public function testContainerCanFlushValues()
+    {
+        $c1 = Container::getInstance();
+        Container::flush();
+        $c2 = Container::getInstance();
+        $this->assertNotSame($c1, $c2);
+    }
+
+    public function testContainerCanGetResolveValues()
     {
         $container = new Container();
 
         $container->manager()->add('testing', 'hello-world');
         $this->assertEquals('hello-world', $container->get('testing'));
+
+        $container->add('foo', 'bar');
+        $this->assertEquals('bar', $container->get('foo'));
     }
 }

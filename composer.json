@@ -15,18 +15,15 @@
         "myerscode/utilities-bags": "^1.1",
         "myerscode/utilities-files": "^1.0",
         "myerscode/utilities-strings": "^1.2",
-        "phpoption/phpoption": "^1.7",
         "psr/log": "^1.1",
         "symfony/console": "^5.1",
         "symfony/event-dispatcher": "^5.1",
         "symfony/filesystem": "^5.1",
-        "symfony/finder": "^5.1",
-        "symfony/process": "^5.1",
-        "symfony/serializer": "^5.1",
-        "symfony/var-dumper": "^5.2"
+        "symfony/finder": "^5.1"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
+        "symfony/var-dumper": "^5.2",
         "phpunit/phpunit": "^9.0"
     },
     "autoload": {
@@ -48,8 +45,8 @@
         "sort-packages": true
     },
     "scripts": {
-        "tests": "vendor/bin/phpunit --testdox --colors=always",
-        "test-coverage": "vendor/bin/phpunit --testdox --coverage-html .reports/coverage",
+        "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
+        "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
         "phpcs": "vendor/bin/phpcs src tests --standard=PSR12"
     }
 }

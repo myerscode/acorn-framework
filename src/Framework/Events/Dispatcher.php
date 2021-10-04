@@ -71,7 +71,7 @@ class Dispatcher
      * @param  ListenerInterface|callable  $listener
      * @param  int  $priority
      */
-    public function addListener(string $eventName, $listener, $priority = EventPriority::NORMAL): void
+    public function addListener(string $eventName, $listener, int $priority = EventPriority::NORMAL): void
     {
 
         if (!isset($this->listeners[$eventName])) {

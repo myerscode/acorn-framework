@@ -5,15 +5,14 @@ namespace Myerscode\Acorn;
 use League\Container\Container as DependencyManager;
 use League\Container\ReflectionContainer;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
+use Myerscode\Acorn\Framework\Providers\LogServiceProvider;
 
 class Container
 {
     /**
      * The current globally available container (if any).
-     *
-     * @var static
      */
-    protected static $instance;
+    protected static ?Container $instance;
 
     private DependencyManager $container;
 
@@ -31,6 +30,11 @@ class Container
         static::$instance = $this;
     }
 
+    public static function flush(): void
+    {
+        static::$instance = null;
+    }
+
     /**
      * Get the globally available instance of the container.
      *
@@ -43,6 +47,20 @@ class Container
         }
 
         return static::$instance;
+    }
+
+    /**
+     * Add an item to the container
+     *
+     * @param  string  $id
+     * @param  mixed  $concrete
+     * @param  boolean  $shared
+     *
+     * @see DependencyManager::add()
+     */
+    public function add(string $id, $concrete = null, bool $shared = null): void
+    {
+        $this->container->add($id, $concrete, $shared);
     }
 
     /**
