@@ -9,7 +9,7 @@ use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Exceptions\AppConfigException;
-use Myerscode\Acorn\Framework\Log\NullLogger;
+use Myerscode\Acorn\Framework\Log\LogInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application as SymfonyApplication;
@@ -88,24 +88,10 @@ class Application extends SymfonyApplication
     /**
      * Get the logger instance.
      *
-     * @return LoggerInterface
+     * @return LogInterface
      */
-    public function logger(): LoggerInterface
+    public function logger(): LogInterface
     {
-        return $this->logger;
-    }
-
-    /**
-     * Create logger instance.
-     */
-    protected function createLogger()
-    {
-        // TODO make this configurable
-
-        $this->logger = new NullLogger();
-
-        if (!$this->logger instanceof LoggerInterface) {
-            throw new AppConfigException('Logger must be implement the "'.LoggerInterface::class.'" interface.');
-        }
+        return $this->container->manager()->get('logger');
     }
 }

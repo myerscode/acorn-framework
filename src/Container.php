@@ -67,6 +67,7 @@ class Container
     {
         $serviceProviders = [
             ConsoleServiceProvider::class,
+            LogServiceProvider::class,
         ];
 
         foreach ($serviceProviders as $provider) {
