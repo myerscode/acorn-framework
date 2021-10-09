@@ -14,14 +14,9 @@ class AfterCommandRun extends Listener
      */
     protected $listensFor = CommandAfterEvent::class;
 
-    private Text $utility;
-
-    private Output $output;
-
-    public function __construct(Text $utility, Output $output)
+    public function __construct(private Output $output)
     {
-        $this->utility = $utility;
-        $this->output = $output;
+        //
     }
 
     public function __invoke(CommandAfterEvent $event): void
