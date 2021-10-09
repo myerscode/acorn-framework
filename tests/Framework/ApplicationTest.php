@@ -29,17 +29,36 @@ class ApplicationTest extends BaseTestCase
     public function testEventsAreLoaded()
     {
         $dispatcher = new Dispatcher;
-        $app = new Application($this->container(), $dispatcher);
+        $container = $this->container();
 
-        $this->assertCount(3, $dispatcher->getListeners());
+        new Application($container, $dispatcher);
+
+        $this->assertGreaterThanOrEqual(3, $dispatcher->getListeners());
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandAfterEvent::class));
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandBeforeEvent::class));
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandErrorEvent::class));
     }
 
+    public function testCanHandleInvalidEventsDirectory()
+    {
+        $dispatcher = new Dispatcher;
+        $container = $this->container();
+
+        new class($container, $dispatcher) extends Application {
+            public function eventDiscoveryDirectories(): array
+            {
+                return [
+                    'invalid-path',
+                ];
+            }
+        };
+
+        $this->assertGreaterThanOrEqual(0, $dispatcher->getListeners());
+    }
+
     public function testEmitsError()
     {
-        $dispatcher = \Mockery::spy(Dispatcher::class);
+        $dispatcher = $this->spy(Dispatcher::class);
         $app = new Application($this->container(), $dispatcher);
         $app->add(new CommandThatErrorsCommand());
 
@@ -50,6 +69,29 @@ class ApplicationTest extends BaseTestCase
         $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
 
         $this->assertEquals(true, $result->failed());
+    }
+
+    public function testCommandsAreLoaded()
+    {
+        $app = new Application($this->container(),  new Dispatcher);
+        $this->assertGreaterThanOrEqual(3, count($app->all()));
+    }
+
+    public function testCanHandleInvalidCommandsDirectory()
+    {
+        $dispatcher = new Dispatcher;
+        $container = $this->container();
+
+        new class($container, $dispatcher) extends Application {
+            public function commandsDiscoveryDirectories(): array
+            {
+                return [
+                    'invalid-path',
+                ];
+            }
+        };
+
+        $this->assertGreaterThanOrEqual(0, $dispatcher->getListeners());
     }
 
     public function testHasInstanceOfLogger()

@@ -89,14 +89,22 @@ class Application extends SymfonyApplication
     }
 
     /**
+     * return string[]
+     */
+    public function eventDiscoveryDirectories(): array
+    {
+        return [
+            config('app.dir.listeners'),
+            config('framework.dir.listeners'),
+        ];
+    }
+
+    /**
      * Load events files and register them to the handler
      */
     protected function bindAppEvents(): void
     {
-        $eventDiscoveryDirs = [
-            config('app.dir.listeners'),
-            config('framework.dir.listeners'),
-        ];
+        $eventDiscoveryDirs = $this->eventDiscoveryDirectories();
 
         $output = $this->container->manager()->get(Output::class);
 
@@ -106,19 +114,23 @@ class Application extends SymfonyApplication
                     $output->debug("Loading events from $directory to load events from");
                     /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                    if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
-                        $listener = $this->container->manager()->get($eventRegisterClass);
-                        $listensFor = $listener->listensFor();
-                        if (is_string($listensFor)) {
-                            $events = [$listensFor];
-                        } elseif (is_array($listensFor)) {
-                            $events = $listensFor;
-                        } else {
-                            throw new InvalidListenerException("$eventRegisterClass contains invalid listener configuration");
+                    try {
+                        if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
+                            $listener = $this->container->manager()->get($eventRegisterClass);
+                            $listensFor = $listener->listensFor();
+                            if (is_string($listensFor)) {
+                                $events = [$listensFor];
+                            } elseif (is_array($listensFor)) {
+                                $events = $listensFor;
+                            } else {
+                                throw new InvalidListenerException("$eventRegisterClass contains invalid listener configuration");
+                            }
+                            foreach ($events as $event) {
+                                $this->event->addListener($event, $listener);
+                            }
                         }
-                        foreach ($events as $event) {
-                            $this->event->addListener($event, $listener);
-                        }
+                    } catch (InvalidListenerException $invalidListenerException) {
+                        $output->debug($invalidListenerException->getMessage());
                     }
                 }
             } catch (NotADirectoryException $notADirectoryException) {
@@ -127,27 +139,41 @@ class Application extends SymfonyApplication
         }
     }
 
+    /**
+     * return string[]
+     */
+    public function commandsDiscoveryDirectories(): array
+    {
+        return [
+            config('app.dir.commands'),
+        ];
+    }
+
+
     protected function loadCommands()
     {
-        $commandDirectory = config('app.dir.commands');
+        $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
 
         $output = $this->container->manager()->get(Output::class);
 
-        try {
-            foreach (FileService::make($commandDirectory)->files() as $file) {
-                try {
-                    $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                    if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
-                        $this->add($this->container->manager()->get($commandClass));
+        foreach ($commandsDiscoveryDirectories as $commandDirectory) {
+            try {
+                foreach (FileService::make($commandDirectory)->files() as $file) {
+                    try {
+                        $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                        if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
+                            $this->add($this->container->manager()->get($commandClass));
+                        } else {
+                            $output->debug("Found $commandClass in $commandDirectory, but did not load as was not a valid Command class");
+                        }
+                    } catch (FileFormatExpection | ReflectionException $e) {
+                        $output->debug("Unable to load {$file->getRealPath()} from $commandDirectory - unable to determine class name");
                     }
-                } catch (FileFormatExpection | ReflectionException $e) {
-                    // TODO log output in -vvv mode
                 }
+            } catch (NotADirectoryException $notADirectoryException) {
+                $output->debug("Could not find directory $commandDirectory to load commands from");
             }
-        } catch (NotADirectoryException $notADirectoryException) {
-            $output->debug("Could not find directory $commandDirectory to load commands from");
         }
-
     }
 
     public function add(SymfonyCommand $command)
