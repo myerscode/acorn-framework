@@ -28,6 +28,7 @@ use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
 {

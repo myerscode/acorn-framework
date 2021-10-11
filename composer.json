@@ -28,7 +28,7 @@
     },
     "autoload": {
         "files": [
-            "src/Foundation/functions.php"
+            "src/Foundation/Helpers.php"
         ],
         "psr-4": {
             "Myerscode\\Acorn\\": "src/"
