@@ -4,7 +4,6 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use League\Container\Container as DependencyManager;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,12 +21,30 @@ abstract class Command extends SymfonyCommand
     protected DependencyManager $container;
 
     /**
-     * BaseCommand constructor.
-     *
+     * The console command name.
      */
+    protected ?string $name = null;
+
+    /**
+     * The name and signature of the console command.
+     */
+    protected string $signature;
+
     public function __construct()
     {
-        parent::__construct(null);
+        if (isset($this->signature)) {
+            $this->configureWithSignature();
+        } else {
+            parent::__construct($this->name);
+        }
+    }
+
+    protected function configureWithSignature()
+    {
+        [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
+        parent::__construct($this->name = $name);
+        $this->getDefinition()->addArguments($arguments);
+        $this->getDefinition()->addOptions($options);
     }
 
     public function setContainer(DependencyManager $container): self
