@@ -2,6 +2,7 @@
 
 namespace Myerscode\Acorn;
 
+use Exception;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
@@ -32,8 +33,14 @@ use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
 {
+    /**
+     * @var string
+     */
     const APP_NAME = 'Acorn';
 
+    /**
+     * @var string
+     */
     const APP_VERSION = '1.0.0';
 
     /**
@@ -43,25 +50,14 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
-    /**
-     * @var Container
-     */
-    private Container $container;
-
-    private Dispatcher $event;
-
-    public function __construct(Container $container, Dispatcher $event)
+    public function __construct(private Container $container, private Dispatcher $event)
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
-
-        $this->event = $event;
 
         // allow command exceptions to bubble up and be handled by the kernel
         $this->setCatchExceptions(false);
 
         $this->setAutoExit(false);
-
-        $this->container = $container;
 
         $this->bindAppEvents();
 
@@ -112,7 +108,7 @@ class Application extends SymfonyApplication
         foreach ($eventDiscoveryDirs as $directory) {
             try {
                 foreach (FileService::make($directory)->files() as $file) {
-                    $output->debug("Loading events from $directory to load events from");
+                    $output->debug(sprintf('Loading events from %s to load events from', $directory));
                     /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
@@ -124,8 +120,9 @@ class Application extends SymfonyApplication
                             } elseif (is_array($listensFor)) {
                                 $events = $listensFor;
                             } else {
-                                throw new InvalidListenerException("$eventRegisterClass contains invalid listener configuration");
+                                throw new InvalidListenerException(sprintf('%s contains invalid listener configuration', $eventRegisterClass));
                             }
+
                             foreach ($events as $event) {
                                 $this->event->addListener($event, $listener);
                             }
@@ -134,8 +131,8 @@ class Application extends SymfonyApplication
                         $output->debug($invalidListenerException->getMessage());
                     }
                 }
-            } catch (NotADirectoryException $notADirectoryException) {
-                $output->debug("Could not find directory $directory to load events from");
+            } catch (NotADirectoryException) {
+                $output->debug(sprintf('Could not find directory %s to load events from', $directory));
             }
         }
     }
@@ -165,14 +162,14 @@ class Application extends SymfonyApplication
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                             $this->add($this->container->manager()->get($commandClass));
                         } else {
-                            $output->debug("Found $commandClass in $commandDirectory, but did not load as was not a valid Command class");
+                            $output->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDirectory));
                         }
-                    } catch (FileFormatExpection | ReflectionException $e) {
-                        $output->debug("Unable to load {$file->getRealPath()} from $commandDirectory - unable to determine class name");
+                    } catch (FileFormatExpection | ReflectionException) {
+                        $output->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDirectory));
                     }
                 }
-            } catch (NotADirectoryException $notADirectoryException) {
-                $output->debug("Could not find directory $commandDirectory to load commands from");
+            } catch (NotADirectoryException) {
+                $output->debug(sprintf('Could not find directory %s to load commands from', $commandDirectory));
             }
         }
     }
@@ -189,8 +186,6 @@ class Application extends SymfonyApplication
 
     /**
      * Get the logger instance.
-     *
-     * @return LogInterface
      */
     public function logger(): LogInterface
     {
@@ -203,7 +198,7 @@ class Application extends SymfonyApplication
 
         try {
             $exitCode = parent::run($input, $output);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $throwException = $exception;
             $exitCode = 1;
         }

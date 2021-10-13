@@ -19,8 +19,6 @@ class Dispatcher
 
     /**
      * Dispatches an event to all registered listeners.
-     *
-     * @param  object  $event
      */
     public function dispatch(object $event): void
     {
@@ -51,12 +49,7 @@ class Dispatcher
                 throw new UnknownEventTypeException();
             }
         } else {
-            $event = new class($eventName) extends NamedEvent {
-                public function __construct(string $name)
-                {
-                    parent::__construct($name);
-                }
-            };
+            $event = new NamedEvent($eventName);
         }
 
         $this->dispatch($event);
@@ -66,12 +59,8 @@ class Dispatcher
 
     /**
      * Registries a listener for the event.
-     *
-     * @param  string  $eventName
-     * @param  ListenerInterface|callable  $listener
-     * @param  int  $priority
      */
-    public function addListener(string $eventName, $listener, int $priority = EventPriority::NORMAL): void
+    public function addListener(string $eventName, ListenerInterface|callable $listener, int $priority = EventPriority::NORMAL): void
     {
 
         if (!isset($this->listeners[$eventName])) {
@@ -80,12 +69,10 @@ class Dispatcher
 
         if ($listener instanceof Closure || is_callable($listener)) {
             $callableListener = CallableEventManager::create($listener);
+        } elseif ($listener instanceof ListenerInterface) {
+            $callableListener = $listener;
         } else {
-            if ($listener instanceof ListenerInterface) {
-                $callableListener = $listener;
-            } else {
-                throw new InvalidListenerException('The listener should be the implementation of the listenerInterface or callable');
-            }
+            throw new InvalidListenerException('The listener should be the implementation of the listenerInterface or callable');
         }
 
         $this->listeners[$eventName]->push($callableListener, $priority);
@@ -101,11 +88,7 @@ class Dispatcher
      */
     public function getListenersForEvent($event): array
     {
-        if ($event instanceof Event) {
-            $eventName = $event->eventName();
-        } else {
-            $eventName = (string) $event;
-        }
+        $eventName = $event instanceof Event ? $event->eventName() : (string) $event;
 
         return $this->getListeners($eventName);
     }
@@ -115,8 +98,6 @@ class Dispatcher
      * Gets all listeners of the event or all registered listeners.
      *
      * @param  string|null  $eventName
-     *
-     * @return array
      */
     public function getListeners(string $eventName = null): array
     {
@@ -135,8 +116,6 @@ class Dispatcher
 
     /**
      * Registries a subscriber to then event dispatcher
-     *
-     * @param SubscriberInterface $subscriber
      */
     public function addSubscriber(SubscriberInterface $subscriber)
     {

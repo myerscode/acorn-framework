@@ -37,10 +37,8 @@ class CallableEventManager
      * Finds the listener from the collection by its callable.
      *
      * @param  callable  $callable
-     *
-     * @return CallableListener|false
      */
-    public static function findByCallable($callable)
+    public static function findByCallable($callable): CallableListener|false
     {
         foreach (static::$listeners as $listener) {
             if ($listener->getCallable() == $callable) {

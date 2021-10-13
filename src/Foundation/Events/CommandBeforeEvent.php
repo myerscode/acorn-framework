@@ -9,10 +9,7 @@ class CommandBeforeEvent extends Event
 {
     protected string $eventName = 'acorn.command.before';
 
-    public ConsoleCommandEvent $commandEvent;
-
-    public function __construct(ConsoleCommandEvent $commandEvent)
+    public function __construct(public ConsoleCommandEvent $commandEvent)
     {
-        $this->commandEvent = $commandEvent;
     }
 }

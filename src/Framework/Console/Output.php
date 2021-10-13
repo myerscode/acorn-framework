@@ -15,8 +15,6 @@ class Output extends SymfonyStyle implements ConsoleOutputInterface
 
     /**
      * Write a verbose message that is only output when the -v is present
-     *
-     * @param  string  $messages
      */
     public function verbose(string $messages): void
     {
@@ -25,8 +23,6 @@ class Output extends SymfonyStyle implements ConsoleOutputInterface
 
     /**
      * Write a very verbose message that is only output when the -vv is present
-     *
-     * @param  string  $messages
      */
     public function veryVerbose(string $messages): void
     {
@@ -35,8 +31,6 @@ class Output extends SymfonyStyle implements ConsoleOutputInterface
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
-     *
-     * @param  string  $messages
      */
     public function debug(string $messages): void
     {

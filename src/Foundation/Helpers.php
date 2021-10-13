@@ -35,8 +35,6 @@ function config(string $key = null, $default = null)
  * Get the available container instance.
  *
  * @param  string|null  $abstract
- *
- * @return mixed
  */
 function container(string $abstract = null): mixed
 {

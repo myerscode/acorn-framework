@@ -9,15 +9,9 @@ use SplPriorityQueue;
 
 class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
 {
-    /**
-     * @var  SplObjectStorage
-     */
-    protected $storage;
+    protected \SplObjectStorage $storage;
 
-    /**
-     * @var  SplPriorityQueue
-     */
-    protected $queue;
+    protected \SplPriorityQueue $queue;
 
     public function __construct()
     {
@@ -52,9 +46,7 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
     /**
      * Checks whether the queue contains the listener.
      *
-     * @param  ListenerInterface  $listener
      *
-     * @return boolean
      */
     public function contains(ListenerInterface $listener): bool
     {
@@ -63,8 +55,6 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
 
     /**
      * Clones and returns a iterator.
-     *
-     * @return  SplPriorityQueue
      */
     public function getIterator(): SplPriorityQueue
     {
@@ -79,9 +69,6 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
 
     /**
      * Insert an listener to the queue.
-     *
-     * @param  ListenerInterface  $listener
-     * @param  int  $priority
      */
     public function push(ListenerInterface $listener, int $priority)
     {
@@ -105,8 +92,6 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
 
     /**
      * Removes an listener from the queue.
-     *
-     * @param  ListenerInterface  $listener
      */
     public function remove(ListenerInterface $listener)
     {

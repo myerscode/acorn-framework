@@ -1,5 +1,6 @@
 <?php
 
+use Myerscode\Acorn\Framework\Log\NullLogger;
 return [
     'dir' => [
         'commands' => '${base}/Commands',
@@ -8,5 +9,5 @@ return [
     ],
     'input' => '',
     'output' => '',
-    'logger' => \Myerscode\Acorn\Framework\Log\NullLogger::class
+    'logger' => NullLogger::class
 ];

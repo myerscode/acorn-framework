@@ -5,7 +5,7 @@ namespace Myerscode\Acorn\Foundation\Listeners;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Utilities\Strings\Utility as Text;
+use Myerscode\Utilities\Strings\Utility;
 
 class AfterCommandRun extends Listener
 {
@@ -21,6 +21,7 @@ class AfterCommandRun extends Listener
 
     public function __invoke(CommandAfterEvent $event): void
     {
-        $this->output->verbose(sprintf('After running command <info>%s</info>', $event->commandEvent->getCommand()->getName()));
+        $message = sprintf('After running command <info>%s</info>', $event->commandEvent->getCommand()->getName());
+        $this->output->verbose($message);
     }
 }

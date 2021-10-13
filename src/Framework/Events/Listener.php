@@ -13,7 +13,7 @@ abstract class Listener implements ListenerInterface
     /**
      * @return string[]|string
      */
-    public function listensFor()
+    public function listensFor(): array|string
     {
         if (is_null($this->listensFor)) {
             return [];

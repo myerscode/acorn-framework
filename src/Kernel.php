@@ -2,6 +2,7 @@
 
 namespace Myerscode\Acorn;
 
+use Exception;
 use Myerscode\Acorn\Framework\Config\Factory as ConfigFactory;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
@@ -57,40 +58,31 @@ class Kernel
             $result = $this->application->run($this->input(), $this->output());
 
             // TODO if result failed but has no error do something
-            if ($result->failed()) {
+            if ($result->failed() !== 0) {
                 throw $result->error();
             }
 
             return $result->exitCode();
 
-        } catch (CommandNotFoundException $exception) {
-            $this->output()->info($exception->getMessage());
-        } catch (\Exception $exception) {
+        } catch (CommandNotFoundException $commandNotFoundException) {
+            $this->output()->info($commandNotFoundException->getMessage());
+        } catch (Exception $exception) {
             $this->output()->error($exception->getMessage());
         }
 
         return 1;
     }
 
-    /**
-     * @return Application
-     */
     public function application(): Application
     {
         return $this->application;
     }
 
-    /**
-     * @return Container
-     */
     public function container(): Container
     {
         return $this->container;
     }
 
-    /**
-     * @return Dispatcher
-     */
     public function eventBus(): Dispatcher
     {
         return $this->container()->manager()->get(Dispatcher::class);

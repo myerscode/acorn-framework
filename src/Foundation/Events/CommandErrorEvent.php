@@ -9,10 +9,7 @@ class CommandErrorEvent extends Event
 {
     protected string $eventName = 'acorn.command.error';
 
-    public ConsoleErrorEvent $commandEvent;
-
-    public function __construct(ConsoleErrorEvent $commandEvent)
+    public function __construct(public ConsoleErrorEvent $commandEvent)
     {
-        $this->commandEvent = $commandEvent;
     }
 }

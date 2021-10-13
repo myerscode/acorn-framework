@@ -29,8 +29,6 @@ class CallableListener implements ListenerInterface
 
     /**
      * Handles an event.
-     *
-     * @param  Event  $event
      */
     public function handle(Event $event)
     {

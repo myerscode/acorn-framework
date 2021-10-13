@@ -9,10 +9,7 @@ class CommandAfterEvent extends Event
 {
     protected string $eventName = 'acorn.command.after';
 
-    public ConsoleTerminateEvent $commandEvent;
-
-    public function __construct(ConsoleTerminateEvent $commandEvent)
+    public function __construct(public ConsoleTerminateEvent $commandEvent)
     {
-        $this->commandEvent = $commandEvent;
     }
 }

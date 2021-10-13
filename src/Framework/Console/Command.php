@@ -2,7 +2,8 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
-use League\Container\Container as DependencyManager;
+use Exception;
+use League\Container\Container;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -18,7 +19,7 @@ abstract class Command extends SymfonyCommand
 
     protected OutputInterface $output;
 
-    protected DependencyManager $container;
+    protected Container $container;
 
     /**
      * The console command name.
@@ -47,14 +48,14 @@ abstract class Command extends SymfonyCommand
         $this->getDefinition()->addOptions($options);
     }
 
-    public function setContainer(DependencyManager $container): self
+    public function setContainer(Container $container): self
     {
         $this->container = $container;
 
         return $this;
     }
 
-    public function getContainer(): DependencyManager
+    public function getContainer(): Container
     {
         return $this->container;
     }
@@ -68,9 +69,6 @@ abstract class Command extends SymfonyCommand
 
     /**
      * Initialize the command.
-     *
-     * @param  InputInterface  $input
-     * @param  OutputInterface  $output
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
@@ -96,7 +94,7 @@ abstract class Command extends SymfonyCommand
      *
      * @return int Exit code
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function call(string $commandName, array $parameters = []): int
     {
@@ -110,11 +108,9 @@ abstract class Command extends SymfonyCommand
     /**
      * Determine if the given argument is present.
      *
-     * @param  string|int  $name
      *
-     * @return bool
      */
-    public function hasArgument($name): bool
+    public function hasArgument(string|int $name): bool
     {
         return $this->input->hasArgument($name) && !is_null($this->input->getArgument($name));
     }
@@ -122,9 +118,7 @@ abstract class Command extends SymfonyCommand
     /**
      * Get the value of a command argument.
      *
-     * @param  string  $key
      * @param  string|null  $default
-     *
      * @return string|array|null
      */
     public function argument(string $key, string $default = null)
@@ -138,8 +132,6 @@ abstract class Command extends SymfonyCommand
 
     /**
      * Get all of the arguments passed to the command.
-     *
-     * @return array
      */
     public function arguments(): array
     {
@@ -149,9 +141,7 @@ abstract class Command extends SymfonyCommand
     /**
      * Determine if the given option is present.
      *
-     * @param  string  $name
      *
-     * @return bool
      */
     public function hasOption(string $name): bool
     {
@@ -163,8 +153,6 @@ abstract class Command extends SymfonyCommand
      *
      * @param  string|null  $key
      * @param  string|null  $default
-     *
-     * @return string|null
      */
     public function option(string $key, string $default = null): ?string
     {
@@ -177,8 +165,6 @@ abstract class Command extends SymfonyCommand
 
     /**
      * Get all of the options passed to the command.
-     *
-     * @return array
      */
     public function options(): array
     {

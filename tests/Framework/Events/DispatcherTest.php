@@ -27,8 +27,6 @@ class DispatcherTest extends BaseTestCase
         $this->assertEmpty($dispatcher->getListeners('foo'));
         $dispatcher->addListener('foo', new TestListener());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
-        $this->expectException(\InvalidArgumentException::class);
-        $dispatcher->addListener('foo', 'invalid-listener');
     }
 
     public function testHasListener()

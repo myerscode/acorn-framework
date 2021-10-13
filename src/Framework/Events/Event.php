@@ -15,13 +15,11 @@ class Event implements EventInterface, NamedEventInterface
 
     public function eventName(): string
     {
-        return get_class($this);
+        return $this::class;
     }
 
     /**
      * Stop event propagation.
-     *
-     * @return $this
      */
     public function stopPropagation(): self
     {
@@ -32,8 +30,6 @@ class Event implements EventInterface, NamedEventInterface
 
     /**
      * Checks whether propagation was stopped.
-     *
-     * @return bool
      */
     public function isPropagationStopped(): bool
     {

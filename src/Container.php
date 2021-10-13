@@ -37,8 +37,6 @@ class Container
 
     /**
      * Get the globally available instance of the container.
-     *
-     * @return static
      */
     public static function getInstance(): Container
     {
@@ -52,9 +50,7 @@ class Container
     /**
      * Add an item to the container
      *
-     * @param  string  $id
      * @param  mixed  $concrete
-     * @param  boolean  $shared
      *
      * @see DependencyManager::add()
      */
@@ -66,7 +62,6 @@ class Container
     /**
      * Retrieve an instance from the container
      *
-     * @param  string  $id
      *
      * @return array|mixed|object
      * @see DependencyManager::get()

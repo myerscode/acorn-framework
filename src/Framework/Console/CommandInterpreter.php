@@ -19,16 +19,14 @@ class CommandInterpreter
      *
      * @return array
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function parse($expression)
     {
         $name = $this->name($expression);
 
-        if (preg_match_all('/\{\s*(.*?)\s*\}/', $expression, $matches)) {
-            if (count($matches[1])) {
-                return array_merge([$name], $this->parameters($matches[1]));
-            }
+        if (preg_match_all('#\{\s*(.*?)\s*\}#', $expression, $matches) && count($matches[1])) {
+            return array_merge([$name], $this->parameters($matches[1]));
         }
 
         return [$name, [], []];
@@ -41,11 +39,11 @@ class CommandInterpreter
      *
      * @return string
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function name($expression)
     {
-        if (!preg_match('/[^\s]+/', $expression, $matches)) {
+        if (!preg_match('#[^\s]+#', $expression, $matches)) {
             throw new InvalidArgumentException('Unable to determine command name from signature.');
         }
 
@@ -62,7 +60,7 @@ class CommandInterpreter
         $options = [];
 
         foreach ($tokens as $token) {
-            if (preg_match('/-{2,}(.*)/', $token, $matches)) {
+            if (preg_match('#-{2,}(.*)#', $token, $matches)) {
                 $options[] = $this->parseOption($matches[1]);
             } else {
                 $arguments[] = $this->parseArgument($token);
@@ -85,7 +83,7 @@ class CommandInterpreter
             text($token)->endsWith('*') => new InputArgument(trim($token, '*'), InputArgument::IS_ARRAY | InputArgument::REQUIRED, $description),
             text($token)->endsWith('?') => new InputArgument(trim($token, '?'), InputArgument::OPTIONAL, $description),
             text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument($matches[1], InputArgument::IS_ARRAY, $description,
-                preg_split('/,\s?/', $matches[2])),
+                preg_split('#,\s?#', $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]),
             default => new InputArgument($token, InputArgument::REQUIRED, $description),
         };
@@ -98,7 +96,7 @@ class CommandInterpreter
     {
         [$token, $description] = $this->extractDescription($token);
 
-        $matches = preg_split('/\s*\|\s*/', $token, 2);
+        $matches = preg_split('#\s*\|\s*#', $token, 2);
 
         if (isset($matches[1])) {
             $shortcut = $matches[0];
@@ -111,7 +109,7 @@ class CommandInterpreter
             text($token)->endsWith('=') => new InputOption(trim($token, '='), $shortcut, InputOption::VALUE_OPTIONAL, $description),
             text($token)->endsWith('=*') => new InputOption(trim($token, '=*'), $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
                 $description),
-            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, $description, preg_split('/,\s?/', $matches[2])),
+            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, $description, preg_split('#,\s?#', $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL, $description, $matches[2]),
             default => new InputOption($token, $shortcut, InputOption::VALUE_NONE, $description),
         };
@@ -122,7 +120,7 @@ class CommandInterpreter
      */
     protected function extractDescription(string $token): array
     {
-        $parts = preg_split('/\s+:\s+/', trim($token), 2);
+        $parts = preg_split('#\s+:\s+#', trim($token), 2);
 
         return count($parts) === 2 ? $parts : [$token, ''];
     }
