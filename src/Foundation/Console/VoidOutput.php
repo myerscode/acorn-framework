@@ -48,4 +48,28 @@ class VoidOutput extends NullOutput implements ConsoleOutputInterface
         // do nothing
     }
 
+    public function line(string $message)
+    {
+        // do nothing
+    }
+
+    public function verbose(string $message)
+    {
+        // do nothing
+    }
+
+    public function veryVerbose(string $message)
+    {
+        // do nothing
+    }
+
+    public function debug(string $message)
+    {
+        // do nothing
+    }
+
+    public function table(array $headers, array $rows)
+    {
+        // do nothing
+    }
 }

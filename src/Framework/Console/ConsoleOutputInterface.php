@@ -6,6 +6,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 interface ConsoleOutputInterface extends OutputInterface
 {
+    public function line(string $message);
+
+    public function verbose(string $message);
+
+    public function veryVerbose(string $message);
+
+    public function debug(string $message);
+
+    public function table(array $headers, array $rows);
+
     public function text($message);
 
     public function comment($message);

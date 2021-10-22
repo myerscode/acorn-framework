@@ -3,13 +3,11 @@
 namespace Tests\Framework\Console;
 
 use League\Container\Container as DependencyManager;
-use Myerscode\Acorn\Container;
+use Myerscode\Acorn\Foundation\Console\ConfigInput;
+use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Framework\Console\Command;
-use Myerscode\Acorn\Framework\Log\NullLogger;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\NullOutput;
 use Tests\BaseTestCase;
 use Tests\Resources\TestCommand;
 
@@ -44,11 +42,11 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $input = new ArrayInput([
+        $input = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
-        $output = new NullOutput();
+        $output = new VoidOutput();
 
         $command->run($input, $output);
 
@@ -62,11 +60,11 @@ class CommandTest extends BaseTestCase
     public function testCanGetArgumentWithDefaultValue(){
         $command = $this->makeTestCommand();
 
-        $input = new ArrayInput([
+        $input = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
-        $output = new NullOutput();
+        $output = new VoidOutput();
 
         $command->run($input, $output);
 
@@ -79,12 +77,12 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $input = new ArrayInput([
+        $input = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $output = new NullOutput();
+        $output = new VoidOutput();
 
         $command->run($input, $output);
 
@@ -99,12 +97,12 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $input = new ArrayInput([
+        $input = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $output = new NullOutput();
+        $output = new VoidOutput();
 
         $command->run($input, $output);
 

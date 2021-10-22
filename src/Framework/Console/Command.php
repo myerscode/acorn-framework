@@ -15,9 +15,9 @@ abstract class Command extends SymfonyCommand
 
     use LoggerAwareTrait;
 
-    protected InputInterface $input;
+    protected ConsoleInputInterface $input;
 
-    protected OutputInterface $output;
+    protected ConsoleOutputInterface $output;
 
     protected Container $container;
 
@@ -25,6 +25,8 @@ abstract class Command extends SymfonyCommand
      * The console command name.
      */
     protected ?string $name = null;
+
+    protected string $description = '';
 
     /**
      * The name and signature of the console command.
@@ -38,6 +40,8 @@ abstract class Command extends SymfonyCommand
         } else {
             parent::__construct($this->name);
         }
+
+        $this->setDescription($this->description);
     }
 
     protected function configureWithSignature()
@@ -70,7 +74,7 @@ abstract class Command extends SymfonyCommand
     /**
      * Initialize the command.
      */
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    protected function initialize(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output)
     {
         $this->input = $input;
         $this->output = $output;
@@ -79,7 +83,7 @@ abstract class Command extends SymfonyCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output)
     {
         $this->handle();
 
@@ -119,6 +123,7 @@ abstract class Command extends SymfonyCommand
      * Get the value of a command argument.
      *
      * @param  string|null  $default
+     *
      * @return string|array|null
      */
     public function argument(string $key, string $default = null)

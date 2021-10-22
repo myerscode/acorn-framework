@@ -16,25 +16,25 @@ class Output extends SymfonyStyle implements ConsoleOutputInterface
     /**
      * Write a verbose message that is only output when the -v is present
      */
-    public function verbose(string $messages): void
+    public function verbose(string $message): void
     {
-        $this->writeln($messages, OutputInterface::VERBOSITY_VERBOSE);
+        $this->writeln($message, OutputInterface::VERBOSITY_VERBOSE);
     }
 
     /**
      * Write a very verbose message that is only output when the -vv is present
      */
-    public function veryVerbose(string $messages): void
+    public function veryVerbose(string $message): void
     {
-        $this->writeln($messages, OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $this->writeln($message, OutputInterface::VERBOSITY_VERY_VERBOSE);
     }
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
      */
-    public function debug(string $messages): void
+    public function debug(string $message): void
     {
-        $this->writeln($messages, OutputInterface::VERBOSITY_DEBUG);
+        $this->writeln($message, OutputInterface::VERBOSITY_DEBUG);
     }
 
 }
