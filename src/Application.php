@@ -7,7 +7,8 @@ use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Console\Command;
-use Myerscode\Acorn\Framework\Console\Output;
+use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
+use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
@@ -103,12 +104,10 @@ class Application extends SymfonyApplication
     {
         $eventDiscoveryDirs = $this->eventDiscoveryDirectories();
 
-        $output = $this->container->manager()->get(Output::class);
-
         foreach ($eventDiscoveryDirs as $directory) {
             try {
                 foreach (FileService::make($directory)->files() as $file) {
-                    $output->debug(sprintf('Loading events from %s to load events from', $directory));
+                    $this->output()->debug(sprintf('Loading events from %s to load events from', $directory));
                     /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
@@ -128,11 +127,11 @@ class Application extends SymfonyApplication
                             }
                         }
                     } catch (InvalidListenerException $invalidListenerException) {
-                        $output->debug($invalidListenerException->getMessage());
+                        $this->output()->debug($invalidListenerException->getMessage());
                     }
                 }
             } catch (NotADirectoryException) {
-                $output->debug(sprintf('Could not find directory %s to load events from', $directory));
+                $this->output()->debug(sprintf('Could not find directory %s to load events from', $directory));
             }
         }
     }
@@ -149,8 +148,6 @@ class Application extends SymfonyApplication
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
 
-        $output = $this->container->manager()->get(Output::class);
-
         foreach ($commandsDiscoveryDirectories as $commandDirectory) {
             try {
                 foreach (FileService::make($commandDirectory)->files() as $file) {
@@ -159,14 +156,14 @@ class Application extends SymfonyApplication
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                             $this->add($this->container->manager()->get($commandClass));
                         } else {
-                            $output->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDirectory));
+                            $this->output()->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDirectory));
                         }
                     } catch (FileFormatExpection | ReflectionException) {
-                        $output->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDirectory));
+                        $this->output()->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDirectory));
                     }
                 }
             } catch (NotADirectoryException) {
-                $output->debug(sprintf('Could not find directory %s to load commands from', $commandDirectory));
+                $this->output()->debug(sprintf('Could not find directory %s to load commands from', $commandDirectory));
             }
         }
     }
@@ -179,6 +176,16 @@ class Application extends SymfonyApplication
         }
 
         return parent::add($command);
+    }
+
+    public function input(): ConsoleInputInterface
+    {
+        return $this->container->manager()->get('input');
+    }
+
+    public function output(): ConsoleOutputInterface
+    {
+        return $this->container->manager()->get('output');
     }
 
     /**
