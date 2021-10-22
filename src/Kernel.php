@@ -3,12 +3,12 @@
 namespace Myerscode\Acorn;
 
 use Exception;
-use Myerscode\Acorn\Framework\Config\Factory as ConfigFactory;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
-use Myerscode\Acorn\Framework\Console\Input;
-use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Config\Config;
+use Myerscode\Utilities\Files\Exceptions\NotADirectoryException;
+use Myerscode\Utilities\Files\Utility as FileService;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Kernel
@@ -32,21 +32,40 @@ class Kernel
 
     protected function buildConfig()
     {
-        $this->container->add('config', ConfigFactory::make([
+        $config = new Config();
+
+        $configLocations = [
+            __DIR__.'/Config',
+            getcwd().'/Config',
+        ];
+
+        $config->loadData([
             'base' => $this->basePath,
             'src' => __DIR__,
             'cwd' => getcwd(),
-        ]));
+            'configLocations' => $configLocations
+        ]);
+
+
+        foreach ($configLocations as $configLocation) {
+            try {
+                $configFiles = array_map(fn($file) => $file->getRealPath(), FileService::make($configLocation)->files());
+                $config->loadFilesWithNamespace($configFiles);
+            } catch (NotADirectoryException) {
+            }
+        }
+
+        $this->container->add('config', $config);
     }
 
     public function input(): ConsoleInputInterface
     {
-        return $this->container->manager()->get(Input::class);
+        return $this->container->manager()->get('input');
     }
 
     public function output(): ConsoleOutputInterface
     {
-        return $this->container->manager()->get(Output::class);
+        return $this->container->manager()->get('output');
     }
 
     /**
