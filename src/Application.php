@@ -90,10 +90,10 @@ class Application extends SymfonyApplication
      */
     public function eventDiscoveryDirectories(): array
     {
-        return [
+        return array_filter([
             config('app.dir.listeners'),
             config('framework.dir.listeners'),
-        ];
+        ]);
     }
 
     /**
@@ -137,16 +137,13 @@ class Application extends SymfonyApplication
         }
     }
 
-    /**
-     * return string[]
-     */
     public function commandsDiscoveryDirectories(): array
     {
-        return [
+        return array_filter([
             config('app.dir.commands'),
-        ];
+            config('framework.dir.commands'),
+        ]);
     }
-
 
     protected function loadCommands()
     {
