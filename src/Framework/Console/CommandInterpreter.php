@@ -82,6 +82,7 @@ class CommandInterpreter
             text($token)->endsWith('?*') => new InputArgument(trim($token, '?*'), InputArgument::IS_ARRAY, $description),
             text($token)->endsWith('*') => new InputArgument(trim($token, '*'), InputArgument::IS_ARRAY | InputArgument::REQUIRED, $description),
             text($token)->endsWith('?') => new InputArgument(trim($token, '?'), InputArgument::OPTIONAL, $description),
+            text($token)->endsWith(['=', '=']) => new InputArgument(trim($token, '='), InputArgument::OPTIONAL, $description, null),
             text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument($matches[1], InputArgument::IS_ARRAY, $description,
                 preg_split('#,\s?#', $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]),
