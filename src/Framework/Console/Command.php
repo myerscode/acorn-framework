@@ -4,7 +4,6 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Exception;
 use League\Container\Container;
-use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,8 +11,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class Command extends SymfonyCommand
 {
-
-    use LoggerAwareTrait;
+    use InteractsWithInput;
+    use InteractsWithLogs;
+    use InteractsWithOutput;
 
     protected ConsoleInputInterface $input;
 
@@ -22,10 +22,13 @@ abstract class Command extends SymfonyCommand
     protected Container $container;
 
     /**
-     * The console command name.
+     * The console command name/handle used to call it
      */
     protected ?string $name = null;
 
+    /**
+     * The console command description
+     */
     protected string $description = '';
 
     /**
@@ -95,72 +98,5 @@ abstract class Command extends SymfonyCommand
         $arrayInput = new ArrayInput($parameters);
 
         return $command->run($arrayInput, $this->output);
-    }
-
-    /**
-     * Determine if the given argument is present.
-     *
-     *
-     */
-    public function hasArgument(string|int $name): bool
-    {
-        return $this->input->hasArgument($name) && !is_null($this->input->getArgument($name));
-    }
-
-    /**
-     * Get the value of a command argument.
-     *
-     * @param  string|null  $default
-     *
-     * @return string|array|null
-     */
-    public function argument(string $key, string $default = null)
-    {
-        if ($this->hasArgument($key)) {
-            return $this->input->getArgument($key);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Get all of the arguments passed to the command.
-     */
-    public function arguments(): array
-    {
-        return $this->input->getArguments();
-    }
-
-    /**
-     * Determine if the given option is present.
-     *
-     *
-     */
-    public function hasOption(string $name): bool
-    {
-        return $this->input->hasOption($name) && !is_null($this->input->getOption($name));
-    }
-
-    /**
-     * Get the value of a command option.
-     *
-     * @param  string|null  $key
-     * @param  string|null  $default
-     */
-    public function option(string $key, string $default = null): ?string
-    {
-        if ($this->hasOption($key)) {
-            return $this->input->getOption($key);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Get all of the options passed to the command.
-     */
-    public function options(): array
-    {
-        return $this->input->getOptions();
     }
 }
