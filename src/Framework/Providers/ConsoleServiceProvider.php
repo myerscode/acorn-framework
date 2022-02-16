@@ -48,8 +48,6 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
 
     public function boot()
     {
-        $this->getContainer()
-            ->inflector(Command::class)
-            ->invokeMethod('setContainer', [$this->getContainer()]);
+        //
     }
 }

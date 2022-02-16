@@ -110,12 +110,4 @@ class CommandTest extends BaseTestCase
         $this->assertSame('a-default-option-value', $command->option('option-b'));
         $this->assertSame('custom-option-if-null', $command->option('option-c', 'custom-option-if-null'));
     }
-
-    public function testCommandSetsContainer()
-    {
-        $container = new DependencyManager;
-        $command = new TestCommand();
-        $command->setContainer($container);
-        $this->assertSame($container, $command->getContainer());
-    }
 }

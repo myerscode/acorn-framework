@@ -52,18 +52,6 @@ abstract class Command extends SymfonyCommand
         $this->getDefinition()->addOptions($options);
     }
 
-    public function setContainer(Container $container): self
-    {
-        $this->container = $container;
-
-        return $this;
-    }
-
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
     /**
      * What to run when the command is executed
      *
