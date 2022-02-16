@@ -196,7 +196,7 @@ class Application extends SymfonyApplication
         return $this->container->manager()->get('logger');
     }
 
-    public function run(InputInterface $input = null, OutputInterface $output = null): Result
+    public function handle(InputInterface $input = null, OutputInterface $output = null): Result
     {
         $throwException = null;
 

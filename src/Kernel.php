@@ -74,7 +74,7 @@ class Kernel
     public function run(): int
     {
         try {
-            $result = $this->application->run($this->input(), $this->output());
+            $result = $this->application->handle($this->input(), $this->output());
 
             // TODO if result failed but has no error do something
             if ($result->failed() !== 0) {

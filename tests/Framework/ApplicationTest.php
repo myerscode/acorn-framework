@@ -63,7 +63,7 @@ class ApplicationTest extends BaseTestCase
         $app->add(new CommandThatErrorsCommand());
 
         $result = $this->catch(Exception::class)->from(function () use ($app) {
-            return $app->run(new ConfigInput(['error-command']), new VoidOutput());
+            return $app->handle(new ConfigInput(['error-command']), new VoidOutput());
         });
 
         $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();

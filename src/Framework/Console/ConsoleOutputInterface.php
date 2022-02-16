@@ -16,19 +16,19 @@ interface ConsoleOutputInterface extends OutputInterface
 
     public function table(array $headers, array $rows);
 
-    public function text($message);
+    public function text(string|array $message);
 
-    public function comment($message);
+    public function comment(string|array $message);
 
-    public function success($message);
+    public function success(string|array $message);
 
-    public function error($message);
+    public function error(string|array $message);
 
-    public function warning($message);
+    public function warning(string|array $message);
 
-    public function note($message);
+    public function note(string|array $message);
 
-    public function info($message);
+    public function info(string|array $message);
 
-    public function caution($message);
+    public function caution(string|array $message);
 }
