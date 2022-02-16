@@ -52,6 +52,7 @@ class Kernel
                 $configFiles = array_map(fn($file) => $file->getRealPath(), FileService::make($configLocation)->files());
                 $config->loadFilesWithNamespace($configFiles);
             } catch (NotADirectoryException) {
+                //  TODO add debug output
             }
         }
 
@@ -82,11 +83,11 @@ class Kernel
             }
 
             return $result->exitCode();
-
         } catch (CommandNotFoundException $commandNotFoundException) {
             $this->output()->info($commandNotFoundException->getMessage());
         } catch (Exception $exception) {
-            $this->output()->error($exception->getMessage());
+            $message = !empty($exception->getMessage()) ? $exception->getMessage() : get_class($exception);
+            $this->output()->error($message);
         }
 
         return 1;
