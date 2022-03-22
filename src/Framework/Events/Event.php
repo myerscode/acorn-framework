@@ -4,14 +4,12 @@ namespace Myerscode\Acorn\Framework\Events;
 
 class Event implements EventInterface, NamedEventInterface
 {
-
     /**
      * Whether the event propagation is stopped.
      *
      * @var boolean
      */
     protected bool $propagationStopped = false;
-
 
     public function eventName(): string
     {

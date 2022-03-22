@@ -4,6 +4,7 @@ namespace Myerscode\Acorn;
 
 use League\Container\Container as DependencyManager;
 use League\Container\ReflectionContainer;
+use Myerscode\Acorn\Foundation\Providers\QueueServiceProvider;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
 use Myerscode\Acorn\Framework\Providers\LogServiceProvider;
 
@@ -62,7 +63,6 @@ class Container
     /**
      * Retrieve an instance from the container
      *
-     *
      * @return array|mixed|object
      * @see DependencyManager::get()
      */
@@ -81,6 +81,7 @@ class Container
         $serviceProviders = [
             ConsoleServiceProvider::class,
             LogServiceProvider::class,
+            QueueServiceProvider::class,
         ];
 
         foreach ($serviceProviders as $provider) {

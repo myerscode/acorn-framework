@@ -2,11 +2,8 @@
 
 namespace Myerscode\Acorn\Framework\Events;
 
-use Closure;
-
 class CallableEventManager
 {
-
 
     /**
      * Array of callable-listeners.
@@ -26,7 +23,7 @@ class CallableEventManager
     }
 
     /**
-     * Removes all registered callable-listeners.
+     * Removes all registered callable listeners.
      */
     public static function clear()
     {
@@ -35,10 +32,8 @@ class CallableEventManager
 
     /**
      * Finds the listener from the collection by its callable.
-     *
-     * @param  callable  $callable
      */
-    public static function findByCallable($callable): CallableListener|false
+    public static function findByCallable(callable $callable): CallableListener|false
     {
         foreach (static::$listeners as $listener) {
             if ($listener->getCallable() == $callable) {

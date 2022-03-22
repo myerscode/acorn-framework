@@ -3,19 +3,24 @@
 namespace Myerscode\Acorn\Framework\Events;
 
 use Closure;
+use Myerscode\Acorn\Foundation\Queue\Jobs\SynchronousJob;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
-use Myerscode\Acorn\Framework\Queue\ListenerPriorityQueue;
+use Myerscode\Acorn\Framework\Queue\QueueInterface;
 
 class Dispatcher
 {
-
     /**
      * Collection of listeners.
      *
-     * @var ListenerPriorityQueue[]
+     * @var ListenerQueue[]
      */
     protected array $listeners = [];
+
+    public function __construct(protected QueueInterface $queue)
+    {
+        //
+    }
 
     /**
      * Dispatches an event to all registered listeners.
@@ -29,23 +34,27 @@ class Dispatcher
         $listeners = $this->getListenersForEvent($event);
 
         foreach ($listeners as $listener) {
-            if ($event->isPropagationStopped()) {
-                break;
-            }
-
-            if ($listener instanceof CallableListener || method_exists($listener, 'handle')) {
-                $listener->handle($event);
+            if ($listener instanceof ListenerInterface) {
+                if ($event->isPropagationStopped()) {
+                    break;
+                }
+                if ($listener->shouldQueue()) {
+                    $this->queue->push(new SynchronousJob($event, $listener));
+                } else {
+                    $listener->handle($event);
+                }
             } else {
                 throw new InvalidListenerException();
             }
         }
-
     }
 
     public function emit($eventName, $params = null): self
     {
+        $params = !is_array($params) ? [$params] : $params;
+
         if (class_exists($eventName)) {
-            if (!(($event = new $eventName($params)) instanceof Event)) {
+            if (!(($event = new $eventName(...$params)) instanceof Event)) {
                 throw new UnknownEventTypeException();
             }
         } else {
@@ -62,22 +71,18 @@ class Dispatcher
      */
     public function addListener(string $eventName, ListenerInterface|callable $listener, int $priority = EventPriority::NORMAL): void
     {
-
         if (!isset($this->listeners[$eventName])) {
-            $this->listeners[$eventName] = new ListenerPriorityQueue();
+            $this->listeners[$eventName] = new ListenerQueue();
         }
 
         if ($listener instanceof Closure || is_callable($listener)) {
-            $callableListener = CallableEventManager::create($listener);
-        } elseif ($listener instanceof ListenerInterface) {
-            $callableListener = $listener;
+            $newListener = CallableEventManager::create($listener);
         } else {
-            throw new InvalidListenerException('The listener should be the implementation of the listenerInterface or callable');
+            $newListener = $listener;
         }
 
-        $this->listeners[$eventName]->push($callableListener, $priority);
+        $this->listeners[$eventName]->push($newListener, $priority);
     }
-
 
     /**
      * Get the collection of all registered listeners for an event
@@ -92,7 +97,6 @@ class Dispatcher
 
         return $this->getListeners($eventName);
     }
-
 
     /**
      * Gets all listeners of the event or all registered listeners.
@@ -117,17 +121,14 @@ class Dispatcher
     /**
      * Registries a subscriber to then event dispatcher
      */
-    public function addSubscriber(SubscriberInterface $subscriber)
+    public function addSubscriber(SubscriberInterface $subscriber): void
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
             $this->addListener($eventName, [$subscriber, $action]);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeListener($eventName, $listener)
+    public function removeListener($eventName, $listener): void
     {
         if (empty($this->listeners[$eventName])) {
             return;
@@ -140,19 +141,13 @@ class Dispatcher
         $this->listeners[$eventName]->remove($listener);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function removeSubscriber(SubscriberInterface $subscriber)
+    public function removeSubscriber(SubscriberInterface $subscriber): void
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
             $this->removeListener($eventName, [$subscriber, $action]);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function removeAllListeners($eventName = null)
     {
         if (!is_null($eventName) && isset($this->listeners[$eventName])) {
@@ -164,10 +159,7 @@ class Dispatcher
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function hasListener(string $eventName, $listener)
+    public function hasListener(string $eventName, $listener): bool
     {
         if (!isset($this->listeners[$eventName])) {
             return false;

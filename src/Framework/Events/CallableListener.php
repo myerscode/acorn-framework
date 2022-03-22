@@ -8,21 +8,17 @@ use Myerscode\Acorn\Framework\Events\Exception\InvalidCallableConstructException
 class CallableListener implements ListenerInterface
 {
 
-    private $callable;
-
-    public function __construct($callable)
+    public function __construct(protected $callable)
     {
         if (!($callable instanceof Closure) && !is_callable($callable)) {
             throw new InvalidCallableConstructException();
         }
-
-        $this->callable = $callable;
     }
 
     /**
      * @return mixed
      */
-    public function getCallable()
+    public function getCallable(): Callable
     {
         return $this->callable;
     }
@@ -30,8 +26,23 @@ class CallableListener implements ListenerInterface
     /**
      * Handles an event.
      */
-    public function handle(Event $event)
+    public function handle(EventInterface $event): void
     {
         call_user_func($this->callable, $event);
+    }
+
+    public function shouldQueue(): bool
+    {
+        $shouldQueue = false;
+
+        if (method_exists($this->callable, 'shouldQueue')) {
+            $shouldQueue = $this->callable->shouldQueue();
+        } else {
+            if (property_exists($this->callable, 'shouldQueue')) {
+                $shouldQueue = $this->callable->shouldQueue;
+            }
+        }
+
+        return filter_var($shouldQueue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     }
 }

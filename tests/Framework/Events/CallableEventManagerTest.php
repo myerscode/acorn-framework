@@ -11,7 +11,7 @@ class CallableEventManagerTest extends BaseTestCase
 
     public function testFindCallable()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $callable = function () {
         };
         $dispatcher->addListener('my-special-event', $callable);

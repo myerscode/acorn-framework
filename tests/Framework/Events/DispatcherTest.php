@@ -2,28 +2,34 @@
 
 namespace Tests\Framework\Events;
 
+use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\EventPriority;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
+use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 use Tests\BaseTestCase;
 use Tests\Resources\TestEvent;
 use Tests\Resources\TestListener;
+use Tests\Resources\TestPropertiesEvent;
+use Tests\Resources\TestQueueableEvent;
+use Tests\Resources\TestQueueableListener;
+use Tests\Resources\TestSinglePropertyEvent;
 use Tests\Resources\TestSubscriber;
 
 class DispatcherTest extends BaseTestCase
 {
     public function testInitialize()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $this->assertEmpty($dispatcher->getListeners());
     }
 
     public function testAddListener()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $this->assertEmpty($dispatcher->getListeners('foo'));
         $dispatcher->addListener('foo', new TestListener());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
@@ -31,7 +37,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testHasListener()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $listener = new TestListener();
         $this->assertFalse($dispatcher->hasListener('foo', $listener));
         $dispatcher->addListener('foo', $listener);
@@ -45,7 +51,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testGetListeners()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $listener = new TestListener();
         $dispatcher->addListener('foo', $listener);
         $callback = function () {
@@ -56,7 +62,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testAddSubscriber()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $dispatcher->addSubscriber(new TestSubscriber());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
         $this->assertCount(1, $dispatcher->getListeners('bar'));
@@ -64,7 +70,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveListener()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $listener = new TestListener();
         $dispatcher->addListener('bar', $listener);
         $this->assertCount(1, $dispatcher->getListeners('bar'));
@@ -82,7 +88,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveCallableListener()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $callback = function () {
         };
         $dispatcher->addListener('bar', $callback);
@@ -93,7 +99,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveSubscriber()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $subscriber = new TestSubscriber();
         $dispatcher->addSubscriber($subscriber);
         $this->assertCount(1, $dispatcher->getListeners('foo'));
@@ -105,7 +111,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveEventAllListeners()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $dispatcher->addSubscriber(new TestSubscriber());
         $dispatcher->removeAllListeners('foo');
         $this->assertCount(0, $dispatcher->getListeners('foo'));
@@ -114,7 +120,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveAllListeners()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $dispatcher->addSubscriber(new TestSubscriber());
         $dispatcher->removeAllListeners();
         $this->assertCount(0, $dispatcher->getListeners('foo'));
@@ -123,7 +129,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testDispatchEvent()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $counter = 0;
         $dispatcher->addListener(TestEvent::class, function () use (&$counter) {
             $counter++;
@@ -138,7 +144,7 @@ class DispatcherTest extends BaseTestCase
     public function testDispatchThrowsErrorIfEventInterfaceIsNotPassed()
     {
         $this->expectException(UnknownEventTypeException::class);
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $dispatcher->dispatch(function () {
 
         });
@@ -155,7 +161,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testDispatchCanUseClosureListeners()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $callable = new class() {
             public function __invoke($event)
@@ -175,7 +181,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testDispatcherWithPriority()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $counter = [];
 
@@ -202,7 +208,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testDispatcherOrdersPriority()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $listener1 = new TestListener();
         $listener2 = new TestListener();
@@ -234,7 +240,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testEventDispatchingStopsWhenEventPropagationIsStopped()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
         $counter = 0;
         $dispatcher->addListener(TestEvent::class, function (Event $event) use (&$counter) {
             $counter++;
@@ -249,7 +255,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testGetListenersForEventUsingEventClass()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $listener1 = new TestListener();
         $listener2 = new TestListener();
@@ -270,7 +276,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testGetListenersForEventUsingEventName()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $listener1 = new TestListener();
         $listener2 = new TestListener();
@@ -290,7 +296,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testCanEmitEventUsingCustomName()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $counter = 0;
 
@@ -305,7 +311,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testCanEmitEventUsingClassName()
     {
-        $dispatcher = new Dispatcher();
+        $dispatcher = $this->dispatcher();
 
         $counter = 0;
 
@@ -316,5 +322,80 @@ class DispatcherTest extends BaseTestCase
         $dispatcher->emit(TestEvent::class);
 
         $this->assertEquals(7749, $counter);
+    }
+
+    public function testCanEmitWithSingleProperties()
+    {
+        $dispatcher = $this->dispatcher();
+
+        $numberWord = null;
+
+        $dispatcher->addListener(TestSinglePropertyEvent::class, function (TestSinglePropertyEvent $event) use (&$numberWord) {
+            $numberWord = $event->numberWord;
+        });
+
+        $dispatcher->emit(TestSinglePropertyEvent::class, 'Seven');
+
+        $this->assertEquals('Seven', $numberWord);
+    }
+
+    public function testCanEmitWithMultipleProperties()
+    {
+        $dispatcher = $this->dispatcher();
+
+        $number = null;
+        $word = '';
+
+        $dispatcher->addListener(TestPropertiesEvent::class, function (TestPropertiesEvent $event) use (&$number, &$word) {
+            $number = $event->number;
+            $word = $event->word;
+        });
+
+        $dispatcher->emit(TestPropertiesEvent::class, [7, 'Tor']);
+
+        $this->assertEquals('Tor', $word);
+        $this->assertEquals(7, $number);
+    }
+
+    public function testWillPushQueueableEventToQueue()
+    {
+        $queue = new class extends SynchronousQueue {
+            public int $counter = 0;
+            public function push(JobInterface $job): void
+            {
+                $this->counter++;
+            }
+        };
+        $dispatcher = $this->dispatcher($queue);
+        $dispatcher->addListener(TestQueueableEvent::class, new TestQueueableListener());
+        $dispatcher->emit(TestQueueableEvent::class);
+
+        $this->assertEquals(1, $queue->counter);
+    }
+
+    public function testWillPushAnonymousQueueableEventToQueue()
+    {
+        $queue = new class extends SynchronousQueue {
+            public int $counter = 0;
+            public function push(JobInterface $job): void
+            {
+                $this->counter++;
+            }
+        };
+
+        $dispatcher = $this->dispatcher($queue);
+
+        $callable = new class {
+            public $shouldQueue = true;
+            public function __invoke()
+            {
+                //
+            }
+        };
+
+        $dispatcher->addListener(TestQueueableEvent::class, $callable);
+        $dispatcher->emit(TestQueueableEvent::class);
+
+        $this->assertEquals(1, $queue->counter);
     }
 }

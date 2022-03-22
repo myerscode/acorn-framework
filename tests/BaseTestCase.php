@@ -4,8 +4,12 @@ namespace Tests;
 
 use Mockery;
 use Myerscode\Acorn\Container;
+use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Config\Factory as ConfigFactory;
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
+use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Framework\Queue\QueueInterface;
+use Myerscode\Utilities\Strings\Utility;
 use PHPUnit\Framework\TestCase;
 
 class BaseTestCase extends TestCase
@@ -39,7 +43,12 @@ class BaseTestCase extends TestCase
 
     public function resourceFilePath($fileName = ''): string
     {
-        return __DIR__ . $fileName;
+        return $this->path(__DIR__ . $fileName);
+    }
+
+    protected function path($path): string
+    {
+        return Utility::make($path)->replace(['\\', '/'], DIRECTORY_SEPARATOR)->value();
     }
 
     public function container(): Container
@@ -47,11 +56,16 @@ class BaseTestCase extends TestCase
         $container = new Container;
         $container->add('config', ConfigFactory::make([
             'base' => $this->resourceFilePath('/Resources/App'),
-            'src' => dirname(__DIR__) . '/src',
-            'cwd' => getcwd(),
+            'src' => $this->path(dirname(__DIR__) . '/src'),
+            'cwd' => $this->path(getcwd()),
         ]));
 
         return $container;
+    }
+
+    public function dispatcher(QueueInterface $queue = new SynchronousQueue()): Dispatcher
+    {
+        return  new Dispatcher($queue);
     }
 
 

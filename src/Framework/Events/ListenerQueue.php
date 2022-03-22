@@ -1,17 +1,15 @@
 <?php
 
-namespace Myerscode\Acorn\Framework\Queue;
+namespace Myerscode\Acorn\Framework\Events;
 
-use IteratorAggregate;
-use Myerscode\Acorn\Framework\Events\ListenerInterface;
 use SplObjectStorage;
 use SplPriorityQueue;
 
-class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
+class ListenerQueue
 {
-    protected \SplObjectStorage $storage;
+    protected SplObjectStorage $storage;
 
-    protected \SplPriorityQueue $queue;
+    protected SplPriorityQueue $queue;
 
     public function __construct()
     {
@@ -27,7 +25,14 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
     public function all(): array
     {
         $listeners = [];
-        foreach ($this->getIterator() as $listener) {
+
+        $queue = clone $this->queue;
+
+        if (!$queue->isEmpty()) {
+            $queue->top();
+        }
+
+        foreach ($queue as $listener) {
             $listeners[] = $listener;
         }
 
@@ -37,16 +42,15 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
     /**
      * Clears the queue.
      */
-    public function clear()
+    public function clear(): void
     {
+        unset($this->storage, $this->queue);
         $this->storage = new SplObjectStorage();
         $this->queue = new SplPriorityQueue();
     }
 
     /**
      * Checks whether the queue contains the listener.
-     *
-     *
      */
     public function contains(ListenerInterface $listener): bool
     {
@@ -54,23 +58,9 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
     }
 
     /**
-     * Clones and returns a iterator.
-     */
-    public function getIterator(): SplPriorityQueue
-    {
-        $queue = clone $this->queue;
-
-        if (!$queue->isEmpty()) {
-            $queue->top();
-        }
-
-        return $queue;
-    }
-
-    /**
      * Insert an listener to the queue.
      */
-    public function push(ListenerInterface $listener, int $priority)
+    public function push(ListenerInterface $listener, int $priority): void
     {
         $this->storage->attach($listener, $priority);
         $this->queue->insert($listener, $priority);
@@ -93,12 +83,11 @@ class ListenerPriorityQueue implements QueueInterface, IteratorAggregate
     /**
      * Removes an listener from the queue.
      */
-    public function remove(ListenerInterface $listener)
+    public function remove(ListenerInterface $listener): void
     {
         if ($this->storage->contains($listener)) {
             $this->storage->detach($listener);
             $this->refresh();
         }
     }
-
 }

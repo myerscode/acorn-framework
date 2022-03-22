@@ -2,17 +2,16 @@
 
 namespace Tests\Framework\Queue;
 
-use Myerscode\Acorn\Framework\Queue\ListenerPriorityQueue;
+use Myerscode\Acorn\Framework\Events\ListenerQueue;
 use Tests\BaseTestCase;
 use Tests\Resources\TestEmptyListener;
 use Tests\Resources\TestListener;
 
 class QueueTest extends BaseTestCase
 {
-
     public function testQueueCanGetAllItemsItContains()
     {
-        $queue = new ListenerPriorityQueue();
+        $queue = new ListenerQueue();
 
         $listener = new TestEmptyListener();
         $listener2 = new TestListener();
@@ -25,7 +24,7 @@ class QueueTest extends BaseTestCase
 
     public function testQueueCanBeCleared()
     {
-        $queue = new ListenerPriorityQueue();
+        $queue = new ListenerQueue();
 
         $listener = new TestEmptyListener();
 
@@ -40,7 +39,7 @@ class QueueTest extends BaseTestCase
 
     public function testQueueCanCheckIfItContainsSomething()
     {
-        $queue = new ListenerPriorityQueue();
+        $queue = new ListenerQueue();
 
         $listener = new TestEmptyListener();
 
@@ -52,7 +51,7 @@ class QueueTest extends BaseTestCase
 
     public function testQueueCanBePushedTo()
     {
-        $queue = new ListenerPriorityQueue();
+        $queue = new ListenerQueue();
 
         $listener = new TestEmptyListener();
 
@@ -63,7 +62,7 @@ class QueueTest extends BaseTestCase
 
     public function testQueueCanHaveItemsRemoved()
     {
-        $queue = new ListenerPriorityQueue();
+        $queue = new ListenerQueue();
 
         $listener1 = new TestEmptyListener();
         $listener2 = new TestEmptyListener();
@@ -79,6 +78,4 @@ class QueueTest extends BaseTestCase
 
         $this->assertEquals([$listener1, $listener3], $queue->all());
     }
-
-
 }

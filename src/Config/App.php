@@ -1,5 +1,6 @@
 <?php
 
+use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Console\Input;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Log\NullLogger;
@@ -13,4 +14,5 @@ return [
     'input' => Input::class,
     'output' => Output::class,
     'logger' => NullLogger::class,
+    'queue' => SynchronousQueue::class,
 ];

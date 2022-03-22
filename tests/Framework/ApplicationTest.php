@@ -9,6 +9,7 @@ use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
+use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Log\LogInterface;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
@@ -20,7 +21,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testIsBuildable()
     {
-        $app = new Application($this->container(), new Dispatcher);
+        $app = new Application($this->container(), $this->dispatcher());
 
         $this->assertEquals(Application::APP_NAME, $app->getName());
         $this->assertEquals(Application::APP_VERSION, $app->getVersion());
@@ -28,7 +29,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testEventsAreLoaded()
     {
-        $dispatcher = new Dispatcher;
+        $dispatcher = $this->dispatcher();
         $container = $this->container();
 
         new Application($container, $dispatcher);
@@ -41,7 +42,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testCanHandleInvalidEventsDirectory()
     {
-        $dispatcher = new Dispatcher;
+        $dispatcher = $this->dispatcher();
         $container = $this->container();
 
         new class($container, $dispatcher) extends Application {
@@ -58,7 +59,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testEmitsError()
     {
-        $dispatcher = $this->spy(Dispatcher::class);
+        $dispatcher = $this->spy(Dispatcher::class, [new SynchronousQueue()]);
         $app = new Application($this->container(), $dispatcher);
         $app->add(new CommandThatErrorsCommand());
 
@@ -73,13 +74,13 @@ class ApplicationTest extends BaseTestCase
 
     public function testCommandsAreLoaded()
     {
-        $app = new Application($this->container(),  new Dispatcher);
+        $app = new Application($this->container(),  $this->dispatcher());
         $this->assertGreaterThanOrEqual(3, count($app->all()));
     }
 
     public function testCanHandleInvalidCommandsDirectory()
     {
-        $dispatcher = new Dispatcher;
+        $dispatcher = $this->dispatcher();
         $container = $this->container();
 
         new class($container, $dispatcher) extends Application {
@@ -96,7 +97,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testHasInstanceOfLogger()
     {
-        $app = new Application($this->container(), new Dispatcher);
+        $app = new Application($this->container(), $this->dispatcher());
         $this->assertInstanceOf(LogInterface::class, $app->logger());
     }
 

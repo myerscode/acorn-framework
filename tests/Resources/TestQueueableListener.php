@@ -5,14 +5,17 @@ namespace Tests\Resources;
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
 
-class TestListener extends Listener
+class TestQueueableListener extends Listener
 {
+
+    protected bool $shouldQueue = true;
+
     /**
      * @var string[]|string
      */
-    protected $listensFor = TestEvent::class;
+    protected $listensFor = TestQueueableEvent::class;
 
-    public function handle(TestEvent $event): void
+    public function handle(Event $event)
     {
         //
     }

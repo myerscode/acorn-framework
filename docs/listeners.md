@@ -40,3 +40,7 @@ class SendAlert extends Listener
     }
 }
 ```
+
+## Queueable Listeners
+
+A callable listener needs to define a property called `$shouldQueue` or implement the `ListenerInterface` 
