@@ -21,7 +21,7 @@ abstract class Listener implements ListenerInterface
      */
     public function listensFor(): array|string
     {
-        if (!isset($this->listensFor)) {
+        if ($this->listensFor === null) {
             return [];
         }
 
@@ -30,8 +30,6 @@ abstract class Listener implements ListenerInterface
 
     /**
      * Should this listener queue its response
-     *
-     * @return bool
      */
     public function shouldQueue(): bool
     {

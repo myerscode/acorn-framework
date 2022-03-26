@@ -8,17 +8,17 @@ use Tests\BaseTestCase;
 class ContainerTest extends BaseTestCase
 {
 
-    public function testContainerCanCreateItselfStatically()
+    public function testContainerCanCreateItselfStatically(): void
     {
         $this->assertInstanceOf(Container::class, Container::getInstance());
     }
 
-    public function testContainerCreatesItself()
+    public function testContainerCreatesItself(): void
     {
         $this->assertInstanceOf(Container::class, Container::getInstance());
     }
 
-    public function testContainerCanFlushValues()
+    public function testContainerCanFlushValues(): void
     {
         $c1 = Container::getInstance();
         Container::flush();
@@ -26,7 +26,7 @@ class ContainerTest extends BaseTestCase
         $this->assertNotSame($c1, $c2);
     }
 
-    public function testContainerCanGetResolveValues()
+    public function testContainerCanGetResolveValues(): void
     {
         $container = new Container();
 

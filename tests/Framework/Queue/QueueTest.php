@@ -9,73 +9,83 @@ use Tests\Resources\TestListener;
 
 class QueueTest extends BaseTestCase
 {
-    public function testQueueCanGetAllItemsItContains()
+    public function testQueueCanGetAllItemsItContains(): void
     {
-        $queue = new ListenerQueue();
+        $listenerQueue = null;
+        $testEmptyListener = null;
+        $testListener = null;
+        $listenerQueue = new ListenerQueue();
 
-        $listener = new TestEmptyListener();
-        $listener2 = new TestListener();
+        $testEmptyListener = new TestEmptyListener();
+        $testListener = new TestListener();
 
-        $queue->push($listener, 0);
-        $queue->push($listener2, 10);
+        $listenerQueue->push($testEmptyListener, 0);
+        $listenerQueue->push($testListener, 10);
 
-        $this->assertEquals([$listener2, $listener], $queue->all());
+        $this->assertEquals([$testListener, $testEmptyListener], $listenerQueue->all());
     }
 
-    public function testQueueCanBeCleared()
+    public function testQueueCanBeCleared(): void
     {
-        $queue = new ListenerQueue();
+        $listenerQueue = null;
+        $testEmptyListener = null;
+        $listenerQueue = new ListenerQueue();
 
-        $listener = new TestEmptyListener();
+        $testEmptyListener = new TestEmptyListener();
 
-        $queue->push($listener, 0);
+        $listenerQueue->push($testEmptyListener, 0);
 
-        $this->assertEquals([$listener], $queue->all());
+        $this->assertEquals([$testEmptyListener], $listenerQueue->all());
 
-        $queue->clear();
+        $listenerQueue->clear();
 
-        $this->assertEquals([], $queue->all());
+        $this->assertEquals([], $listenerQueue->all());
     }
 
-    public function testQueueCanCheckIfItContainsSomething()
+    public function testQueueCanCheckIfItContainsSomething(): void
     {
-        $queue = new ListenerQueue();
+        $listenerQueue = null;
+        $testEmptyListener = null;
+        $listenerQueue = new ListenerQueue();
 
-        $listener = new TestEmptyListener();
+        $testEmptyListener = new TestEmptyListener();
 
-        $queue->push($listener, 0);
+        $listenerQueue->push($testEmptyListener, 0);
 
-        $this->assertEquals(true, $queue->contains($listener));
-        $this->assertEquals(false, $queue->contains(new TestListener()));
+        $this->assertEquals(true, $listenerQueue->contains($testEmptyListener));
+        $this->assertEquals(false, $listenerQueue->contains(new TestListener()));
     }
 
-    public function testQueueCanBePushedTo()
+    public function testQueueCanBePushedTo(): void
     {
-        $queue = new ListenerQueue();
+        $listenerQueue = null;
+        $testEmptyListener = null;
+        $listenerQueue = new ListenerQueue();
 
-        $listener = new TestEmptyListener();
+        $testEmptyListener = new TestEmptyListener();
 
-        $queue->push($listener, 0);
+        $listenerQueue->push($testEmptyListener, 0);
 
-        $this->assertEquals([$listener], $queue->all());
+        $this->assertEquals([$testEmptyListener], $listenerQueue->all());
     }
 
-    public function testQueueCanHaveItemsRemoved()
+    public function testQueueCanHaveItemsRemoved(): void
     {
-        $queue = new ListenerQueue();
+        $listenerQueue = null;
+        $listenerQueue = new ListenerQueue();
 
         $listener1 = new TestEmptyListener();
         $listener2 = new TestEmptyListener();
         $listener3 = new TestEmptyListener();
 
-        $queue->push($listener1, 0);
-        $queue->push($listener2, 0);
-        $queue->push($listener3, 0);
+        $listenerQueue->push($listener1, 0);
+        $listenerQueue->push($listener2, 0);
+        $listenerQueue->push($listener3, 0);
 
-        $this->assertEquals([$listener1, $listener2, $listener3], $queue->all());
+        $this->assertEquals([$listener1, $listener2, $listener3], $listenerQueue->all());
 
-        $queue->remove($listener2);
+        $listenerQueue->remove($listener2);
 
-        $this->assertEquals([$listener1, $listener3], $queue->all());
+        $this->assertEquals([$listener1, $listener3], $listenerQueue->all());
     }
 }

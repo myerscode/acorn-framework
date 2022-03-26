@@ -11,17 +11,18 @@ use Tests\BaseTestCase;
 class ConsoleServiceProviderTest extends BaseTestCase
 {
 
-    public function testServicesAreRegistered()
+    public function testServicesAreRegistered(): void
     {
-        $provider = new ConsoleServiceProvider();
+        $consoleServiceProvider = null;
+        $consoleServiceProvider = new ConsoleServiceProvider();
 
-        $this->assertTrue($provider->provides(Input::class));
-        $this->assertTrue($provider->provides('input'));
-        $this->assertTrue($provider->provides(Output::class));
-        $this->assertTrue($provider->provides('output'));
+        $this->assertTrue($consoleServiceProvider->provides(Input::class));
+        $this->assertTrue($consoleServiceProvider->provides('input'));
+        $this->assertTrue($consoleServiceProvider->provides(Output::class));
+        $this->assertTrue($consoleServiceProvider->provides('output'));
     }
 
-    public function testContainerReturnsCorrectInstanceOfInput()
+    public function testContainerReturnsCorrectInstanceOfInput(): void
     {
         $container = new Container();
         $instanceA = $container->manager()->get(Input::class);
@@ -31,7 +32,7 @@ class ConsoleServiceProviderTest extends BaseTestCase
         $this->assertEquals($instanceA, $instanceB);
     }
 
-    public function testContainerReturnsCorrectInstanceOfOutput()
+    public function testContainerReturnsCorrectInstanceOfOutput(): void
     {
         $container = new Container();
         $instanceA = $container->manager()->get(Output::class);

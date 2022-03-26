@@ -15,7 +15,7 @@ class TestQueueableListener extends Listener
      */
     protected $listensFor = TestQueueableEvent::class;
 
-    public function handle(Event $event)
+    public function handle(Event $event): void
     {
         //
     }

@@ -25,7 +25,7 @@ class CallableEventManager
     /**
      * Removes all registered callable listeners.
      */
-    public static function clear()
+    public static function clear(): void
     {
         static::$listeners = [];
     }
@@ -36,7 +36,7 @@ class CallableEventManager
     public static function findByCallable(callable $callable): CallableListener|false
     {
         foreach (static::$listeners as $listener) {
-            if ($listener->getCallable() == $callable) {
+            if ($listener->getCallable() === $callable) {
                 return $listener;
             }
         }

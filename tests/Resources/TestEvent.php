@@ -9,5 +9,5 @@ class TestEvent extends Event implements EventInterface
 {
     protected string $eventName = 'test.event';
 
-    public $counter = 0;
+    public int $counter = 0;
 }

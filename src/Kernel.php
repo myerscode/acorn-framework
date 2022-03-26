@@ -18,9 +18,9 @@ class Kernel
      */
     protected string $basePath;
 
-    private Container $container;
+    private readonly Container $container;
 
-    private Application $application;
+    private readonly Application $application;
 
     public function __construct(string $basePath = '')
     {
@@ -30,7 +30,7 @@ class Kernel
         $this->application = new Application($this->container(), $this->eventBus());
     }
 
-    protected function buildConfig()
+    protected function buildConfig(): void
     {
         $config = new Config();
 
@@ -78,7 +78,7 @@ class Kernel
             $result = $this->application->handle($this->input(), $this->output());
 
             // TODO if result failed but has no error do something
-            if ($result->failed() !== 0) {
+            if ($result->failed()) {
                 throw $result->error();
             }
 
@@ -86,7 +86,7 @@ class Kernel
         } catch (CommandNotFoundException $commandNotFoundException) {
             $this->output()->info($commandNotFoundException->getMessage());
         } catch (Exception $exception) {
-            $message = !empty($exception->getMessage()) ? $exception->getMessage() : get_class($exception);
+            $message = empty($exception->getMessage()) ? $exception::class : $exception->getMessage();
             $this->output()->error($message);
         }
 
@@ -109,7 +109,7 @@ class Kernel
     }
 
 
-    protected function setBasePath(string $basePath)
+    protected function setBasePath(string $basePath): void
     {
         $this->basePath = rtrim($basePath, '\/');
         $this->container->add('basePath', $this->basePath);

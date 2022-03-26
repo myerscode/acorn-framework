@@ -9,7 +9,7 @@ use Tests\BaseTestCase;
 class FactoryTest extends BaseTestCase
 {
 
-    public function testReturnsConfigObject()
+    public function testReturnsConfigObject(): void
     {
         $this->assertInstanceOf(Config::class, Factory::make([]));
     }

@@ -10,7 +10,7 @@ use Tests\Resources\TestMultiEventListener;
 
 class ListenerTest extends BaseTestCase
 {
-    public function testListenerReturnsEventsToSubscribeTo()
+    public function testListenerReturnsEventsToSubscribeTo(): void
     {
         $listener = new TestListener();
 

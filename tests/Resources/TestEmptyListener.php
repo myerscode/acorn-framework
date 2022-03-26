@@ -7,7 +7,7 @@ use Myerscode\Acorn\Framework\Events\Listener;
 
 class TestEmptyListener extends Listener
 {
-    public function handle(Event $event)
+    public function handle(Event $event): void
     {
         //
     }

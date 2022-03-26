@@ -27,11 +27,9 @@ class LogServiceProvider extends AbstractServiceProvider
      * that you need to, but remember, every alias registered
      * within this method must be declared in the `$provides` array.
      */
-    public function register()
+    public function register(): void
     {
         $this->getContainer()->add(NullLogger::class);
-        $this->getContainer()->add('logger', function () {
-            return $this->getContainer()->get(NullLogger::class);
-        });
+        $this->getContainer()->add('logger', fn() => $this->getContainer()->get(NullLogger::class));
     }
 }

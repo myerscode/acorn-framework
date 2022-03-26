@@ -6,5 +6,8 @@ use Myerscode\Acorn\Framework\Events\Listener;
 
 class InvalidListener extends Listener
 {
+    /**
+     * @var int
+     */
     protected $listensFor = 123;
 }

@@ -12,6 +12,9 @@ use function Myerscode\Acorn\Foundation\config;
 
 class QueueServiceProvider extends AbstractServiceProvider
 {
+    /**
+     * @var array<class-string<\Myerscode\Acorn\Framework\Events\Dispatcher>>|array<class-string<\Myerscode\Acorn\Framework\Queue\QueueInterface>>|string[]
+     */
     protected $provides = [
         'queue',
         QueueInterface::class,
@@ -24,16 +27,12 @@ class QueueServiceProvider extends AbstractServiceProvider
      * that you need to, but remember, every alias registered
      * within this method must be declared in the `$provides` array.
      */
-    public function register()
+    public function register(): void
     {
         $this->getContainer()->add(QueueInterface::class, config('app.queue'));
 
-        $this->getContainer()->add('queue', function () {
-            return $this->getContainer()->get(QueueInterface::class);
-        });
+        $this->getContainer()->add('queue', fn() => $this->getContainer()->get(QueueInterface::class));
 
-        $this->getContainer()->add(Dispatcher::class, function () {
-            return new Dispatcher($this->getContainer()->get(QueueInterface::class));
-        });
+        $this->getContainer()->add(Dispatcher::class, fn(): \Myerscode\Acorn\Framework\Events\Dispatcher => new Dispatcher($this->getContainer()->get(QueueInterface::class)));
     }
 }

@@ -6,17 +6,17 @@ use Exception;
 
 class Result
 {
-    public function __construct(protected $exitCode, protected ?Exception $error = null)
+    public function __construct(protected $exitCode, protected ?Exception $exception = null)
     {
         //
     }
 
-    public function wasSucessfull(): int
+    public function wasSucessfull(): bool
     {
         return $this->exitCode === 0;
     }
 
-    public function failed(): int
+    public function failed(): bool
     {
         return $this->exitCode !== 0;
     }
@@ -26,8 +26,8 @@ class Result
         return $this->exitCode;
     }
 
-    public function error(): Exception
+    public function error(): Exception|null
     {
-        return $this->error;
+        return $this->exception;
     }
 }

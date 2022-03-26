@@ -11,12 +11,12 @@ class TestSubscriber extends Subscriber
         'bar' => 'onBar',
     ];
 
-    public function onFoo()
+    public function onFoo(): bool
     {
         return true;
     }
 
-    public function onBar()
+    public function onBar(): bool
     {
         return true;
     }

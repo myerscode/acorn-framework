@@ -8,12 +8,12 @@ use InvalidArgumentException;
 
 class CommandInterpreterTest extends BaseTestCase
 {
-    public function parser()
+    public function parser(): \Myerscode\Acorn\Framework\Console\CommandInterpreter
     {
         return new CommandInterpreter();
     }
 
-    public function testBasicParameterParsing()
+    public function testBasicParameterParsing(): void
     {
         $results = $this->parser()->parse('command:name');
 
@@ -72,7 +72,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->assertTrue($results[2][0]->isArray());
     }
 
-    public function testShortcutNameParsing()
+    public function testShortcutNameParsing(): void
     {
         $results = $this->parser()->parse('command:name {--o|option}');
 
@@ -114,7 +114,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->assertTrue($results[2][0]->isArray());
     }
 
-    public function testDefaultValueParsing()
+    public function testDefaultValueParsing(): void
     {
         $results = $this->parser()->parse('command:name {argument=defaultArgumentValue} {--option=defaultOptionValue}');
         $this->assertFalse($results[1][0]->isRequired());
@@ -132,7 +132,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->assertEquals(['defaultOptionValue1', 'defaultOptionValue2'], $results[2][0]->getDefault());
     }
 
-    public function testArgumentDefaultValue()
+    public function testArgumentDefaultValue(): void
     {
         $results = $this->parser()->parse('command:name {argument= : The argument description.}');
         $this->assertNull($results[1][0]->getDefault());
@@ -141,7 +141,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->assertSame('default', $results[1][0]->getDefault());
     }
 
-    public function testOptionDefaultValue()
+    public function testOptionDefaultValue(): void
     {
         $results = $this->parser()->parse('command:name {--option= : The option description.}');
         $this->assertNull($results[2][0]->getDefault());
@@ -150,7 +150,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->assertSame('default', $results[2][0]->getDefault());
     }
 
-    public function testNameIsSpacesException()
+    public function testNameIsSpacesException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to determine command name from signature.');
@@ -158,7 +158,7 @@ class CommandInterpreterTest extends BaseTestCase
         $this->parser()->parse(" \t\n\r\x0B\f");
     }
 
-    public function testNameInEmptyException()
+    public function testNameInEmptyException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unable to determine command name from signature.');

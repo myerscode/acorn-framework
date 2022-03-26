@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputDefinition;
 
 class ConfigInput extends ArrayInput implements ConsoleInputInterface
 {
-    public function __construct(array $parameters =[], InputDefinition $definition = null)
+    public function __construct(array $parameters =[], InputDefinition $inputDefinition = null)
     {
-        parent::__construct($parameters, $definition);
+        parent::__construct($parameters, $inputDefinition);
     }
 }

@@ -15,7 +15,7 @@ class TestMultiEventListener extends Listener
         'another.test.event'
     ];
 
-    public function handle(Event $event)
+    public function handle(Event $event): void
     {
         //
     }

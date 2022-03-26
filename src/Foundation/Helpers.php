@@ -69,3 +69,8 @@ function output(): Output
 {
     return Container::getInstance()->manager()->get('output');
 }
+
+function pipe(mixed $thing): mixed
+{
+
+}

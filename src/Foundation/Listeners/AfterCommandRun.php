@@ -14,14 +14,14 @@ class AfterCommandRun extends Listener
      */
     protected $listensFor = CommandAfterEvent::class;
 
-    public function __construct(private Output $output)
+    public function __construct(private readonly Output $output)
     {
         //
     }
 
-    public function __invoke(CommandAfterEvent $event): void
+    public function __invoke(CommandAfterEvent $commandAfterEvent): void
     {
-        $message = sprintf('After running command <info>%s</info>', $event->commandEvent->getCommand()->getName());
+        $message = sprintf('After running command <info>%s</info>', $commandAfterEvent->consoleTerminateEvent->getCommand()->getName());
         $this->output->verbose($message);
     }
 }

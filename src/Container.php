@@ -13,9 +13,9 @@ class Container
     /**
      * The current globally available container (if any).
      */
-    protected static ?Container $instance;
+    protected static ?Container $instance = null;
 
-    private DependencyManager $container;
+    private readonly DependencyManager $container;
 
     public function __construct()
     {
@@ -76,7 +76,7 @@ class Container
         return $this->container;
     }
 
-    protected function loadServiceProviders()
+    protected function loadServiceProviders(): void
     {
         $serviceProviders = [
             ConsoleServiceProvider::class,
@@ -84,8 +84,8 @@ class Container
             QueueServiceProvider::class,
         ];
 
-        foreach ($serviceProviders as $provider) {
-            $this->manager()->addServiceProvider($provider);
+        foreach ($serviceProviders as $serviceProvider) {
+            $this->manager()->addServiceProvider($serviceProvider);
         }
     }
 }

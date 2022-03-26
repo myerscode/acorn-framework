@@ -47,7 +47,7 @@ abstract class Command extends SymfonyCommand
         $this->setDescription($this->description);
     }
 
-    protected function configureWithSignature()
+    protected function configureWithSignature(): void
     {
         [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
         parent::__construct($this->name = $name);
@@ -64,8 +64,10 @@ abstract class Command extends SymfonyCommand
 
     /**
      * Initialize the command.
+     * @param \Myerscode\Acorn\Framework\Console\ConsoleInputInterface $input
+     * @param \Myerscode\Acorn\Framework\Console\ConsoleOutputInterface $output
      */
-    protected function initialize(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output)
+    protected function initialize(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output): void
     {
         $this->input = $input;
         $this->output = $output;
@@ -93,10 +95,12 @@ abstract class Command extends SymfonyCommand
      */
     protected function call(string $commandName, array $parameters = []): int
     {
-        $command = $this->getApplication()->find($commandName);
+        $symfonyCommand = null;
+        $symfonyCommand = $this->getApplication()->find($commandName);
+
         $parameters = array_merge($parameters, ['command' => $commandName]);
         $arrayInput = new ArrayInput($parameters);
 
-        return $command->run($arrayInput, $this->output);
+        return $symfonyCommand->run($arrayInput, $this->output);
     }
 }

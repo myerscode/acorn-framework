@@ -34,19 +34,15 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
      * that you need to, but remember, every alias registered
      * within this method must be declared in the `$provides` array.
      */
-    public function register()
+    public function register(): void
     {
         $this->getContainer()->add(Input::class);
-        $this->getContainer()->add('input', function () {
-            return $this->getContainer()->get(Input::class);
-        });
+        $this->getContainer()->add('input', fn() => $this->getContainer()->get(Input::class));
         $this->getContainer()->add(Output::class)->addArguments([Input::class, ConsoleOutput::class]);
-        $this->getContainer()->add('output', function () {
-            return $this->getContainer()->get(Output::class);
-        });
+        $this->getContainer()->add('output', fn() => $this->getContainer()->get(Output::class));
     }
 
-    public function boot()
+    public function boot(): void
     {
         //
     }

@@ -16,7 +16,10 @@ trait InteractsWithInput
      */
     public function hasArgument(string|int $name): bool
     {
-        return $this->input->hasArgument($name) && !is_null($this->input->getArgument($name));
+        if (!$this->input->hasArgument($name)) {
+            return false;
+        }
+        return !is_null($this->input->getArgument($name));
     }
 
     /**
@@ -37,6 +40,7 @@ trait InteractsWithInput
 
     /**
      * Get all of the arguments passed to the command.
+     * @return mixed[]
      */
     public function arguments(): array
     {
@@ -48,7 +52,10 @@ trait InteractsWithInput
      */
     public function hasOption(string $name): bool
     {
-        return $this->input->hasOption($name) && !empty($this->input->getOption($name));
+        if (!$this->input->hasOption($name)) {
+            return false;
+        }
+        return !empty($this->input->getOption($name));
     }
 
     /**
@@ -68,6 +75,7 @@ trait InteractsWithInput
 
     /**
      * Get all of the options passed to the command.
+     * @return mixed[]
      */
     public function options(): array
     {

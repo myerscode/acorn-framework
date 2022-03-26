@@ -1,5 +1,7 @@
 <?php
 
+namespace Myerscode\Acorn\Config;
+
 return [
     'dir' => [
         'base' => '${cwd}',

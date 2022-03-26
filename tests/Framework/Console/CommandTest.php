@@ -18,7 +18,7 @@ class CommandTest extends BaseTestCase
     {
         return new class extends Command {
 
-            protected function configure()
+            protected function configure(): void
             {
                 $this
                     ->addArgument('argument-a', InputArgument::REQUIRED, 'first argument')
@@ -38,17 +38,19 @@ class CommandTest extends BaseTestCase
         };
     }
 
-    public function testCanGetAllCommandArguments()
+    public function testCanGetAllCommandArguments(): void
     {
+        $configInput = null;
+        $voidOutput = null;
         $command = $this->makeTestCommand();
 
-        $input = new ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
-        $output = new VoidOutput();
+        $voidOutput = new VoidOutput();
 
-        $command->run($input, $output);
+        $command->run($configInput, $voidOutput);
 
         $this->assertSame([
             'argument-a' => 'test-first-argument',
@@ -57,34 +59,38 @@ class CommandTest extends BaseTestCase
         ], $command->arguments());
     }
 
-    public function testCanGetArgumentWithDefaultValue(){
+    public function testCanGetArgumentWithDefaultValue(): void{
+        $configInput = null;
+        $voidOutput = null;
         $command = $this->makeTestCommand();
 
-        $input = new ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
-        $output = new VoidOutput();
+        $voidOutput = new VoidOutput();
 
-        $command->run($input, $output);
+        $command->run($configInput, $voidOutput);
 
         $this->assertSame('test-first-argument', $command->argument('argument-a'));
         $this->assertSame('a-default-argument-value', $command->argument('argument-b'));
         $this->assertSame('custom-value-if-null', $command->argument('argument-c', 'custom-value-if-null'));
     }
 
-    public function testCanGetAllCommandOptions()
+    public function testCanGetAllCommandOptions(): void
     {
+        $configInput = null;
+        $voidOutput = null;
         $command = $this->makeTestCommand();
 
-        $input = new ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $output = new VoidOutput();
+        $voidOutput = new VoidOutput();
 
-        $command->run($input, $output);
+        $command->run($configInput, $voidOutput);
 
         $this->assertSame([
             'option-a' => 'test-first-option',
@@ -93,18 +99,20 @@ class CommandTest extends BaseTestCase
         ], $command->options());
     }
 
-    public function testCanGetOptionWithDefaultValue()
+    public function testCanGetOptionWithDefaultValue(): void
     {
+        $configInput = null;
+        $voidOutput = null;
         $command = $this->makeTestCommand();
 
-        $input = new ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $output = new VoidOutput();
+        $voidOutput = new VoidOutput();
 
-        $command->run($input, $output);
+        $command->run($configInput, $voidOutput);
 
         $this->assertSame('test-first-option', $command->option('option-a'));
         $this->assertSame('a-default-option-value', $command->option('option-b'));

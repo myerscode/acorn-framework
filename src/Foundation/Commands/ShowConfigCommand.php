@@ -19,12 +19,13 @@ class ShowConfigCommand extends Command
         $locations = config('configLocations');
         $config = container('config');
         $flattened = $config->store()->flatten();
-        $mapped = array_map(fn($key, $value) => ['key' => $key, 'value' => $value], array_keys($flattened), $flattened);
+        $mapped = array_map(fn($key, $value): array => ['key' => $key, 'value' => $value], array_keys($flattened), $flattened);
         $headers = ['Key', 'Value'];
         $this->output->info("Loaded Config Files From Locations:");
         foreach ($locations as $location) {
             $this->output->text($location);
         }
+
         $this->output->newLine(2);
         $this->output->table($headers, $mapped);
     }

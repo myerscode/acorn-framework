@@ -9,35 +9,38 @@ use Tests\Resources\TestEvent;
 
 class EventTest extends BaseTestCase
 {
-    public function testEventHasName()
+    public function testEventHasName(): void
     {
-        $event = new TestEvent();
+        $testEvent = null;
+        $testEvent = new TestEvent();
 
-        $this->assertEquals(TestEvent::class, $event->eventName());
+        $this->assertEquals(TestEvent::class, $testEvent->eventName());
     }
 
-    public function testNamedEventWithCustomName()
+    public function testNamedEventWithCustomName(): void
     {
-        $event = new NamedEvent('test.event.name');
+        $namedEvent = null;
+        $namedEvent = new NamedEvent('test.event.name');
 
-        $this->assertEquals('test.event.name', $event->eventName());
+        $this->assertEquals('test.event.name', $namedEvent->eventName());
     }
 
-    public function testNamedEventMustHaveName()
+    public function testNamedEventMustHaveName(): void
     {
         $this->expectException(EventConfigException::class);
 
         new NamedEvent('');
     }
 
-    public function testEventCanStopPropagation()
+    public function testEventCanStopPropagation(): void
     {
-        $event = new TestEvent();
+        $testEvent = null;
+        $testEvent = new TestEvent();
 
-        $this->assertFalse($event->isPropagationStopped());
+        $this->assertFalse($testEvent->isPropagationStopped());
 
-        $event->stopPropagation();
+        $testEvent->stopPropagation();
 
-        $this->assertTrue($event->isPropagationStopped());
+        $this->assertTrue($testEvent->isPropagationStopped());
     }
 }

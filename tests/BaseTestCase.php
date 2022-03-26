@@ -14,17 +14,17 @@ use PHPUnit\Framework\TestCase;
 
 class BaseTestCase extends TestCase
 {
-    public function mock($class, $constructorArgs = [])
+    public function mock($class, $constructorArgs = []): \Mockery\LegacyMockInterface
     {
         return Mockery::mock($class, $constructorArgs);
     }
 
-    public function spy($class, $constructorArgs = [])
+    public function spy($class, $constructorArgs = []): \Mockery\LegacyMockInterface
     {
         return Mockery::spy($class, $constructorArgs);
     }
 
-    public function stub($class)
+    public function stub($class): \Mockery\LegacyMockInterface
     {
         return Mockery::mock($class);
     }
@@ -34,7 +34,7 @@ class BaseTestCase extends TestCase
         CallableEventManager::clear();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         Container::flush();
@@ -46,7 +46,7 @@ class BaseTestCase extends TestCase
         return $this->path(__DIR__ . $fileName);
     }
 
-    protected function path($path): string
+    protected function path($path): string|\Stringable
     {
         return Utility::make($path)->replace(['\\', '/'], DIRECTORY_SEPARATOR)->value();
     }
@@ -69,14 +69,11 @@ class BaseTestCase extends TestCase
     }
 
 
-    public function catch($e)
+    public function catch($e): object
     {
         return new class ($e) {
-            private $e;
-
-            public function __construct($e)
+            public function __construct(private $e)
             {
-                $this->e = $e;
             }
 
             public function from(\Closure $c)

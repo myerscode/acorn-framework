@@ -9,17 +9,17 @@ use Tests\BaseTestCase;
 class CallableListenerTest extends BaseTestCase
 {
 
-    public function testCallableListenerAcceptsClosures()
+    public function testCallableListenerAcceptsClosures(): void
     {
-        $closure = function () {
+        $closure = function (): void {
 
         };
-        $listener = new CallableListener($closure);
+        $callableListener = new CallableListener($closure);
 
-        $this->assertEquals($listener->getCallable(), $closure);
+        $this->assertEquals($callableListener->getCallable(), $closure);
     }
 
-    public function testCallableListenerAcceptsCallables()
+    public function testCallableListenerAcceptsCallables(): void
     {
         $callable = new class {
             public function __invoke()
@@ -28,14 +28,14 @@ class CallableListenerTest extends BaseTestCase
             }
         };
 
-        $listener = new CallableListener($callable);
+        $callableListener = new CallableListener($callable);
 
-        $this->assertEquals($listener->getCallable(), $callable);
+        $this->assertEquals($callableListener->getCallable(), $callable);
     }
 
-    public function testCallableListenerThrowsErrorIfNotClosureOrCallable()
+    public function testCallableListenerThrowsErrorIfNotClosureOrCallable(): void
     {
         $this->expectException(InvalidCallableConstructException::class);
-        $listener = new CallableListener(new \stdClass());
+        new CallableListener(new \stdClass());
     }
 }

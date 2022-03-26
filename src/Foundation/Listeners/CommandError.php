@@ -15,15 +15,15 @@ class CommandError extends Listener
      */
     protected $listensFor = CommandErrorEvent::class;
 
-    public function __construct(private Output $output)
+    public function __construct(private readonly Output $output)
     {
         //
     }
 
     public function __invoke(CommandErrorEvent $event): void
     {
-        if ($command = $event->commandEvent->getCommand() instanceof Command) {
-            $commaName = $event->commandEvent->getCommand()->getName();
+        if ($command = $event->consoleErrorEvent->getCommand() instanceof Command) {
+            $commaName = $event->consoleErrorEvent->getCommand()->getName();
         }
 
         $message = sprintf('Error running command <info>%s</info>', $commaName ?? 'UNKNOWN');

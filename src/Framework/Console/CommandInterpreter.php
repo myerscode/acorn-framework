@@ -15,17 +15,16 @@ class CommandInterpreter
     /**
      * Parse the given console command definition into an array.
      *
-     * @param  string  $expression
      *
-     * @return array
      *
      * @throws InvalidArgumentException
+     * @return mixed[]|array<int, mixed[]>|string[]
      */
-    public function parse($expression)
+    public function parse(string $expression): array
     {
         $name = $this->name($expression);
 
-        if (preg_match_all('#\{\s*(.*?)\s*\}#', $expression, $matches) && count($matches[1])) {
+        if (preg_match_all('#\{\s*(.*?)\s*\}#', $expression, $matches) && (is_countable($matches[1]) ? count($matches[1]) : 0)) {
             return array_merge([$name], $this->parameters($matches[1]));
         }
 
@@ -35,13 +34,11 @@ class CommandInterpreter
     /**
      * Extract the name of the command from the expression.
      *
-     * @param  string  $expression
      *
-     * @return string
      *
      * @throws InvalidArgumentException
      */
-    protected function name($expression)
+    protected function name(string $expression): string
     {
         if (!preg_match('#[^\s]+#', $expression, $matches)) {
             throw new InvalidArgumentException('Unable to determine command name from signature.');
@@ -52,6 +49,7 @@ class CommandInterpreter
 
     /**
      * Extract all of the parameters from the tokens.
+     * @return array<int, array<\Symfony\Component\Console\Input\InputArgument|\Symfony\Component\Console\Input\InputOption>>
      */
     protected function parameters(array $tokens): array
     {
@@ -60,7 +58,7 @@ class CommandInterpreter
         $options = [];
 
         foreach ($tokens as $token) {
-            if (preg_match('#-{2,}(.*)#', $token, $matches)) {
+            if (preg_match('#-{2,}(.*)#', (string) $token, $matches)) {
                 $options[] = $this->parseOption($matches[1]);
             } else {
                 $arguments[] = $this->parseArgument($token);
@@ -84,7 +82,7 @@ class CommandInterpreter
             text($token)->endsWith('?') => new InputArgument(trim($token, '?'), InputArgument::OPTIONAL, $description),
             text($token)->endsWith(['=', '=']) => new InputArgument(trim($token, '='), InputArgument::OPTIONAL, $description, null),
             text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument($matches[1], InputArgument::IS_ARRAY, $description,
-                preg_split('#,\s?#', $matches[2])),
+                preg_split('#,\s?#', (string) $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]),
             default => new InputArgument($token, InputArgument::REQUIRED, $description),
         };
@@ -97,7 +95,7 @@ class CommandInterpreter
     {
         [$token, $description] = $this->extractDescription($token);
 
-        $matches = preg_split('#\s*\|\s*#', $token, 2);
+        $matches = preg_split('#\s*\|\s*#', (string) $token, 2);
 
         if (isset($matches[1])) {
             $shortcut = $matches[0];
@@ -119,10 +117,10 @@ class CommandInterpreter
     /**
      * Parse the token into its token and description segments.
      */
-    protected function extractDescription(string $token): array
+    protected function extractDescription(string $token): array|bool
     {
         $parts = preg_split('#\s+:\s+#', trim($token), 2);
 
-        return count($parts) === 2 ? $parts : [$token, ''];
+        return (is_countable($parts) ? count($parts) : 0) === 2 ? $parts : [$token, ''];
     }
 }

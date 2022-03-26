@@ -32,8 +32,8 @@ class ListenerQueue
             $queue->top();
         }
 
-        foreach ($queue as $listener) {
-            $listeners[] = $listener;
+        foreach ($queue as $singleQueue) {
+            $listeners[] = $singleQueue;
         }
 
         return $listeners;
@@ -69,14 +69,14 @@ class ListenerQueue
     /**
      * Refreshes the status of the queue.
      */
-    protected function refresh()
+    protected function refresh(): void
     {
         $this->storage->rewind();
 
         $this->queue = new SplPriorityQueue();
-        foreach ($this->storage as $listener) {
+        foreach ($this->storage as $singleStorage) {
             $priority = $this->storage->getInfo();
-            $this->queue->insert($listener, $priority);
+            $this->queue->insert($singleStorage, $priority);
         }
     }
 

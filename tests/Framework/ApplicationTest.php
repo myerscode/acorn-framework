@@ -19,15 +19,16 @@ use Tests\Resources\App\Commands\CommandThatErrorsCommand;
 class ApplicationTest extends BaseTestCase
 {
 
-    public function testIsBuildable()
+    public function testIsBuildable(): void
     {
-        $app = new Application($this->container(), $this->dispatcher());
+        $application = null;
+        $application = new Application($this->container(), $this->dispatcher());
 
-        $this->assertEquals(Application::APP_NAME, $app->getName());
-        $this->assertEquals(Application::APP_VERSION, $app->getVersion());
+        $this->assertEquals(Application::APP_NAME, $application->getName());
+        $this->assertEquals(Application::APP_VERSION, $application->getVersion());
     }
 
-    public function testEventsAreLoaded()
+    public function testEventsAreLoaded(): void
     {
         $dispatcher = $this->dispatcher();
         $container = $this->container();
@@ -40,7 +41,7 @@ class ApplicationTest extends BaseTestCase
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandErrorEvent::class));
     }
 
-    public function testCanHandleInvalidEventsDirectory()
+    public function testCanHandleInvalidEventsDirectory(): void
     {
         $dispatcher = $this->dispatcher();
         $container = $this->container();
@@ -57,28 +58,28 @@ class ApplicationTest extends BaseTestCase
         $this->assertGreaterThanOrEqual(0, $dispatcher->getListeners());
     }
 
-    public function testEmitsError()
+    public function testEmitsError(): void
     {
+        $application = null;
         $dispatcher = $this->spy(Dispatcher::class, [new SynchronousQueue()]);
-        $app = new Application($this->container(), $dispatcher);
-        $app->add(new CommandThatErrorsCommand());
+        $application = new Application($this->container(), $dispatcher);
+        $application->add(new CommandThatErrorsCommand());
 
-        $result = $this->catch(Exception::class)->from(function () use ($app) {
-            return $app->handle(new ConfigInput(['error-command']), new VoidOutput());
-        });
+        $result = $this->catch(Exception::class)->from(fn() => $application->handle(new ConfigInput(['error-command']), new VoidOutput()));
 
         $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
 
         $this->assertEquals(true, $result->failed());
     }
 
-    public function testCommandsAreLoaded()
+    public function testCommandsAreLoaded(): void
     {
-        $app = new Application($this->container(),  $this->dispatcher());
-        $this->assertGreaterThanOrEqual(3, count($app->all()));
+        $application = null;
+        $application = new Application($this->container(),  $this->dispatcher());
+        $this->assertGreaterThanOrEqual(3, is_countable($application->all()) ? count($application->all()) : 0);
     }
 
-    public function testCanHandleInvalidCommandsDirectory()
+    public function testCanHandleInvalidCommandsDirectory(): void
     {
         $dispatcher = $this->dispatcher();
         $container = $this->container();
@@ -95,10 +96,11 @@ class ApplicationTest extends BaseTestCase
         $this->assertGreaterThanOrEqual(0, $dispatcher->getListeners());
     }
 
-    public function testHasInstanceOfLogger()
+    public function testHasInstanceOfLogger(): void
     {
-        $app = new Application($this->container(), $this->dispatcher());
-        $this->assertInstanceOf(LogInterface::class, $app->logger());
+        $application = null;
+        $application = new Application($this->container(), $this->dispatcher());
+        $this->assertInstanceOf(LogInterface::class, $application->logger());
     }
 
 }

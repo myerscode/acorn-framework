@@ -13,7 +13,7 @@ use Tests\Resources\App\Commands\CommandThatErrorsCommand;
 class KernelTest extends BaseTestCase
 {
 
-    public function testCanRun()
+    public function testCanRun(): void
     {
         $kernel = $this->mock(Kernel::class.'[input,output]', [$this->resourceFilePath('/Resources/App')])
             ->allows([
@@ -25,7 +25,7 @@ class KernelTest extends BaseTestCase
         $this->assertEquals(0, $kernel->run());
     }
 
-    public function testHandlesErrors()
+    public function testHandlesErrors(): void
     {
         $kernel = $this->mock(Kernel::class.'[input,output]', [$this->resourceFilePath('/Resources/App')])
             ->allows([
@@ -39,7 +39,7 @@ class KernelTest extends BaseTestCase
         $this->assertEquals(1, $kernel->run());
     }
 
-    public function testHandlesMissingCommand()
+    public function testHandlesMissingCommand(): void
     {
         $kernel = $this->mock(Kernel::class.'[input,output]', [$this->resourceFilePath('/Resources/App')])
             ->allows([
@@ -51,14 +51,14 @@ class KernelTest extends BaseTestCase
         $this->assertEquals(1, $kernel->run());
     }
 
-    public function testCanMakeInput()
+    public function testCanMakeInput(): void
     {
         $kernel = new Kernel($this->resourceFilePath('/Resources/App'));
 
         $this->assertInstanceOf(Input::class, $kernel->input());
     }
 
-    public function testCanMakeOutput()
+    public function testCanMakeOutput(): void
     {
         $kernel = new Kernel($this->resourceFilePath('/Resources/App'));
 

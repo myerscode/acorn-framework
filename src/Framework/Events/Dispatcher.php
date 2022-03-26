@@ -38,6 +38,7 @@ class Dispatcher
                 if ($event->isPropagationStopped()) {
                     break;
                 }
+
                 if ($listener->shouldQueue()) {
                     $this->queue->push(new SynchronousJob($event, $listener));
                 } else {
@@ -51,7 +52,7 @@ class Dispatcher
 
     public function emit($eventName, $params = null): self
     {
-        $params = !is_array($params) ? [$params] : $params;
+        $params = is_array($params) ? $params : [$params];
 
         if (class_exists($eventName)) {
             if (!(($event = new $eventName(...$params)) instanceof Event)) {
@@ -102,20 +103,18 @@ class Dispatcher
      * Gets all listeners of the event or all registered listeners.
      *
      * @param  string|null  $eventName
+     * @return mixed[]
      */
     public function getListeners(string $eventName = null): array
     {
         if (!is_null($eventName)) {
             return isset($this->listeners[$eventName]) ? $this->listeners[$eventName]->all() : [];
-        } else {
-            $listeners = [];
-
-            foreach ($this->listeners as $queue) {
-                $listeners = array_merge($listeners, $queue->all());
-            }
-
-            return $listeners;
         }
+        $listeners = [];
+        foreach ($this->listeners as $listener) {
+            $listeners = array_merge($listeners, $listener->all());
+        }
+        return $listeners;
     }
 
     /**
@@ -148,13 +147,13 @@ class Dispatcher
         }
     }
 
-    public function removeAllListeners($eventName = null)
+    public function removeAllListeners($eventName = null): void
     {
         if (!is_null($eventName) && isset($this->listeners[$eventName])) {
             $this->listeners[$eventName]->clear();
         } else {
-            foreach ($this->listeners as $queue) {
-                $queue->clear();
+            foreach ($this->listeners as $listener) {
+                $listener->clear();
             }
         }
     }

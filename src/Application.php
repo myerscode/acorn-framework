@@ -37,12 +37,12 @@ class Application extends SymfonyApplication
     /**
      * @var string
      */
-    const APP_NAME = 'Acorn';
+    final const APP_NAME = 'Acorn';
 
     /**
      * @var string
      */
-    const APP_VERSION = '1.0.0';
+    final const APP_VERSION = '1.0.0';
 
     /**
      * The logger instance.
@@ -51,7 +51,7 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
-    public function __construct(private Container $container, private Dispatcher $event)
+    public function __construct(private readonly Container $container, private readonly Dispatcher $dispatcher)
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
 
@@ -67,27 +67,29 @@ class Application extends SymfonyApplication
         $this->loadCommands();
     }
 
-    protected function bindCommandEvents()
+    protected function bindCommandEvents(): void
     {
-        $dispatcher = new EventDispatcher;
+        $eventDispatcher = null;
+        $eventDispatcher = new EventDispatcher;
 
-        $dispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event) {
-            $this->event->emit(CommandBeforeEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event): void {
+            $this->dispatcher->emit(CommandBeforeEvent::class, $event);
         });
 
-        $dispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event) {
-            $this->event->emit(CommandAfterEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event): void {
+            $this->dispatcher->emit(CommandAfterEvent::class, $event);
         });
 
-        $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event) {
-            $this->event->emit(CommandErrorEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
+            $this->dispatcher->emit(CommandErrorEvent::class, $event);
         });
 
-        $this->setDispatcher($dispatcher);
+        $this->setDispatcher($eventDispatcher);
     }
 
     /**
      * return string[]
+     * @return mixed[]
      */
     public function eventDiscoveryDirectories(): array
     {
@@ -104,10 +106,10 @@ class Application extends SymfonyApplication
     {
         $eventDiscoveryDirs = $this->eventDiscoveryDirectories();
 
-        foreach ($eventDiscoveryDirs as $directory) {
+        foreach ($eventDiscoveryDirs as $eventDiscoveryDir) {
             try {
-                foreach (FileService::make($directory)->files() as $file) {
-                    $this->output()->debug(sprintf('Loading events from %s to load events from', $directory));
+                foreach (FileService::make($eventDiscoveryDir)->files() as $file) {
+                    $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
                     /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
@@ -123,7 +125,7 @@ class Application extends SymfonyApplication
                             }
 
                             foreach ($events as $event) {
-                                $this->event->addListener($event, $listener);
+                                $this->dispatcher->addListener($event, $listener);
                             }
                         }
                     } catch (InvalidListenerException $invalidListenerException) {
@@ -131,11 +133,14 @@ class Application extends SymfonyApplication
                     }
                 }
             } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load events from', $directory));
+                $this->output()->debug(sprintf('Could not find directory %s to load events from', $eventDiscoveryDir));
             }
         }
     }
 
+    /**
+     * @return mixed[]
+     */
     public function commandsDiscoveryDirectories(): array
     {
         return array_filter([
@@ -144,38 +149,38 @@ class Application extends SymfonyApplication
         ]);
     }
 
-    protected function loadCommands()
+    protected function loadCommands(): void
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
 
-        foreach ($commandsDiscoveryDirectories as $commandDirectory) {
+        foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
             try {
-                foreach (FileService::make($commandDirectory)->files() as $file) {
+                foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                             $this->add($this->container->manager()->get($commandClass));
                         } else {
-                            $this->output()->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDirectory));
+                            $this->output()->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory));
                         }
                     } catch (FileFormatExpection | ReflectionException) {
-                        $this->output()->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDirectory));
+                        $this->output()->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory));
                     }
                 }
             } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load commands from', $commandDirectory));
+                $this->output()->debug(sprintf('Could not find directory %s to load commands from', $commandDiscoveryDirectory));
             }
         }
     }
 
-    public function add(SymfonyCommand $command)
+    public function add(SymfonyCommand $symfonyCommand): ?\Symfony\Component\Console\Command\Command
     {
 
-        if ($command instanceof Command || $command instanceof LoggerAwareInterface) {
-            $command->setLogger($this->logger());
+        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
+            $symfonyCommand->setLogger($this->logger());
         }
 
-        return parent::add($command);
+        return parent::add($symfonyCommand);
     }
 
     public function input(): ConsoleInputInterface

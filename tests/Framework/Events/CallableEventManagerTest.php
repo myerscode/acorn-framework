@@ -9,10 +9,10 @@ use Tests\BaseTestCase;
 class CallableEventManagerTest extends BaseTestCase
 {
 
-    public function testFindCallable()
+    public function testFindCallable(): void
     {
         $dispatcher = $this->dispatcher();
-        $callable = function () {
+        $callable = function (): void {
         };
         $dispatcher->addListener('my-special-event', $callable);
         $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());

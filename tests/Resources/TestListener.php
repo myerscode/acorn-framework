@@ -12,7 +12,7 @@ class TestListener extends Listener
      */
     protected $listensFor = TestEvent::class;
 
-    public function handle(TestEvent $event): void
+    public function handle(TestEvent $testEvent): void
     {
         //
     }

@@ -24,19 +24,19 @@ trait InteractsWithOutput
         $this->output->debug($message);
     }
 
-    public function error(string $string, int|string $verbosity = null)
+    public function error(string $string, int|string $verbosity = null): void
     {
         $this->output->error($string);
     }
 
-    public function info(string $string, int|string $verbosity = null)
+    public function info(string $string, int|string $verbosity = null): void
     {
         $this->line($string, 'info', $verbosity);
     }
 
-    public function line(string $string, string $style = null, int|string $verbosity = null)
+    public function line(string $string, string $style = null, int|string $verbosity = null): void
     {
-        $styled = $style ? "<$style>$string</$style>" : $string;
+        $styled = $style ? sprintf('<%s>%s</%s>', $style, $string, $style) : $string;
 
         $this->output->writeln($styled, $this->parseVerbosity($verbosity));
     }
@@ -44,9 +44,7 @@ trait InteractsWithOutput
     /**
      * Get the verbosity level in terms of Symfony's OutputInterface level.
      *
-     * @param  string|int|null  $level
      *
-     * @return int
      */
     protected function parseVerbosity(string|int|null $level = null): int
     {
