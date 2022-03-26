@@ -6,6 +6,7 @@ use Myerscode\Acorn\Container;
 use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\EventInterface;
+use Myerscode\Acorn\Framework\Pipeline\LineManager;
 use Myerscode\Config\Config;
 use Myerscode\Utilities\Strings\Utility as TextUtility;
 
@@ -70,7 +71,7 @@ function output(): Output
     return Container::getInstance()->manager()->get('output');
 }
 
-function pipe(mixed $thing): mixed
+function input(): Output
 {
-
+    return Container::getInstance()->manager()->get('input');
 }
