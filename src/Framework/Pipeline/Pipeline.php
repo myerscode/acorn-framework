@@ -3,13 +3,10 @@
 namespace Myerscode\Acorn\Framework\Pipeline;
 
 use Closure;
-use InvalidArgumentException;
 use Myerscode\Acorn\Framework\Exceptions\InvalidPipeException;
 
 class Pipeline
 {
-
-    private $originalObject;
 
     /**
      * The collection of pipes that a value will be passed through
@@ -19,27 +16,25 @@ class Pipeline
     private array $pipes;
 
 
-    public function __construct(array $pipes = [])
+    public function __construct(array|string|PipeCollectionInterface $pipes = [])
     {
-        $this->pipes = array_filter($pipes, function ($pipe) {
-            return ($pipe instanceof PipeInterface || is_subclass_of($pipe, PipeInterface::class));
-        });
+        if (is_string($pipes)) {
+            $pipes = [$pipes];
+        }
+
+        $this->setPipes($pipes);
     }
 
     /**
      * Set the pipes that will be passed through
      *
      * @param  mixed  $pipes
-     *
-     * @return Pipeline
      */
-    public function pipes($pipes): Pipeline
+    public function pipes($pipes): static
     {
         if ($pipes instanceof Pipeline) {
             $pipes = $pipes->toArray();
-        }
-
-        if ($pipes instanceof PipeInterface) {
+        } elseif (!is_array($pipes) && is_subclass_of($pipes, PipeInterface::class)) {
             $pipes = [$pipes];
         }
 
@@ -55,22 +50,18 @@ class Pipeline
      * object through it
      *
      * @param  mixed  $object
-     * @param  Closure  $core
+     * @param  Closure|null  $core
      *
      * @return mixed
      */
-    public function flush($object, ?Closure $core = null)
+    public function flush(mixed $object, ?Closure $core = null): mixed
     {
 
         if (is_null($core)) {
-            $core = function ($object) {
-                return $object;
-            };
+            $core = fn($object) => $object;
         }
 
-        $coreFunction = function ($object) use ($core) {
-            return $core($object);
-        };
+        $coreFunction = fn($object) => $core($object);
 
         // Since we will be "currying" the functions starting with the first
         // in the array, the first function will be "closer" to the core.
@@ -81,13 +72,16 @@ class Pipeline
         // We create the onion by starting initially with the core and then
         // gradually wrap it in pipes. Each layer will have the next layer "curried"
         // into it and will have the current state (the object) passed to it.
-        $completeOnion = array_reduce($pipes, function ($nextLayer, $layer) {
-            return $this->createLayer($nextLayer, $layer);
-        }, $coreFunction);
+        $completeOnion = array_reduce($pipes, fn($nextLayer, $layer): Closure => $this->createLayer($nextLayer, $layer), $coreFunction);
 
         // We now have the complete onion and can start passing the object
         // down through the pipes.
         return $completeOnion($object);
+    }
+
+    public function setPipes($pipes): void
+    {
+        $this->pipes = array_filter($pipes, fn($pipe): bool => $pipe instanceof PipeCollectionInterface || is_subclass_of($pipe, PipeInterface::class));
     }
 
     /**
@@ -95,7 +89,7 @@ class Pipeline
      *
      * @return PipeInterface[]
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->pipes;
     }
@@ -104,20 +98,22 @@ class Pipeline
      * Get an onion layer function.
      * This function will get the object from a previous layer and pass it inwards
      *
-     * @param  PipeInterface  $nextLayer
-     * @param  PipeInterface  $layer
+     * @param  Closure  $nextLayer
+     * @param  PipeCollectionInterface|PipeInterface|string  $pipe
      *
-     * @return Closure
+     * @return callable
      */
-    private function createLayer($nextLayer, $layer)
+    private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): callable
     {
-        if (is_string($layer) && is_subclass_of($layer, PipeInterface::class)) {
-            $layer = new $layer();
+        if ($pipe instanceof PipeCollectionInterface) {
+            return fn($object) => $nextLayer( (new Pipeline($pipe->toArray()))->flush($object) );
         }
 
-        return function ($object) use ($nextLayer, $layer) {
-            return $layer->handle($object, $nextLayer);
-        };
+        if (is_string($pipe)) {
+            $pipe = new $pipe();
+        }
+
+        return fn($object) => $pipe->handle($object, $nextLayer);
     }
 
 }

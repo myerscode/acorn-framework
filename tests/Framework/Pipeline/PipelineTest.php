@@ -5,13 +5,14 @@ namespace Tests\Framework\Pipeline;
 use Myerscode\Acorn\Framework\Exceptions\InvalidPipeException;
 use Myerscode\Acorn\Framework\Pipeline\Pipeline;
 use PHPUnit\Framework\TestCase;
+use StdClass;
 use Tests\Resources\AfterPipe;
 use Tests\Resources\BeforePipe;
 use Tests\Resources\PipedObject;
 
 class PipelineTest extends TestCase
 {
-    public function testLayersAreRunInCorrectOrder()
+    public function testLayersAreRunInCorrectOrder(): void
     {
         $pipeline = new Pipeline();
         $end = $pipeline
@@ -30,20 +31,45 @@ class PipelineTest extends TestCase
         ], $end->passedThrough);
     }
 
-    public function testAddingAnOnionAndArrayWorks()
+    public function testCanAddASinglePipe(): void
+    {
+        $stdClass = new StdClass();
+        $pipeline = (new Pipeline)->pipes(new BeforePipe)->flush($stdClass);
+
+        $this->assertEquals(['before'], $pipeline->passedThrough);
+
+        $stdClass = new StdClass();
+        $pipeline = (new Pipeline(AfterPipe::class))->flush($stdClass);
+
+        $this->assertEquals(['after'], $pipeline->passedThrough);
+    }
+
+    public function testPipesCanBeDefinedByClass(): void
+    {
+        $stdClass = new StdClass();
+
+        $pipeline = (new Pipeline)->pipes([
+            BeforePipe::class,
+            AfterPipe::class,
+        ])->flush($stdClass);
+
+        $this->assertEquals(['before', 'after'], $pipeline->passedThrough);
+    }
+
+    public function testAddingAnPipelineAndArrayWorks(): void
     {
         $pipeline1 = (new Pipeline)->pipes([
             new BeforePipe(1),
             new AfterPipe(4),
         ]);
 
-        $pipeline2 = new Pipeline([
+        $pipeline = new Pipeline([
             new BeforePipe(3),
             new AfterPipe(2),
         ]);
 
         $end = $pipeline1
-            ->pipes($pipeline2)
+            ->pipes($pipeline)
             ->flush(new PipedObject, function ($object) {
                 $object->passedThrough[] = 'core';
 
@@ -55,10 +81,11 @@ class PipelineTest extends TestCase
         ], $end->passedThrough);
     }
 
-    public function testDefaultHandler()
+    public function testDefaultHandler(): void
     {
-        $object = new \StdClass;
-        $object->runs = [];
+        $stdClass = new StdClass();
+
+        $stdClass->runs = [];
         $pipeline = new Pipeline();
 
         $end = $pipeline->pipes([
@@ -66,33 +93,33 @@ class PipelineTest extends TestCase
             new BeforePipe(2),
             new AfterPipe(3),
             new AfterPipe(4),
-        ])->flush($object);
+        ])->flush($stdClass);
 
         $this->assertEquals([
             1, 2, 4, 3,
         ], $end->passedThrough);
     }
 
-    public function testOnlyAcceptsPipesWithInterface()
+    public function testOnlyAcceptsPipesWithInterface(): void
     {
-        $object = new \StdClass;
-        $object->runs = [];
+        $stdClass = new StdClass();
+
+        $stdClass->runs = [];
+
         $pipeline = new Pipeline();
 
         $end = $pipeline->pipes([
             new BeforePipe(1),
-            function () {
-                return 2;
-            },
+            fn(): int => 2,
             new AfterPipe(3),
-        ])->flush($object);
+        ])->flush($stdClass);
 
         $this->assertEquals([
             1, 3,
         ], $end->passedThrough);
     }
 
-    public function testInvalidPipelineException()
+    public function testInvalidPipelineException(): void
     {
         $pipeline = new Pipeline();
         $this->expectException(InvalidPipeException::class);

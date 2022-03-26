@@ -6,11 +6,8 @@ use Myerscode\Acorn\Framework\Pipeline\PipeInterface;
 
 class AfterPipe implements PipeInterface
 {
-    private string $id;
-
-    public function __construct(string $id = 'after')
+    public function __construct(private readonly string $id = 'after')
     {
-        $this->id = $id;
     }
 
     public function handle($object, \Closure $next)

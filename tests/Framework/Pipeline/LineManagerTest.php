@@ -10,31 +10,50 @@ use Tests\Resources\PipedObject;
 
 class LineManagerTest extends TestCase
 {
-    public function testRegisteringPipelineWithClasses()
+    public function testRegisteringPipelineWithClasses(): void
     {
-        $manager = new LineManager();
+        $lineManager = new LineManager();
 
-        $manager->setPipeline('test', [
+        $lineManager->setPipeline('test', [
             BeforePipe::class,
             AfterPipe::class,
         ]);
 
-        $response = $manager->send(new PipedObject)->through('test');
+        $response = $lineManager->send(new PipedObject)->through('test');
 
         $this->assertEquals(['before', 'after'], $response->passedThrough);
     }
 
-    public function testRegisteringPipelineWithObjects()
+    public function testRegisteringPipelineWithObjects(): void
     {
-        $manager = new LineManager();
+        $lineManager = new LineManager();
 
-        $manager->setPipeline('test', [
+        $lineManager->setPipeline('test', [
             new BeforePipe('123'),
             new AfterPipe('456'),
         ]);
 
-        $response = $manager->send(new PipedObject)->through('test');
+        $response = $lineManager->send(new PipedObject)->through('test');
 
         $this->assertEquals(['123', '456'], $response->passedThrough);
+    }
+
+    public function testCanBePassedThroughMultiplePipelines(): void
+    {
+        $lineManager = new LineManager();
+
+        $lineManager->setPipeline('first', [
+            new BeforePipe('123'),
+            new AfterPipe('456'),
+        ]);
+
+        $lineManager->setPipeline('second', [
+            new BeforePipe('abc'),
+            new AfterPipe('xyz'),
+        ]);
+
+        $response = $lineManager->send(new PipedObject)->through(['first', 'second']);
+
+        $this->assertEquals(['123', '456', 'abc', 'xyz'], $response->passedThrough);
     }
 }

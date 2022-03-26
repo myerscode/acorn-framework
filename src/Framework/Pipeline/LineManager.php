@@ -4,39 +4,43 @@ namespace Myerscode\Acorn\Framework\Pipeline;
 
 class LineManager
 {
-    private $object;
+    /**
+     * Thing that will be passed through the pipelines
+     *
+     * @var mixed
+     */
+    private mixed $object;
 
     /**
-     * @var PipeInterface[]|Pipeline
+     * @var PipeCollection[]
      */
-    private $pipes;
+    private array $pipes = [];
 
-    /**
-     * @var array
-     */
-    private array $pipelines;
-
-
-    public function setPipeline($name, $pipes)
+    public function setPipeline($name, array $pipes): void
     {
-        $this->pipelines[$name] = function ($object) use ($pipes) {
-            return (new Pipeline)->pipes($pipes)->flush($object);
-        };
+        $this->pipes[$name] = new PipeCollection($pipes);
     }
 
-    public function send($object): LineManager
+    public function send(mixed $object): static
     {
         $this->object = $object;
 
         return $this;
     }
 
-    public function through($pipes)
+    /**
+     * @param  string|array  $pipeNames
+     *
+     * @return mixed
+     */
+    public function through(string|array $pipeNames): mixed
     {
-        if (is_string($pipes) && isset($this->pipelines[$pipes])) {
-            return $this->pipelines[$pipes]($this->object);
+        if (is_string($pipeNames) && isset($this->pipes[$pipeNames])) {
+            $pipes =  $this->pipes[$pipeNames]->toArray();
+        } else {
+            $pipes = array_values(array_filter($this->pipes, fn($name) => in_array($name, $pipeNames), ARRAY_FILTER_USE_KEY));
         }
 
-        return (new Pipeline($this->pipes))->flush($this->object);
+        return (new Pipeline($pipes))->flush($this->object);
     }
 }
