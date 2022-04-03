@@ -2,9 +2,10 @@
 
 namespace Myerscode\Acorn;
 
-use League\Container\Container as DependencyManager;
 use League\Container\ReflectionContainer;
 use Myerscode\Acorn\Foundation\Providers\QueueServiceProvider;
+use Myerscode\Acorn\Framework\Container\Definitions;
+use Myerscode\Acorn\Framework\Container\DependencyManager;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
 use Myerscode\Acorn\Framework\Providers\LogServiceProvider;
 
@@ -19,7 +20,7 @@ class Container
 
     public function __construct()
     {
-        $this->container = new DependencyManager;
+        $this->container = new DependencyManager(new Definitions());
         $this->container
             ->delegate(
                 (new ReflectionContainer())->cacheResolutions()
@@ -69,6 +70,11 @@ class Container
     public function get(string $id)
     {
         return $this->container->get($id);
+    }
+
+    public function swap(string $id, $concrete = null, bool $shared = null): void
+    {
+        $this->container->swap($id, $concrete, $shared);
     }
 
     public function manager(): DependencyManager
