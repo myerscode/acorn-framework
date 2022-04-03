@@ -4,6 +4,7 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Exception;
 use League\Container\Container;
+use Myerscode\Acorn\Foundation\Console\ConfigInput;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -84,6 +85,14 @@ abstract class Command extends SymfonyCommand
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function getAliases(): array
+    {
+        return array_unique(array_merge([get_called_class()], parent::getAliases()));
+    }
+
+    /**
      * Call other command.
      *
      * @param  string  $commandName  Command name
@@ -95,12 +104,12 @@ abstract class Command extends SymfonyCommand
      */
     protected function call(string $commandName, array $parameters = []): int
     {
-        $symfonyCommand = null;
         $symfonyCommand = $this->getApplication()->find($commandName);
 
         $parameters = array_merge($parameters, ['command' => $commandName]);
-        $arrayInput = new ArrayInput($parameters);
+        $arrayInput = new ConfigInput($parameters);
 
         return $symfonyCommand->run($arrayInput, $this->output);
     }
+
 }

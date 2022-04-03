@@ -16,12 +16,13 @@ use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\CommandThatErrorsCommand;
 
+use function Myerscode\Acorn\Foundation\container;
+
 class ApplicationTest extends BaseTestCase
 {
 
     public function testIsBuildable(): void
     {
-        $application = null;
         $application = new Application($this->container(), $this->dispatcher());
 
         $this->assertEquals(Application::APP_NAME, $application->getName());
@@ -30,10 +31,9 @@ class ApplicationTest extends BaseTestCase
 
     public function testEventsAreLoaded(): void
     {
-        $dispatcher = $this->dispatcher();
-        $container = $this->container();
+        $app = new Application( $this->newContainer() );
 
-        new Application($container, $dispatcher);
+        $dispatcher = $app->dispatcher();
 
         $this->assertGreaterThanOrEqual(3, $dispatcher->getListeners());
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandAfterEvent::class));
@@ -60,10 +60,13 @@ class ApplicationTest extends BaseTestCase
 
     public function testEmitsError(): void
     {
-        $application = null;
         $dispatcher = $this->spy(Dispatcher::class, [new SynchronousQueue()]);
-        $application = new Application($this->container(), $dispatcher);
+
+        $application = new Application($this->container());
+
         $application->add(new CommandThatErrorsCommand());
+
+        container()->swap(Dispatcher::class, $dispatcher);
 
         $result = $this->catch(Exception::class)->from(fn() => $application->handle(new ConfigInput(['error-command']), new VoidOutput()));
 
@@ -74,8 +77,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testCommandsAreLoaded(): void
     {
-        $application = null;
-        $application = new Application($this->container(),  $this->dispatcher());
+        $application = new Application($this->container());
         $this->assertGreaterThanOrEqual(3, is_countable($application->all()) ? count($application->all()) : 0);
     }
 
@@ -84,7 +86,7 @@ class ApplicationTest extends BaseTestCase
         $dispatcher = $this->dispatcher();
         $container = $this->container();
 
-        new class($container, $dispatcher) extends Application {
+        new class($container) extends Application {
             public function commandsDiscoveryDirectories(): array
             {
                 return [

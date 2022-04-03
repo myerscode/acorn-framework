@@ -4,9 +4,9 @@ namespace Myerscode\Acorn\Framework\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
+use Myerscode\Acorn\Foundation\Console\Input;
+use Myerscode\Acorn\Foundation\Console\Output;
 use Myerscode\Acorn\Framework\Console\Command;
-use Myerscode\Acorn\Framework\Console\Input;
-use Myerscode\Acorn\Framework\Console\Output;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class ConsoleServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
@@ -38,7 +38,7 @@ class ConsoleServiceProvider extends AbstractServiceProvider implements Bootable
     {
         $this->getContainer()->add(Input::class);
         $this->getContainer()->add('input', fn() => $this->getContainer()->get(Input::class));
-        $this->getContainer()->add(Output::class)->addArguments([Input::class, ConsoleOutput::class]);
+        $this->getContainer()->add(Output::class)->addArguments([ Input::class, ConsoleOutput::class]);
         $this->getContainer()->add('output', fn() => $this->getContainer()->get(Output::class));
     }
 

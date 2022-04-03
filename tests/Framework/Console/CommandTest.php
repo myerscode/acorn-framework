@@ -2,17 +2,19 @@
 
 namespace Tests\Framework\Console;
 
-use League\Container\Container as DependencyManager;
 use Myerscode\Acorn\Foundation\Console\ConfigInput;
+use Myerscode\Acorn\Foundation\Console\StreamOutput;
 use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Framework\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Tests\BaseTestCase;
-use Tests\Resources\TestCommand;
+use Tests\Resources\App\Commands\SimpleOutputCommand;
+use Myerscode\Acorn\Testing\InteractsWithCommands;
 
 class CommandTest extends BaseTestCase
 {
+    use InteractsWithCommands;
 
     public function makeTestCommand(): Command
     {
@@ -40,8 +42,6 @@ class CommandTest extends BaseTestCase
 
     public function testCanGetAllCommandArguments(): void
     {
-        $configInput = null;
-        $voidOutput = null;
         $command = $this->makeTestCommand();
 
         $configInput = new ConfigInput([
@@ -59,9 +59,8 @@ class CommandTest extends BaseTestCase
         ], $command->arguments());
     }
 
-    public function testCanGetArgumentWithDefaultValue(): void{
-        $configInput = null;
-        $voidOutput = null;
+    public function testCanGetArgumentWithDefaultValue(): void
+    {
         $command = $this->makeTestCommand();
 
         $configInput = new ConfigInput([
@@ -79,8 +78,6 @@ class CommandTest extends BaseTestCase
 
     public function testCanGetAllCommandOptions(): void
     {
-        $configInput = null;
-        $voidOutput = null;
         $command = $this->makeTestCommand();
 
         $configInput = new ConfigInput([
@@ -101,8 +98,6 @@ class CommandTest extends BaseTestCase
 
     public function testCanGetOptionWithDefaultValue(): void
     {
-        $configInput = null;
-        $voidOutput = null;
         $command = $this->makeTestCommand();
 
         $configInput = new ConfigInput([
@@ -117,5 +112,25 @@ class CommandTest extends BaseTestCase
         $this->assertSame('test-first-option', $command->option('option-a'));
         $this->assertSame('a-default-option-value', $command->option('option-b'));
         $this->assertSame('custom-option-if-null', $command->option('option-c', 'custom-option-if-null'));
+    }
+
+    public function testCommandCanCallAnotherCommand(): void
+    {
+        $command = new class extends Command {
+            protected string $signature = 'anon {name : The name to pass through}';
+
+            public function handle(): void
+            {
+                $this->call(SimpleOutputCommand::class, ['name' => $this->argument('name')]);
+            }
+        };
+
+        $display = $this->call($command, ['name' => 'Gerald']);
+
+        $this->assertEquals('Hello Gerald', $display);
+
+        $display = $this->call(SimpleOutputCommand::class, ['name' => 'Rupert']);
+
+        $this->assertEquals('Hello Rupert', $display);
     }
 }

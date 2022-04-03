@@ -23,13 +23,13 @@ class DispatcherTest extends BaseTestCase
 {
     public function testInitialize(): void
     {
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $this->assertEmpty($dispatcher->getListeners());
     }
 
     public function testAddListener(): void
     {
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $this->assertEmpty($dispatcher->getListeners('foo'));
         $dispatcher->addListener('foo', new TestListener());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
@@ -37,8 +37,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testHasListener(): void
     {
-        $testListener = null;
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $testListener = new TestListener();
         $this->assertFalse($dispatcher->hasListener('foo', $testListener));
         $dispatcher->addListener('foo', $testListener);
@@ -52,8 +51,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testGetListeners(): void
     {
-        $testListener = null;
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $testListener = new TestListener();
         $dispatcher->addListener('foo', $testListener);
         $callback = function (): void {
@@ -64,7 +62,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testAddSubscriber(): void
     {
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $dispatcher->addSubscriber(new TestSubscriber());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
         $this->assertCount(1, $dispatcher->getListeners('bar'));
@@ -72,8 +70,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveListener(): void
     {
-        $testListener = null;
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $testListener = new TestListener();
         $dispatcher->addListener('bar', $testListener);
         $this->assertCount(1, $dispatcher->getListeners('bar'));
@@ -91,7 +88,7 @@ class DispatcherTest extends BaseTestCase
 
     public function testRemoveCallableListener(): void
     {
-        $dispatcher = $this->dispatcher();
+        $dispatcher = $this->newDispatcher();
         $callback = function (): void {
         };
         $dispatcher->addListener('bar', $callback);
@@ -371,7 +368,7 @@ class DispatcherTest extends BaseTestCase
                 ++$this->counter;
             }
         };
-        $dispatcher = $this->dispatcher($queue);
+        $dispatcher = $this->newDispatcher($queue);
         $dispatcher->addListener(TestQueueableEvent::class, new TestQueueableListener());
         $dispatcher->emit(TestQueueableEvent::class);
 
@@ -389,7 +386,7 @@ class DispatcherTest extends BaseTestCase
             }
         };
 
-        $dispatcher = $this->dispatcher($queue);
+        $dispatcher = $this->newDispatcher($queue);
 
         $callable = new class {
             public bool $shouldQueue = true;

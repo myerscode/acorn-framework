@@ -27,7 +27,7 @@ class Kernel
         $this->container = new Container();
         $this->setBasePath($basePath);
         $this->buildConfig();
-        $this->application = new Application($this->container(), $this->eventBus());
+        $this->application = new Application($this->container());
     }
 
     protected function buildConfig(): void
@@ -61,12 +61,12 @@ class Kernel
 
     public function input(): ConsoleInputInterface
     {
-        return $this->container->manager()->get('input');
+        return $this->application()->input();
     }
 
     public function output(): ConsoleOutputInterface
     {
-        return $this->container->manager()->get('output');
+        return $this->application()->output();
     }
 
     /**
@@ -102,12 +102,6 @@ class Kernel
     {
         return $this->container;
     }
-
-    public function eventBus(): Dispatcher
-    {
-        return $this->container()->manager()->get(Dispatcher::class);
-    }
-
 
     protected function setBasePath(string $basePath): void
     {
