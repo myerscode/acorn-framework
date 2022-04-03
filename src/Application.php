@@ -30,6 +30,7 @@ use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+
 use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
@@ -51,7 +52,7 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
-    public function __construct(private readonly Container $container, private readonly Dispatcher $dispatcher)
+    public function __construct(private readonly Container $container)
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
 
@@ -67,21 +68,30 @@ class Application extends SymfonyApplication
         $this->loadCommands();
     }
 
+    public function dispatcher(): Dispatcher
+    {
+        return $this->container()->manager()->get(Dispatcher::class);
+    }
+
+    public function container(): Container
+    {
+        return $this->container;
+    }
+
     protected function bindCommandEvents(): void
     {
-        $eventDispatcher = null;
         $eventDispatcher = new EventDispatcher;
 
         $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event): void {
-            $this->dispatcher->emit(CommandBeforeEvent::class, $event);
+            $this->dispatcher()->emit(CommandBeforeEvent::class, $event);
         });
 
         $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event): void {
-            $this->dispatcher->emit(CommandAfterEvent::class, $event);
+            $this->dispatcher()->emit(CommandAfterEvent::class, $event);
         });
 
         $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
-            $this->dispatcher->emit(CommandErrorEvent::class, $event);
+            $this->dispatcher()->emit(CommandErrorEvent::class, $event);
         });
 
         $this->setDispatcher($eventDispatcher);
@@ -125,7 +135,7 @@ class Application extends SymfonyApplication
                             }
 
                             foreach ($events as $event) {
-                                $this->dispatcher->addListener($event, $listener);
+                                $this->dispatcher()->addListener($event, $listener);
                             }
                         }
                     } catch (InvalidListenerException $invalidListenerException) {
