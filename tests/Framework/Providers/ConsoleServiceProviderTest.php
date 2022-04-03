@@ -3,8 +3,8 @@
 namespace Tests\Framework\Providers;
 
 use Myerscode\Acorn\Container;
-use Myerscode\Acorn\Framework\Console\Input;
-use Myerscode\Acorn\Framework\Console\Output;
+use Myerscode\Acorn\Foundation\Console\Input;
+use Myerscode\Acorn\Foundation\Console\Output;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
 use Tests\BaseTestCase;
 

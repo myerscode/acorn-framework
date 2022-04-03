@@ -3,9 +3,9 @@
 namespace Tests\Framework;
 
 use Myerscode\Acorn\Foundation\Console\ConfigInput;
+use Myerscode\Acorn\Foundation\Console\Input;
+use Myerscode\Acorn\Foundation\Console\Output;
 use Myerscode\Acorn\Foundation\Console\VoidOutput;
-use Myerscode\Acorn\Framework\Console\Input;
-use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Kernel;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\CommandThatErrorsCommand;

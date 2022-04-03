@@ -1,12 +1,18 @@
 <?php
 
-namespace Myerscode\Acorn\Framework\Console;
+namespace Myerscode\Acorn\Foundation\Console;
 
+use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class Output extends SymfonyStyle implements ConsoleOutputInterface
 {
+    public function __construct(InputInterface $input, OutputInterface $output)
+    {
+        parent::__construct($input, $output);
+    }
 
     public function line(string $message): void
     {

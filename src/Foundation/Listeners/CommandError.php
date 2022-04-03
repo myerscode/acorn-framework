@@ -2,11 +2,10 @@
 
 namespace Myerscode\Acorn\Foundation\Listeners;
 
+use Myerscode\Acorn\Foundation\Console\Output;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Console\Command;
-use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Utilities\Strings\Utility;
 
 class CommandError extends Listener
 {

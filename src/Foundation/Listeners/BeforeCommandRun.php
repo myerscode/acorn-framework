@@ -2,10 +2,9 @@
 
 namespace Myerscode\Acorn\Foundation\Listeners;
 
+use Myerscode\Acorn\Foundation\Console\Output;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
-use Myerscode\Acorn\Framework\Console\Output;
 use Myerscode\Acorn\Framework\Events\Listener;
-use Myerscode\Utilities\Strings\Utility;
 
 class BeforeCommandRun extends Listener
 {
