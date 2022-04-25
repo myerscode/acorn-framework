@@ -5,7 +5,7 @@ namespace Myerscode\Acorn;
 use Exception;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
-use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Config\Config;
 use Myerscode\Utilities\Files\Exceptions\NotADirectoryException;
 use Myerscode\Utilities\Files\Utility as FileService;

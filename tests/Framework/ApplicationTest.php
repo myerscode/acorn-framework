@@ -12,6 +12,8 @@ use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Log\LogInterface;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\CommandThatErrorsCommand;
@@ -20,10 +22,12 @@ use function Myerscode\Acorn\Foundation\container;
 
 class ApplicationTest extends BaseTestCase
 {
+    use InteractsWithContainer;
+    use InteractsWithDispatcher;
 
     public function testIsBuildable(): void
     {
-        $application = new Application($this->container(), $this->dispatcher());
+        $application = new Application($this->container());
 
         $this->assertEquals(Application::APP_NAME, $application->getName());
         $this->assertEquals(Application::APP_VERSION, $application->getVersion());
@@ -31,7 +35,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testEventsAreLoaded(): void
     {
-        $app = new Application( $this->newContainer() );
+        $app = new Application($this->newContainer());
 
         $dispatcher = $app->dispatcher();
 
@@ -44,9 +48,8 @@ class ApplicationTest extends BaseTestCase
     public function testCanHandleInvalidEventsDirectory(): void
     {
         $dispatcher = $this->dispatcher();
-        $container = $this->container();
 
-        new class($container, $dispatcher) extends Application {
+        new class($this->container()) extends Application {
             public function eventDiscoveryDirectories(): array
             {
                 return [
@@ -100,8 +103,7 @@ class ApplicationTest extends BaseTestCase
 
     public function testHasInstanceOfLogger(): void
     {
-        $application = null;
-        $application = new Application($this->container(), $this->dispatcher());
+        $application = new Application($this->container());
         $this->assertInstanceOf(LogInterface::class, $application->logger());
     }
 

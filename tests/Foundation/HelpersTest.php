@@ -2,9 +2,11 @@
 
 namespace Tests\Foundation;
 
-use Myerscode\Acorn\Container;
 use Myerscode\Acorn\Foundation\Console\Input;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
 use Tests\Resources\CountingListener;
 use Tests\Resources\TestEvent;
@@ -15,6 +17,9 @@ use function Myerscode\Acorn\Foundation\dispatch;
 
 class HelpersTest extends BaseTestCase
 {
+    use InteractsWithContainer;
+    use InteractsWithDispatcher;
+
     public function testConfigHelper(): void
     {
         $this->container()->get('config')->store()->set('corgis', ['long' => 'Gerald', 'short' => 'Rupert']);

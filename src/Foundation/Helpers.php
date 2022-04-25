@@ -2,8 +2,8 @@
 
 namespace Myerscode\Acorn\Foundation;
 
-use Myerscode\Acorn\Container;
 use Myerscode\Acorn\Foundation\Console\Output;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Config\Config;
@@ -22,7 +22,7 @@ function config(string $key = null, $default = null)
     /**
      * @var $config Config
      */
-    $config = Container::getInstance()->manager()->get('config');
+    $config = Container::getInstance()->get('config');
 
     if ($key) {
         return $config->store()->get($key, $default);
@@ -67,10 +67,10 @@ function text(string|TextUtility $text = ''): TextUtility
 
 function output(): Output
 {
-    return Container::getInstance()->manager()->get('output');
+    return Container::getInstance()->get('output');
 }
 
 function input(): Output
 {
-    return Container::getInstance()->manager()->get('input');
+    return Container::getInstance()->get('input');
 }

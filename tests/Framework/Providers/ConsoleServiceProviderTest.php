@@ -2,9 +2,9 @@
 
 namespace Tests\Framework\Providers;
 
-use Myerscode\Acorn\Container;
 use Myerscode\Acorn\Foundation\Console\Input;
 use Myerscode\Acorn\Foundation\Console\Output;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
 use Tests\BaseTestCase;
 
@@ -25,8 +25,8 @@ class ConsoleServiceProviderTest extends BaseTestCase
     public function testContainerReturnsCorrectInstanceOfInput(): void
     {
         $container = new Container();
-        $instanceA = $container->manager()->get(Input::class);
-        $instanceB = $container->manager()->get('input');
+        $instanceA = $container->get(Input::class);
+        $instanceB = $container->get('input');
         $this->assertInstanceOf(Input::class, $instanceA);
         $this->assertInstanceOf(Input::class, $instanceB);
         $this->assertEquals($instanceA, $instanceB);
@@ -35,8 +35,8 @@ class ConsoleServiceProviderTest extends BaseTestCase
     public function testContainerReturnsCorrectInstanceOfOutput(): void
     {
         $container = new Container();
-        $instanceA = $container->manager()->get(Output::class);
-        $instanceB = $container->manager()->get('output');
+        $instanceA = $container->get(Output::class);
+        $instanceB = $container->get('output');
         $this->assertInstanceOf(Output::class, $instanceA);
         $this->assertInstanceOf(Output::class, $instanceB);
         $this->assertEquals($instanceA, $instanceB);

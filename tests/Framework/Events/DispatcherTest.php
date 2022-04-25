@@ -10,6 +10,7 @@ use Myerscode\Acorn\Framework\Events\EventPriority;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
 use Tests\Resources\TestEvent;
 use Tests\Resources\TestListener;
@@ -21,6 +22,8 @@ use Tests\Resources\TestSubscriber;
 
 class DispatcherTest extends BaseTestCase
 {
+    use InteractsWithDispatcher;
+
     public function testInitialize(): void
     {
         $dispatcher = $this->newDispatcher();

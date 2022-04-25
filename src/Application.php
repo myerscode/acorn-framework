@@ -10,6 +10,7 @@ use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Listener;
@@ -70,7 +71,7 @@ class Application extends SymfonyApplication
 
     public function dispatcher(): Dispatcher
     {
-        return $this->container()->manager()->get(Dispatcher::class);
+        return $this->container()->get(Dispatcher::class);
     }
 
     public function container(): Container
@@ -124,7 +125,7 @@ class Application extends SymfonyApplication
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
                         if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
-                            $listener = $this->container->manager()->get($eventRegisterClass);
+                            $listener = $this->container->get($eventRegisterClass);
                             $listensFor = $listener->listensFor();
                             if (is_string($listensFor)) {
                                 $events = [$listensFor];
@@ -169,7 +170,7 @@ class Application extends SymfonyApplication
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
-                            $this->add($this->container->manager()->get($commandClass));
+                            $this->add($this->container->get($commandClass));
                         } else {
                             $this->output()->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory));
                         }
@@ -195,12 +196,12 @@ class Application extends SymfonyApplication
 
     public function input(): ConsoleInputInterface
     {
-        return $this->container->manager()->get('input');
+        return $this->container->get('input');
     }
 
     public function output(): ConsoleOutputInterface
     {
-        return $this->container->manager()->get('output');
+        return $this->container->get('output');
     }
 
     /**
@@ -208,7 +209,7 @@ class Application extends SymfonyApplication
      */
     public function logger(): LogInterface
     {
-        return $this->container->manager()->get('logger');
+        return $this->container->get('logger');
     }
 
     public function handle(InputInterface $input = null, OutputInterface $output = null): Result

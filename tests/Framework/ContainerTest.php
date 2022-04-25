@@ -2,12 +2,11 @@
 
 namespace Tests\Framework;
 
-use Myerscode\Acorn\Container;
+use Myerscode\Acorn\Framework\Container\Container;
 use Tests\BaseTestCase;
 
 class ContainerTest extends BaseTestCase
 {
-
     public function testContainerCanCreateItselfStatically(): void
     {
         $this->assertInstanceOf(Container::class, Container::getInstance());
@@ -30,7 +29,7 @@ class ContainerTest extends BaseTestCase
     {
         $container = new Container();
 
-        $container->manager()->add('testing', 'hello-world');
+        $container->add('testing', 'hello-world');
         $this->assertEquals('hello-world', $container->get('testing'));
 
         $container->add('foo', 'bar');

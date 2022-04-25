@@ -4,10 +4,12 @@ namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
 
 class CallableEventManagerTest extends BaseTestCase
 {
+    use InteractsWithDispatcher;
 
     public function testFindCallable(): void
     {

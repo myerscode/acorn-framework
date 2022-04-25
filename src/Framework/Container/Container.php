@@ -1,11 +1,9 @@
 <?php
 
-namespace Myerscode\Acorn;
+namespace Myerscode\Acorn\Framework\Container;
 
 use League\Container\ReflectionContainer;
 use Myerscode\Acorn\Foundation\Providers\QueueServiceProvider;
-use Myerscode\Acorn\Framework\Container\Definitions;
-use Myerscode\Acorn\Framework\Container\DependencyManager;
 use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
 use Myerscode\Acorn\Framework\Providers\LogServiceProvider;
 
@@ -43,7 +41,7 @@ class Container
     public static function getInstance(): Container
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static;
+            static::$instance = new static();
         }
 
         return static::$instance;
@@ -52,11 +50,9 @@ class Container
     /**
      * Add an item to the container
      *
-     * @param  mixed  $concrete
-     *
      * @see DependencyManager::add()
      */
-    public function add(string $id, $concrete = null, bool $shared = null): void
+    public function add(string $id, mixed $concrete = null, bool $shared = null): void
     {
         $this->container->add($id, $concrete, $shared);
     }
@@ -64,10 +60,11 @@ class Container
     /**
      * Retrieve an instance from the container
      *
-     * @return array|mixed|object
+     * @return mixed
+     *
      * @see DependencyManager::get()
      */
-    public function get(string $id)
+    public function get(string $id): mixed
     {
         return $this->container->get($id);
     }
@@ -75,11 +72,6 @@ class Container
     public function swap(string $id, $concrete = null, bool $shared = null): void
     {
         $this->container->swap($id, $concrete, $shared);
-    }
-
-    public function manager(): DependencyManager
-    {
-        return $this->container;
     }
 
     protected function loadServiceProviders(): void
@@ -91,7 +83,7 @@ class Container
         ];
 
         foreach ($serviceProviders as $serviceProvider) {
-            $this->manager()->addServiceProvider($serviceProvider);
+            $this->container->addServiceProvider($serviceProvider);
         }
     }
 }

@@ -3,14 +3,13 @@
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Foundation\Console\ConfigInput;
-use Myerscode\Acorn\Foundation\Console\StreamOutput;
 use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Framework\Console\Command;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithCommands;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\SimpleOutputCommand;
-use Myerscode\Acorn\Testing\InteractsWithCommands;
 
 class CommandTest extends BaseTestCase
 {
@@ -19,7 +18,6 @@ class CommandTest extends BaseTestCase
     public function makeTestCommand(): Command
     {
         return new class extends Command {
-
             protected function configure(): void
             {
                 $this
