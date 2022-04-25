@@ -35,8 +35,8 @@ class Kernel
         $config = new Config();
 
         $configLocations = [
-            __DIR__.'/Config',
-            getcwd().'/Config',
+            __DIR__ . '/Config',
+            $this->basePath . '/Config',
         ];
 
         $config->loadData([
