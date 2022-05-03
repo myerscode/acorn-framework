@@ -4,17 +4,17 @@ namespace Tests\Framework\Providers;
 
 use Myerscode\Acorn\Foundation\Console\Input;
 use Myerscode\Acorn\Foundation\Console\Output;
-use Myerscode\Acorn\Framework\Container\Container;
-use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
+use Myerscode\Acorn\Foundation\Providers\ConsoleProvider;
+use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Tests\BaseTestCase;
 
 class ConsoleServiceProviderTest extends BaseTestCase
 {
+    use InteractsWithContainer;
 
     public function testServicesAreRegistered(): void
     {
-        $consoleServiceProvider = null;
-        $consoleServiceProvider = new ConsoleServiceProvider();
+        $consoleServiceProvider = new ConsoleProvider();
 
         $this->assertTrue($consoleServiceProvider->provides(Input::class));
         $this->assertTrue($consoleServiceProvider->provides('input'));
@@ -24,7 +24,8 @@ class ConsoleServiceProviderTest extends BaseTestCase
 
     public function testContainerReturnsCorrectInstanceOfInput(): void
     {
-        $container = new Container();
+        $container = $this->container();
+
         $instanceA = $container->get(Input::class);
         $instanceB = $container->get('input');
         $this->assertInstanceOf(Input::class, $instanceA);
@@ -34,7 +35,8 @@ class ConsoleServiceProviderTest extends BaseTestCase
 
     public function testContainerReturnsCorrectInstanceOfOutput(): void
     {
-        $container = new Container();
+        $container = $this->container();
+
         $instanceA = $container->get(Output::class);
         $instanceB = $container->get('output');
         $this->assertInstanceOf(Output::class, $instanceA);

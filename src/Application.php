@@ -62,6 +62,10 @@ class Application extends SymfonyApplication
 
         $this->setAutoExit(false);
 
+        $this->registerFrameworkProviders();
+
+        $this->loadServiceProviders();
+
         $this->bindAppEvents();
 
         $this->bindCommandEvents();
@@ -183,8 +187,66 @@ class Application extends SymfonyApplication
             }
         }
     }
+    /**
+     * Look for userland providers
+     * @return array
+     */
+    protected function providerDiscoveryDirectories(): array
+    {
+        return array_filter([
+            config('app.dir.providers'),
+        ]);
+    }
 
-    public function add(SymfonyCommand $symfonyCommand): ?\Symfony\Component\Console\Command\Command
+    /**
+     * Get list of service providers
+     *
+     * @return array
+     */
+    protected function serviceProviders(): array
+    {
+        $providerDiscoveryDirectories = $this->providerDiscoveryDirectories();
+
+        $serviceProviders = config('framework.providers', []);
+
+        foreach ($providerDiscoveryDirectories as $providerDirectory) {
+            try {
+                foreach (FileService::make($providerDirectory)->files() as $file) {
+                    $serviceProviders[] = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                }
+            } catch (NotADirectoryException) {
+                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
+            }
+        }
+
+        return array_filter($serviceProviders);
+    }
+
+    /**
+     * Load service providers from the framework into the container
+     *
+     * @return void
+     */
+    protected function registerFrameworkProviders(): void
+    {
+        foreach (config('framework.providers', []) as $provider) {
+            $this->container->addServiceProvider($provider);
+        }
+    }
+
+    /**
+     * Load service providers from user land into the container
+     *
+     * @return void
+     */
+    protected function loadServiceProviders(): void
+    {
+        foreach ($this->serviceProviders() as $provider) {
+            $this->container->addServiceProvider($provider);
+        }
+    }
+
+    public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
     {
 
         if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {

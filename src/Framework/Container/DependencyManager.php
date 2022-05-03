@@ -7,7 +7,6 @@ use League\Container\Definition\DefinitionInterface;
 
 class DependencyManager extends Container
 {
-
     public function remove(string $id): void
     {
         $this->definitions->remove($id);

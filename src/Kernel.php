@@ -25,8 +25,11 @@ class Kernel
     public function __construct(string $basePath = '')
     {
         $this->container = new Container();
+
         $this->setBasePath($basePath);
+
         $this->buildConfig();
+
         $this->application = new Application($this->container());
     }
 
@@ -43,7 +46,7 @@ class Kernel
             'base' => $this->basePath,
             'src' => __DIR__,
             'cwd' => getcwd(),
-            'configLocations' => $configLocations
+            'configLocations' => $configLocations,
         ]);
 
 

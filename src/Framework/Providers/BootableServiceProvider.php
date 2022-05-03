@@ -3,9 +3,9 @@
 namespace Myerscode\Acorn\Framework\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
-use Myerscode\Acorn\Framework\Log\NullLogger;
+use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
-class LogServiceProvider extends AbstractServiceProvider
+abstract class BootableServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
     /**
      * The provided array is a way to let the container
@@ -16,10 +16,7 @@ class LogServiceProvider extends AbstractServiceProvider
      *
      * @var array
      */
-    protected $provides = [
-        NullLogger::class,
-        'logger',
-    ];
+    protected $provides = [];
 
     /**
      * This is where the magic happens, within the method you can
@@ -27,9 +24,13 @@ class LogServiceProvider extends AbstractServiceProvider
      * that you need to, but remember, every alias registered
      * within this method must be declared in the `$provides` array.
      */
-    public function register(): void
-    {
-        $this->getContainer()->add(NullLogger::class);
-        $this->getContainer()->add('logger', fn() => $this->getContainer()->get(NullLogger::class));
-    }
+    abstract public function register(): void;
+
+    /**
+     * Method will be invoked on registration of a service provider implementing
+     * this interface. Provides ability for eager loading of Service Providers.
+     *
+     * @return void
+     */
+    abstract public function boot(): void;
 }

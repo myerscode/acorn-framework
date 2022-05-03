@@ -3,9 +3,6 @@
 namespace Myerscode\Acorn\Framework\Container;
 
 use League\Container\ReflectionContainer;
-use Myerscode\Acorn\Foundation\Providers\QueueServiceProvider;
-use Myerscode\Acorn\Framework\Providers\ConsoleServiceProvider;
-use Myerscode\Acorn\Framework\Providers\LogServiceProvider;
 
 class Container
 {
@@ -24,8 +21,6 @@ class Container
                 (new ReflectionContainer())->cacheResolutions()
             )
             ->defaultToShared();
-
-        $this->loadServiceProviders();
 
         static::$instance = $this;
     }
@@ -69,21 +64,27 @@ class Container
         return $this->container->get($id);
     }
 
+    /**
+     * Swap the defined container with a new implementation
+     *
+     * @param  string  $id
+     * @param  null  $concrete
+     * @param  bool|null  $shared
+     */
     public function swap(string $id, $concrete = null, bool $shared = null): void
     {
         $this->container->swap($id, $concrete, $shared);
     }
 
-    protected function loadServiceProviders(): void
+    /**
+     * Load a service provider into the container
+     *
+     * @param $serviceProvider
+     *
+     * @return void
+     */
+    public function addServiceProvider($serviceProvider): void
     {
-        $serviceProviders = [
-            ConsoleServiceProvider::class,
-            LogServiceProvider::class,
-            QueueServiceProvider::class,
-        ];
-
-        foreach ($serviceProviders as $serviceProvider) {
-            $this->container->addServiceProvider($serviceProvider);
-        }
+        $this->container->addServiceProvider($serviceProvider);
     }
 }
