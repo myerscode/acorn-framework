@@ -53,6 +53,11 @@ class VoidOutput extends NullOutput implements ConsoleOutputInterface
         // do nothing
     }
 
+    public function verbosity(): int
+    {
+        // do nothing
+    }
+
     public function verbose(string $message): void
     {
         // do nothing

@@ -24,7 +24,7 @@ trait InteractsWithOutput
         $this->output->debug($message);
     }
 
-    public function error(string $string, int|string $verbosity = null): void
+    public function error(string $string): void
     {
         $this->output->error($string);
     }
@@ -43,8 +43,6 @@ trait InteractsWithOutput
 
     /**
      * Get the verbosity level in terms of Symfony's OutputInterface level.
-     *
-     *
      */
     protected function parseVerbosity(string|int|null $level = null): int
     {
@@ -67,4 +65,43 @@ trait InteractsWithOutput
         $this->output->veryVerbose($message);
     }
 
+    /**
+     * Gets the current verbosity of the output.
+     */
+    public function verbosity(): int
+    {
+        return $this->output->getVerbosity();
+    }
+
+    /**
+     * Returns whether verbosity is quiet (-q).
+     */
+    public function isQuiet(): bool
+    {
+        return $this->output->isQuiet();
+    }
+
+    /**
+     * Returns whether verbosity is verbose (-v).
+     */
+    public function isVerbose(): bool
+    {
+        return $this->output->isVerbose();
+    }
+
+    /**
+     * Returns whether verbosity is very verbose (-vv).
+     */
+    public function isVeryVerbose(): bool
+    {
+        return $this->output->isVeryVerbose();
+    }
+
+    /**
+     * Returns whether verbosity is debug (-vvv).
+     */
+    public function isDebug(): bool
+    {
+        return $this->output->isDebug();
+    }
 }
