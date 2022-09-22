@@ -3,12 +3,10 @@
 namespace Myerscode\Acorn;
 
 use Exception;
+use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
 use Myerscode\Acorn\Framework\Container\Container;
-use Myerscode\Config\Config;
-use Myerscode\Utilities\Files\Exceptions\NotADirectoryException;
-use Myerscode\Utilities\Files\Utility as FileService;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Kernel
@@ -22,54 +20,69 @@ class Kernel
 
     private readonly Application $application;
 
+    private bool $booted;
+
     public function __construct(string $basePath = '')
     {
+        $this->booted = false;
         $this->container = new Container();
-
         $this->setBasePath($basePath);
-
-        $this->buildConfig();
-
-        $this->application = new Application($this->container());
     }
 
-    protected function buildConfig(): void
+    /**
+     * Load the config and boot the application
+     *
+     * @return $this
+     */
+    protected function boot(): self
     {
-        $config = new Config();
+        if ($this->booted) {
+            return $this;
+        }
 
-        $configLocations = [
+        $this->loadConfig();
+
+        $this->application = new Application($this->container());
+
+        $this->booted = true;
+
+        return $this;
+    }
+
+    protected function configLocations(): array
+    {
+        return [
             __DIR__ . '/Config',
             $this->basePath . '/Config',
         ];
+    }
 
-        $config->loadData([
+    protected function loadConfig(): void
+    {
+        $configManager = $this->configManager();
+
+        $config = $configManager->loadConfig($this->configLocations(), [
             'base' => $this->basePath,
             'src' => __DIR__,
             'cwd' => getcwd(),
-            'configLocations' => $configLocations,
         ]);
-
-
-        foreach ($configLocations as $configLocation) {
-            try {
-                $configFiles = array_map(fn($file) => $file->getRealPath(), FileService::make($configLocation)->files());
-                $config->loadFilesWithNamespace($configFiles);
-            } catch (NotADirectoryException) {
-                //  TODO add debug output
-            }
-        }
 
         $this->container->add('config', $config);
     }
 
+    protected function configManager(): Manager
+    {
+        return new Manager($this->basePath);
+    }
+
     public function input(): ConsoleInputInterface
     {
-        return $this->application()->input();
+        return $this->boot()->application()->input();
     }
 
     public function output(): ConsoleOutputInterface
     {
-        return $this->application()->output();
+        return $this->boot()->application()->output();
     }
 
     /**
@@ -78,7 +91,7 @@ class Kernel
     public function run(): int
     {
         try {
-            $result = $this->application->handle($this->input(), $this->output());
+            $result = $this->boot()->application->handle($this->input(), $this->output());
 
             // TODO if result failed but has no error do something
             if ($result->failed()) {
@@ -98,7 +111,7 @@ class Kernel
 
     public function application(): Application
     {
-        return $this->application;
+        return $this->boot()->application;
     }
 
     public function container(): Container
