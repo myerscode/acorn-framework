@@ -11,7 +11,7 @@ class Result
         //
     }
 
-    public function wasSucessfull(): bool
+    public function wasSuccessful(): bool
     {
         return $this->exitCode === 0;
     }
