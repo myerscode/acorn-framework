@@ -55,14 +55,14 @@ class Application extends SymfonyApplication
 
     public function __construct(private readonly Container $container)
     {
-        parent::__construct(self::APP_NAME, self::APP_VERSION);
+        $this->registerFrameworkProviders();
+
+        $this->configureConsole();
 
         // allow command exceptions to bubble up and be handled by the kernel
         $this->setCatchExceptions(false);
 
         $this->setAutoExit(false);
-
-        $this->registerFrameworkProviders();
 
         $this->loadServiceProviders();
 
@@ -71,6 +71,8 @@ class Application extends SymfonyApplication
         $this->bindCommandEvents();
 
         $this->loadCommands();
+
+        parent::__construct(self::APP_NAME, self::APP_VERSION);
     }
 
     public function dispatcher(): Dispatcher
@@ -81,6 +83,11 @@ class Application extends SymfonyApplication
     public function container(): Container
     {
         return $this->container;
+    }
+
+    protected function configureConsole(): void
+    {
+        $this->configureIO($this->input(), $this->output());
     }
 
     protected function bindCommandEvents(): void
