@@ -6,6 +6,7 @@ use Exception;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
+use Myerscode\Acorn\Framework\Config\PackageDiscovery;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
@@ -53,6 +54,10 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
+    protected array $discoveredCommandDirectories = [];
+
+    protected array $discoveredProviders = [];
+
     public function __construct(private readonly Container $container)
     {
         $this->registerFrameworkProviders();
@@ -63,6 +68,8 @@ class Application extends SymfonyApplication
         $this->setCatchExceptions(false);
 
         $this->setAutoExit(false);
+
+        $this->discoverPackages();
 
         $this->loadServiceProviders();
 
@@ -109,10 +116,6 @@ class Application extends SymfonyApplication
         $this->setDispatcher($eventDispatcher);
     }
 
-    /**
-     * return string[]
-     * @return mixed[]
-     */
     public function eventDiscoveryDirectories(): array
     {
         return array_filter([
@@ -160,14 +163,12 @@ class Application extends SymfonyApplication
         }
     }
 
-    /**
-     * @return mixed[]
-     */
     public function commandsDiscoveryDirectories(): array
     {
         return array_filter([
             config('app.dir.commands'),
             config('framework.dir.commands'),
+            ...$this->discoveredCommandDirectories,
         ]);
     }
 
@@ -194,6 +195,7 @@ class Application extends SymfonyApplication
             }
         }
     }
+
     /**
      * Look for userland providers
      * @return array
@@ -202,6 +204,7 @@ class Application extends SymfonyApplication
     {
         return array_filter([
             config('app.dir.providers'),
+            $this->discoveredProviders,
         ]);
     }
 
@@ -214,7 +217,7 @@ class Application extends SymfonyApplication
     {
         $providerDiscoveryDirectories = $this->providerDiscoveryDirectories();
 
-        $serviceProviders = config('framework.providers', []);
+        $serviceProviders = [ ];
 
         foreach ($providerDiscoveryDirectories as $providerDirectory) {
             try {
@@ -227,6 +230,21 @@ class Application extends SymfonyApplication
         }
 
         return array_filter($serviceProviders);
+    }
+
+    /**
+     * Look through installed packages and locate packages to load commands and services from
+     *
+     * @return void
+     */
+    protected function discoverPackages(): void
+    {
+        $finder = new PackageDiscovery(config('executing.dir.base'));
+        foreach ($finder->found as $package => $meta) {
+            $this->output()->debug(sprintf('Discovered %s', $package));
+            $this->discoveredCommandDirectories = $finder->locateCommands();
+            $this->discoveredProviders = $finder->locateProviders();
+        }
     }
 
     /**
