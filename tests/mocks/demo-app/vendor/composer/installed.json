@@ -1,0 +1,35 @@
+{
+    "packages": [
+        {
+            "name": "myerscode/acorn-package-with-all-extras",
+            "version": "1.0.0",
+            "extra": {
+                "acorn": {
+                    "commands": true,
+                    "providers": true
+                }
+            },
+            "install-path": "../myerscode/acorn-package-with-all-extras"
+        },
+        {
+            "name": "myerscode/acorn-package-with-commands",
+            "version": "1.0.0",
+            "extra": {
+                "acorn": {
+                    "commands": true
+                }
+            },
+            "install-path": "../myerscode/acorn-package-with-commands"
+        },
+        {
+            "name": "myerscode/acorn-package-with-providers",
+            "version": "1.0.0",
+            "extra": {
+                "acorn": {
+                    "providers": true
+                }
+            },
+            "install-path": "../myerscode/acorn-package-with-providers"
+        }
+    ]
+}
