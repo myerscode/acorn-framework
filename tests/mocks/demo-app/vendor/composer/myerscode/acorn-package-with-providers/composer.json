@@ -1,0 +1,11 @@
+{
+  "name": "myerscode/acorn-package-with-providers",
+  "require": {
+    "php": "^8.1"
+  },
+  "extra": {
+    "acorn": {
+      "providers": true
+    }
+  }
+}
