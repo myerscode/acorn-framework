@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Resources\App\Listeners;
+namespace Tests\Mocks\DemoApp\App\Listeners;
 
 use Myerscode\Acorn\Framework\Events\Listener;
 

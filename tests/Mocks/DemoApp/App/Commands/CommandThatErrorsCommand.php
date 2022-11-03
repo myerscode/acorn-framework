@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Resources\App\Commands;
+namespace Tests\Mocks\DemoApp\App\Commands;
 
 use Exception;
 use Myerscode\Acorn\Framework\Console\Command;

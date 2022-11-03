@@ -25,6 +25,8 @@ class ApplicationTest extends BaseTestCase
     use InteractsWithContainer;
     use InteractsWithDispatcher;
 
+    protected string $appDirectory = 'tests/Mocks/DemoApp/App';
+
     public function testIsBuildable(): void
     {
         $application = new Application($this->container());

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Resources\App\Events;
+namespace Tests\Mocks\DemoApp\App\Events;
 
 use Myerscode\Acorn\Framework\Events\Event;
 
