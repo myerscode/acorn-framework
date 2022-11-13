@@ -12,7 +12,7 @@ class CommandError extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = CommandErrorEvent::class;
+    protected string|array $listensFor = CommandErrorEvent::class;
 
     public function __construct(private readonly Output $output)
     {

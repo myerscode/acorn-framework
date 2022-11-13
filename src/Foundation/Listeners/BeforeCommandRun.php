@@ -11,7 +11,7 @@ class BeforeCommandRun extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = CommandBeforeEvent::class;
+    protected string|array $listensFor = CommandBeforeEvent::class;
 
     public function __construct(private readonly Output $output)
     {

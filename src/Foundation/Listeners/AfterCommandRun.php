@@ -11,7 +11,7 @@ class AfterCommandRun extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = CommandAfterEvent::class;
+    protected string|array $listensFor = CommandAfterEvent::class;
 
     public function __construct(private readonly Output $output)
     {
