@@ -6,6 +6,7 @@ use Exception;
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
+use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 
@@ -15,6 +16,8 @@ class Kernel
      * The base path for the Acorn application.
      */
     protected string $basePath;
+
+    protected string $rootPath;
 
     private readonly Container $container;
 
@@ -27,6 +30,7 @@ class Kernel
         $this->booted = false;
         $this->container = new Container();
         $this->setBasePath($basePath);
+        $this->setRootPath($basePath);
     }
 
     /**
@@ -63,6 +67,7 @@ class Kernel
 
         $config = $configManager->loadConfig($this->configLocations(), [
             'base' => $this->basePath,
+            'root' => $this->rootPath,
             'src' => __DIR__,
             'cwd' => getcwd(),
         ]);
@@ -123,5 +128,11 @@ class Kernel
     {
         $this->basePath = rtrim($basePath, '\/');
         $this->container->add('basePath', $this->basePath);
+    }
+
+    protected function setRootPath(string $basePath): void
+    {
+        $this->rootPath = dirname(rtrim($basePath, '\/'));
+        $this->container->add('rootPath', $this->rootPath);
     }
 }

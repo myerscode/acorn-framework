@@ -3,6 +3,8 @@
 namespace Myerscode\Acorn\Config;
 
 return [
+    'root' => '${root}',
+    'base' => '${base}',
     'dir' => [
         'commands' => '${base}/Commands',
         'events' => '${base}/Events',

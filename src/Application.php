@@ -54,6 +54,8 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
+    protected array $discoveredPackages = [];
+
     protected array $discoveredCommandDirectories = [];
 
     protected array $discoveredProviders = [];
@@ -204,7 +206,7 @@ class Application extends SymfonyApplication
     {
         return array_filter([
             config('app.dir.providers'),
-            $this->discoveredProviders,
+            ...$this->discoveredProviders,
         ]);
     }
 
@@ -217,7 +219,7 @@ class Application extends SymfonyApplication
     {
         $providerDiscoveryDirectories = $this->providerDiscoveryDirectories();
 
-        $serviceProviders = [ ];
+        $serviceProviders = [];
 
         foreach ($providerDiscoveryDirectories as $providerDirectory) {
             try {
@@ -232,6 +234,11 @@ class Application extends SymfonyApplication
         return array_filter($serviceProviders);
     }
 
+    public function discoveredPackages(): array
+    {
+        return $this->discoveredPackages;
+    }
+
     /**
      * Look through installed packages and locate packages to load commands and services from
      *
@@ -239,11 +246,14 @@ class Application extends SymfonyApplication
      */
     protected function discoverPackages(): void
     {
-        $finder = new PackageDiscovery(config('executing.dir.base'));
+        $finder = new PackageDiscovery(config('app.root'));
+
+        $this->discoveredPackages = $finder->found;
+        $this->discoveredCommandDirectories = $finder->locateCommands();
+        $this->discoveredProviders = $finder->locateProviders();
+
         foreach ($finder->found as $package => $meta) {
             $this->output()->debug(sprintf('Discovered %s', $package));
-            $this->discoveredCommandDirectories = $finder->locateCommands();
-            $this->discoveredProviders = $finder->locateProviders();
         }
     }
 
@@ -269,6 +279,11 @@ class Application extends SymfonyApplication
         foreach ($this->serviceProviders() as $provider) {
             $this->container->addServiceProvider($provider);
         }
+    }
+
+    public function loadedServiceProviders(): array
+    {
+        return $this->container->loadedProviders();
     }
 
     public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
