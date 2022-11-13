@@ -140,20 +140,20 @@ class Application extends SymfonyApplication
                     /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
-                        if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
+                        if (is_subclass_of($eventRegisterClass, Listener::class)) {
                             $listener = $this->container->get($eventRegisterClass);
+
                             $listensFor = $listener->listensFor();
                             if (is_string($listensFor)) {
                                 $events = [$listensFor];
                             } elseif (is_array($listensFor)) {
                                 $events = $listensFor;
-                            } else {
-                                throw new InvalidListenerException(sprintf('%s contains invalid listener configuration', $eventRegisterClass));
                             }
-
                             foreach ($events as $event) {
                                 $this->dispatcher()->addListener($event, $listener);
                             }
+                        } else {
+                            throw new InvalidListenerException(sprintf('%s is not a valid Listener', $eventRegisterClass));
                         }
                     } catch (InvalidListenerException $invalidListenerException) {
                         $this->output()->debug($invalidListenerException->getMessage());

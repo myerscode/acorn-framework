@@ -10,7 +10,7 @@ class TestMultiEventListener extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = [
+    protected string|array $listensFor = [
         TestEvent::class,
         'another.test.event'
     ];

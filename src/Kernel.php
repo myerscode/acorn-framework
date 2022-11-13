@@ -63,7 +63,7 @@ class Kernel
 
     protected function loadConfig(): void
     {
-        $configManager = $this->configManager();
+        $configManager = $this->config();
 
         $config = $configManager->loadConfig($this->configLocations(), [
             'base' => $this->basePath,
@@ -75,9 +75,14 @@ class Kernel
         $this->container->add('config', $config);
     }
 
-    protected function configManager(): Manager
+    public function config(): Manager
     {
-        return new Manager($this->basePath);
+        return new Manager($this->rootPath);
+    }
+
+    protected function processCommand(): Result
+    {
+        return $this->boot()->application->handle($this->input(), $this->output());
     }
 
     public function input(): ConsoleInputInterface
@@ -96,7 +101,7 @@ class Kernel
     public function run(): int
     {
         try {
-            $result = $this->boot()->application->handle($this->input(), $this->output());
+            $result = $this->processCommand();
 
             // TODO if result failed but has no error do something
             if ($result->failed()) {

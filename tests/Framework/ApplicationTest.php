@@ -11,6 +11,7 @@ use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Log\LogInterface;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
@@ -107,6 +108,26 @@ class ApplicationTest extends BaseTestCase
     {
         $application = new Application($this->container());
         $this->assertInstanceOf(LogInterface::class, $application->logger());
+    }
+
+    public function testDiscoversPackages(): void
+    {
+        $application = new Application($this->container());
+
+        $this->assertCount(3, $application->discoveredPackages());
+    }
+
+    public function testCanFindAndLoadServiceProviders(): void
+    {
+        $application = new Application($this->container());
+
+        $demoProviderCount = 1;
+
+        $frameworkProviderCount = count($this->appConfig()->value('framework.providers', []));
+
+        $expectedCount = $frameworkProviderCount + $demoProviderCount;
+
+        $this->assertCount($expectedCount, $application->loadedServiceProviders());
     }
 
 }

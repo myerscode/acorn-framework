@@ -13,6 +13,8 @@ class Container
 
     private readonly DependencyManager $container;
 
+    protected array $loadedProviders = [];
+
     public function __construct()
     {
         $this->container = new DependencyManager(new Definitions());
@@ -85,6 +87,19 @@ class Container
      */
     public function addServiceProvider($serviceProvider): void
     {
-        $this->container->addServiceProvider($serviceProvider);
+        if (!in_array($serviceProvider, $this->loadedProviders)) {
+            $this->loadedProviders[] = $serviceProvider;
+            $this->container->addServiceProvider($serviceProvider);
+        }
+    }
+
+    /**
+     * Returns a list of service providers that have been added to the cotainer
+     *
+     * @return array
+     */
+    public function loadedProviders(): array
+    {
+        return $this->loadedProviders;
     }
 }

@@ -9,7 +9,7 @@ class ListensForArrayListener extends Listener
     /**
      * @var string[]
      */
-    protected $listensFor = [
+    protected string|array $listensFor = [
         'test.event.one',
         'test.event.two',
     ];
