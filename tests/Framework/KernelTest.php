@@ -2,72 +2,23 @@
 
 namespace Tests\Framework;
 
-use Myerscode\Acorn\Foundation\Console\ConfigInput;
+use Exception;
+use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Config\Manager as ConfigManager;
-use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
-use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
+use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Kernel;
 use Tests\BaseTestCase;
-use Exception;
 
 class KernelTest extends BaseTestCase
 {
 
-    public function testCanRun(): void
+    public function testCanGetConfig(): void
     {
-        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
-            ->shouldAllowMockingProtectedMethods()
-            ->allows([
-                'input' => new ConfigInput(),
-                'output' => new VoidOutput(),
-                'config' => $this->configManager(),
-            ])
-            ->makePartial();
+        $kernel = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
 
-        $this->assertEquals(0, $kernel->run());
-    }
-
-    public function testCanHandleFailingCommand(): void
-    {
-        $kernel = $this->mock(Kernel::class.'[output,processCommand]', [$this->resourceFilePath('Resources/App')])
-            ->shouldAllowMockingProtectedMethods()
-            ->allows([
-                'processCommand' => new Result(1, new Exception("Testing errors are handled")),
-                'output' => new VoidOutput(),
-            ])
-            ->makePartial();
-
-        $this->assertEquals(1, $kernel->run());
-    }
-
-    public function testHandlesErrors(): void
-    {
-        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
-            ->shouldAllowMockingProtectedMethods()
-            ->allows([
-                'input' => new ConfigInput(['error-command']),
-                'output' => new VoidOutput(),
-                'config' => $this->configManager(),
-            ])
-            ->makePartial();
-
-        $this->assertEquals(1, $kernel->run());
-    }
-
-    public function testHandlesMissingCommand(): void
-    {
-        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
-            ->shouldAllowMockingProtectedMethods()
-            ->allows([
-                'input' => new ConfigInput(['unknown-command']),
-                'output' => new VoidOutput(),
-                'config' => $this->configManager(),
-            ])
-            ->makePartial();
-
-        $this->assertEquals(1, $kernel->run());
+        $this->assertInstanceOf(ConfigManager::class, $kernel->config());
     }
 
     public function testCanGetInput(): void
@@ -91,13 +42,61 @@ class KernelTest extends BaseTestCase
             ])
             ->makePartial();
 
-        $this->assertInstanceOf(ConsoleOutputInterface::class, $kernel->output());
+        $this->assertInstanceOf(DisplayOutputInterface::class, $kernel->output());
     }
 
-    public function testCanGetConfig(): void
+    public function testCanHandleFailingCommand(): void
     {
-        $kernel = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
+        $kernel = $this->mock(Kernel::class.'[output,processCommand]', [$this->resourceFilePath('Resources/App')])
+            ->shouldAllowMockingProtectedMethods()
+            ->allows([
+                'processCommand' => new Result(1, new Exception("Testing errors are handled")),
+                'output' => $this->createVoidOutput(),
+            ])
+            ->makePartial();
 
-        $this->assertInstanceOf(ConfigManager::class, $kernel->config());
+        $this->assertEquals(1, $kernel->run());
+    }
+
+    public function testCanRun(): void
+    {
+        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
+            ->shouldAllowMockingProtectedMethods()
+            ->allows([
+                'input' => new ConfigInput(),
+                'output' => $this->createVoidOutput(),
+                'config' => $this->configManager(),
+            ])
+            ->makePartial();
+
+        $this->assertEquals(0, $kernel->run());
+    }
+
+    public function testHandlesErrors(): void
+    {
+        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
+            ->shouldAllowMockingProtectedMethods()
+            ->allows([
+                'input' => new ConfigInput(['error-command']),
+                'output' => $this->createVoidOutput(),
+                'config' => $this->configManager(),
+            ])
+            ->makePartial();
+
+        $this->assertEquals(1, $kernel->run());
+    }
+
+    public function testHandlesMissingCommand(): void
+    {
+        $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])
+            ->shouldAllowMockingProtectedMethods()
+            ->allows([
+                'input' => new ConfigInput(['unknown-command']),
+                'output' => $this->createVoidOutput(),
+                'config' => $this->configManager(),
+            ])
+            ->makePartial();
+
+        $this->assertEquals(1, $kernel->run());
     }
 }

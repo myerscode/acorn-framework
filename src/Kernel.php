@@ -5,7 +5,7 @@ namespace Myerscode\Acorn;
 use Exception;
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
-use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
+use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
@@ -33,46 +33,9 @@ class Kernel
         $this->setRootPath($basePath);
     }
 
-    /**
-     * Load the config and boot the application
-     *
-     * @return $this
-     */
-    protected function boot(): self
+    public function application(): Application
     {
-        if ($this->booted) {
-            return $this;
-        }
-
-        $this->loadConfig();
-
-        $this->application = new Application($this->container());
-
-        $this->booted = true;
-
-        return $this;
-    }
-
-    protected function configLocations(): array
-    {
-        return [
-            __DIR__ . '/Config',
-            $this->basePath . '/Config',
-        ];
-    }
-
-    protected function loadConfig(): void
-    {
-        $configManager = $this->config();
-
-        $config = $configManager->loadConfig($this->configLocations(), [
-            'base' => $this->basePath,
-            'root' => $this->rootPath,
-            'src' => __DIR__,
-            'cwd' => getcwd(),
-        ]);
-
-        $this->container->add('config', $config);
+        return $this->boot()->application;
     }
 
     public function config(): Manager
@@ -80,9 +43,9 @@ class Kernel
         return new Manager($this->rootPath);
     }
 
-    protected function processCommand(): Result
+    public function container(): Container
     {
-        return $this->boot()->application->handle($this->input(), $this->output());
+        return $this->container;
     }
 
     public function input(): ConsoleInputInterface
@@ -90,7 +53,7 @@ class Kernel
         return $this->boot()->application()->input();
     }
 
-    public function output(): ConsoleOutputInterface
+    public function output(): DisplayOutputInterface
     {
         return $this->boot()->application()->output();
     }
@@ -119,14 +82,51 @@ class Kernel
         return 1;
     }
 
-    public function application(): Application
+    /**
+     * Load the config and boot the application
+     *
+     * @return $this
+     */
+    protected function boot(): self
     {
-        return $this->boot()->application;
+        if ($this->booted) {
+            return $this;
+        }
+
+        $this->loadConfig();
+
+        $this->application = new Application($this->container());
+
+        $this->booted = true;
+
+        return $this;
     }
 
-    public function container(): Container
+    protected function configLocations(): array
     {
-        return $this->container;
+        return [
+            __DIR__.'/Config',
+            $this->basePath.'/Config',
+        ];
+    }
+
+    protected function loadConfig(): void
+    {
+        $configManager = $this->config();
+
+        $config = $configManager->loadConfig($this->configLocations(), [
+            'base' => $this->basePath,
+            'root' => $this->rootPath,
+            'src' => __DIR__,
+            'cwd' => getcwd(),
+        ]);
+
+        $this->container->add('config', $config);
+    }
+
+    protected function processCommand(): Result
+    {
+        return $this->boot()->application->handle($this->input(), $this->output());
     }
 
     protected function setBasePath(string $basePath): void

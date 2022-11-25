@@ -4,14 +4,11 @@ namespace Tests\Framework;
 
 use Exception;
 use Myerscode\Acorn\Application;
-use Myerscode\Acorn\Foundation\Console\ConfigInput;
-use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
-use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Log\LogInterface;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
@@ -74,7 +71,9 @@ class ApplicationTest extends BaseTestCase
 
         container()->swap(Dispatcher::class, $dispatcher);
 
-        $result = $this->catch(Exception::class)->from(fn() => $application->handle(new ConfigInput(['error-command']), new VoidOutput()));
+        $input = $this->createInput(['error-command']);
+
+        $result = $this->catch(Exception::class)->from(fn() => $application->handle($input, $this->createVoidOutput($input)));
 
         $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
 

@@ -2,7 +2,7 @@
 
 namespace Myerscode\Acorn\Foundation\Listeners;
 
-use Myerscode\Acorn\Foundation\Console\Output;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Framework\Events\Listener;
 
@@ -13,7 +13,7 @@ class BeforeCommandRun extends Listener
      */
     protected string|array $listensFor = CommandBeforeEvent::class;
 
-    public function __construct(private readonly Output $output)
+    public function __construct(private readonly DisplayOutput $output)
     {
         //
     }

@@ -2,7 +2,7 @@
 
 namespace Tests\Foundation;
 
-use Myerscode\Acorn\Foundation\Console\Input;
+use Myerscode\Acorn\Foundation\Console\Input\Input;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;

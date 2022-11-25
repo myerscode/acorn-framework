@@ -4,7 +4,8 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Exception;
 use League\Container\Container;
-use Myerscode\Acorn\Foundation\Console\ConfigInput;
+use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
+use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +19,7 @@ abstract class Command extends SymfonyCommand
 
     protected ConsoleInputInterface $input;
 
-    protected ConsoleOutputInterface $output;
+    protected DisplayOutputInterface $output;
 
     protected Container $container;
 
@@ -48,12 +49,12 @@ abstract class Command extends SymfonyCommand
         $this->setDescription($this->description);
     }
 
-    protected function configureWithSignature(): void
+    /**
+     * {@inheritDoc}
+     */
+    public function getAliases(): array
     {
-        [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
-        parent::__construct($this->name = $name);
-        $this->getDefinition()->addArguments($arguments);
-        $this->getDefinition()->addOptions($options);
+        return array_unique(array_merge([get_called_class()], parent::getAliases()));
     }
 
     /**
@@ -62,35 +63,6 @@ abstract class Command extends SymfonyCommand
      * @return mixed
      */
     abstract function handle(): void;
-
-    /**
-     * Initialize the command.
-     * @param \Myerscode\Acorn\Framework\Console\ConsoleInputInterface $input
-     * @param \Myerscode\Acorn\Framework\Console\ConsoleOutputInterface $output
-     */
-    protected function initialize(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output): void
-    {
-        $this->input = $input;
-        $this->output = $output;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(ConsoleInputInterface|InputInterface $input, ConsoleOutputInterface|OutputInterface $output)
-    {
-        $this->handle();
-
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAliases(): array
-    {
-        return array_unique(array_merge([get_called_class()], parent::getAliases()));
-    }
 
     /**
      * Call other command.
@@ -107,9 +79,39 @@ abstract class Command extends SymfonyCommand
         $symfonyCommand = $this->getApplication()->find($commandName);
 
         $parameters = array_merge($parameters, ['command' => $commandName]);
-        $arrayInput = new ConfigInput($parameters);
+        $arrayInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput($parameters);
 
         return $symfonyCommand->run($arrayInput, $this->output);
+    }
+
+    protected function configureWithSignature(): void
+    {
+        [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
+        parent::__construct($this->name = $name);
+        $this->getDefinition()->addArguments($arguments);
+        $this->getDefinition()->addOptions($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function execute(ConsoleInputInterface|InputInterface $input, DisplayOutputInterface|OutputInterface $output)
+    {
+        $this->handle();
+
+        return 0;
+    }
+
+    /**
+     * Initialize the command.
+     *
+     * @param  \Myerscode\Acorn\Framework\Console\ConsoleInputInterface  $input
+     * @param  \Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface  $output
+     */
+    protected function initialize(ConsoleInputInterface|InputInterface $input, DisplayOutputInterface|OutputInterface $output): void
+    {
+        $this->input = $input;
+        $this->output = $output;
     }
 
 }

@@ -2,8 +2,6 @@
 
 namespace Tests\Framework\Console;
 
-use Myerscode\Acorn\Foundation\Console\ConfigInput;
-use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithCommands;
 use Symfony\Component\Console\Input\InputArgument;
@@ -42,11 +40,11 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new ConfigInput([
+        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
-        $voidOutput = new VoidOutput();
+        $voidOutput = $this->createVoidOutput();
 
         $command->run($configInput, $voidOutput);
 
@@ -57,33 +55,16 @@ class CommandTest extends BaseTestCase
         ], $command->arguments());
     }
 
-    public function testCanGetArgumentWithDefaultValue(): void
-    {
-        $command = $this->makeTestCommand();
-
-        $configInput = new ConfigInput([
-            'argument-a' => 'test-first-argument',
-        ]);
-
-        $voidOutput = new VoidOutput();
-
-        $command->run($configInput, $voidOutput);
-
-        $this->assertSame('test-first-argument', $command->argument('argument-a'));
-        $this->assertSame('a-default-argument-value', $command->argument('argument-b'));
-        $this->assertSame('custom-value-if-null', $command->argument('argument-c', 'custom-value-if-null'));
-    }
-
     public function testCanGetAllCommandOptions(): void
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new ConfigInput([
+        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $voidOutput = new VoidOutput();
+        $voidOutput = $this->createVoidOutput();
 
         $command->run($configInput, $voidOutput);
 
@@ -94,16 +75,33 @@ class CommandTest extends BaseTestCase
         ], $command->options());
     }
 
+    public function testCanGetArgumentWithDefaultValue(): void
+    {
+        $command = $this->makeTestCommand();
+
+        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
+            'argument-a' => 'test-first-argument',
+        ]);
+
+        $voidOutput = $this->createVoidOutput();
+
+        $command->run($configInput, $voidOutput);
+
+        $this->assertSame('test-first-argument', $command->argument('argument-a'));
+        $this->assertSame('a-default-argument-value', $command->argument('argument-b'));
+        $this->assertSame('custom-value-if-null', $command->argument('argument-c', 'custom-value-if-null'));
+    }
+
     public function testCanGetOptionWithDefaultValue(): void
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new ConfigInput([
+        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
 
-        $voidOutput = new VoidOutput();
+        $voidOutput = $this->createVoidOutput();
 
         $command->run($configInput, $voidOutput);
 

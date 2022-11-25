@@ -2,25 +2,16 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
+use Symfony\Component\Console\Input\InputInterface;
+
 trait InteractsWithInput
 {
     /**
      * The input interface implementation.
      *
-     * @var \Symfony\Component\Console\Input\InputInterface
+     * @var InputInterface
      */
     protected ConsoleInputInterface $input;
-
-    /**
-     * Determine if the given argument is present.
-     */
-    public function hasArgument(string|int $name): bool
-    {
-        if (!$this->input->hasArgument($name)) {
-            return false;
-        }
-        return !is_null($this->input->getArgument($name));
-    }
 
     /**
      * Get the value of a command argument.
@@ -40,11 +31,24 @@ trait InteractsWithInput
 
     /**
      * Get all of the arguments passed to the command.
+     *
      * @return mixed[]
      */
     public function arguments(): array
     {
         return $this->input->getArguments();
+    }
+
+    /**
+     * Determine if the given argument is present.
+     */
+    public function hasArgument(string|int $name): bool
+    {
+        if (!$this->input->hasArgument($name)) {
+            return false;
+        }
+
+        return !is_null($this->input->getArgument($name));
     }
 
     /**
@@ -55,6 +59,7 @@ trait InteractsWithInput
         if (!$this->input->hasOption($name)) {
             return false;
         }
+
         return !empty($this->input->getOption($name));
     }
 
@@ -75,10 +80,16 @@ trait InteractsWithInput
 
     /**
      * Get all of the options passed to the command.
+     *
      * @return mixed[]
      */
     public function options(): array
     {
         return $this->input->getOptions();
+    }
+
+    public function parameters(): array
+    {
+        return $this->input->parameters();
     }
 }
