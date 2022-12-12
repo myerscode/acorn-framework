@@ -10,29 +10,35 @@ class PackageDiscovery
 
     readonly public array $found;
 
-    readonly public array $providers;
+    readonly protected array $providers;
 
-    readonly public array $commands;
+    readonly protected array $commands;
 
     public function __construct(string $root)
     {
         $this->finder = new Finder($root);
 
         $this->found = $this->finder->discover('acorn');
-
-        $this->providers = $this->locateProviders();
-
-        $this->commands = $this->locateCommands();
     }
 
+    protected function locatePackage(string $package): string
+    {
+        return trim($this->finder->locate($package));
+    }
+
+    /**
+     * Discover all command directories registered by installed packages
+     *
+     * @return array
+     */
     public function locateCommands(): array
     {
         $commandLocations = [];
 
         foreach ($this->found as $package => $meta) {
-            if (($commands = $meta['commands']) && $commands === true) {
-                $packageLocation = $this->finder->locate($package);
-//                dd($packageLocation);
+            $commands = $meta['commands'] ?? false;
+            if ($commands === true) {
+                $packageLocation = $this->locatePackage($package);
                 $commandDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app/Commands';
                 $commandLocations[$package] = $commandDirectory;
             }
@@ -41,20 +47,24 @@ class PackageDiscovery
         return $commandLocations;
     }
 
+    /**
+     * Discover all provider directories registered by installed packages
+     *
+     * @return array
+     */
     public function locateProviders(): array
     {
-        $providers = [ ];
+        $providerClasses = [];
 
         foreach ($this->found as $package => $meta) {
-//            if ($commands = $meta['commands']) {
-//                if ($commands === true) {
-//                    $packageLocation = $this->finder->locate($package);
-//                    $commandDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'Commands';
-//                    $providers['commands'][$package] = $commandDirectory;
-//                }
-//            }
+            $providers = $meta['providers'] ?? false;
+            if ($providers === true) {
+                $packageLocation = $this->locatePackage($package);
+                $providerDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app/Providers';
+                $providerClasses[$package]['providers'] = $providerDirectory;
+            }
         }
 
-        return $providers;
+        return $providerClasses;
     }
 }

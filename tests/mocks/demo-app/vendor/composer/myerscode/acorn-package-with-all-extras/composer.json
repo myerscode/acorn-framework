@@ -1,0 +1,13 @@
+{
+  "name": "myerscode/acorn-package-with-all-extras",
+  "require": {
+    "php": "^8.1"
+  },
+  "extra": {
+    "acorn": {
+      "commands": true,
+      "listeners": true,
+      "providers": true
+    }
+  }
+}

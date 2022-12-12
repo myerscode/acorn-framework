@@ -1,0 +1,22 @@
+{
+    "name": "myerscode/acorn",
+    "description": "A framework for creating powerful PHP CLI applications",
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "myerscode/acorn-package-with-all-extras": "dev-main",
+        "myerscode/acorn-package-with-commanders": "dev-main",
+        "myerscode/acorn-package-with-providers": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+}
