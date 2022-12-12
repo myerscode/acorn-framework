@@ -73,7 +73,7 @@ class Kernel
 
             return $result->exitCode();
         } catch (CommandNotFoundException $commandNotFoundException) {
-            $this->output()->info($commandNotFoundException->getMessage());
+            $this->output()->error($commandNotFoundException->getMessage());
         } catch (Exception $exception) {
             $message = empty($exception->getMessage()) ? $exception::class : $exception->getMessage();
             $this->output()->error($message);

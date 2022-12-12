@@ -63,6 +63,16 @@ class InteractsWithInputTest extends BaseTestCase
         ], $trait->options());
     }
 
+    public function testParameters(): void
+    {
+        [$trait] = $this->createTrait();
+
+        $this->assertEquals([
+            'breed' => 'Corgi',
+            '--fluff' => true,
+        ], $trait->parameters());
+    }
+
     private function createTrait($userInput = [], string $signature = ''): array
     {
         $trait = new class {

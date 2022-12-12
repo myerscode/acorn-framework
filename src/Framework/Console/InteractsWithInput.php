@@ -79,7 +79,7 @@ trait InteractsWithInput
     }
 
     /**
-     * Get all of the options passed to the command.
+     * Get all the options passed to the command.
      *
      * @return mixed[]
      */
@@ -88,6 +88,11 @@ trait InteractsWithInput
         return $this->input->getOptions();
     }
 
+    /**
+     * Get all the parameters passed to the command.
+     *
+     * @return mixed[]
+     */
     public function parameters(): array
     {
         return $this->input->parameters();
