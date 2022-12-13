@@ -12,6 +12,13 @@ class CallableEventManager
      */
     protected static array $listeners = [];
 
+    /**
+     * Removes all registered callable listeners.
+     */
+    public static function clear(): void
+    {
+        static::$listeners = [];
+    }
 
     public static function create($callable): CallableListener
     {
@@ -20,14 +27,6 @@ class CallableEventManager
         self::$listeners[] = $listener;
 
         return $listener;
-    }
-
-    /**
-     * Removes all registered callable listeners.
-     */
-    public static function clear(): void
-    {
-        static::$listeners = [];
     }
 
     /**
@@ -42,5 +41,15 @@ class CallableEventManager
         }
 
         return false;
+    }
+
+    /**
+     * Get collection of registered callable listeners
+     *
+     * @return CallableListener[]
+     */
+    public static function listeners(): array
+    {
+        return static::$listeners;
     }
 }

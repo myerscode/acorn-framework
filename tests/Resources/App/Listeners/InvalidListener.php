@@ -2,12 +2,7 @@
 
 namespace Tests\Resources\App\Listeners;
 
-use Myerscode\Acorn\Framework\Events\Listener;
-
-class InvalidListener extends Listener
+class InvalidListener
 {
-    /**
-     * @var int
-     */
-    protected $listensFor = 123;
+    protected string|array $listensFor = '123';
 }

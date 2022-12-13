@@ -4,8 +4,6 @@ namespace Tests\Framework;
 
 use Exception;
 use Myerscode\Acorn\Application;
-use Myerscode\Acorn\Foundation\Console\ConfigInput;
-use Myerscode\Acorn\Foundation\Console\VoidOutput;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
@@ -24,6 +22,8 @@ class ApplicationTest extends BaseTestCase
 {
     use InteractsWithContainer;
     use InteractsWithDispatcher;
+
+    protected string $appDirectory = 'tests/Mocks/DemoApp/App';
 
     public function testIsBuildable(): void
     {
@@ -71,7 +71,9 @@ class ApplicationTest extends BaseTestCase
 
         container()->swap(Dispatcher::class, $dispatcher);
 
-        $result = $this->catch(Exception::class)->from(fn() => $application->handle(new ConfigInput(['error-command']), new VoidOutput()));
+        $input = $this->createInput(['error-command']);
+
+        $result = $this->catch(Exception::class)->from(fn() => $application->handle($input, $this->createVoidOutput($input)));
 
         $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
 
@@ -105,6 +107,26 @@ class ApplicationTest extends BaseTestCase
     {
         $application = new Application($this->container());
         $this->assertInstanceOf(LogInterface::class, $application->logger());
+    }
+
+    public function testDiscoversPackages(): void
+    {
+        $application = new Application($this->container());
+
+        $this->assertCount(3, $application->discoveredPackages());
+    }
+
+    public function testCanFindAndLoadServiceProviders(): void
+    {
+        $application = new Application($this->container());
+
+        $demoProviderCount = 1;
+
+        $frameworkProviderCount = count($this->appConfig()->value('framework.providers', []));
+
+        $expectedCount = $frameworkProviderCount + $demoProviderCount;
+
+        $this->assertCount($expectedCount, $application->loadedServiceProviders());
     }
 
 }

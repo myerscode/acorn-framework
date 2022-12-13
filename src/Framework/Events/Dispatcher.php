@@ -10,6 +10,10 @@ use Myerscode\Acorn\Framework\Queue\QueueInterface;
 
 class Dispatcher
 {
+    protected array $catchAllEventNames = ['*', 'any', 'all'];
+
+    protected string $allEventsNamespace = '*';
+
     /**
      * Collection of listeners.
      *
@@ -20,6 +24,38 @@ class Dispatcher
     public function __construct(protected QueueInterface $queue)
     {
         //
+    }
+
+    /**
+     * Registries a listener for the event.
+     */
+    public function addListener(string $eventName, ListenerInterface|callable $listener, int $priority = EventPriority::NORMAL): void
+    {
+        if (in_array($eventName, $this->catchAllEventNames)) {
+            $eventName = $this->allEventsNamespace;
+        }
+
+        if (!isset($this->listeners[$eventName])) {
+            $this->listeners[$eventName] = new ListenerQueue();
+        }
+
+        if ($listener instanceof Closure || is_callable($listener)) {
+            $newListener = CallableEventManager::create($listener);
+        } else {
+            $newListener = $listener;
+        }
+
+        $this->listeners[$eventName]->push($newListener, $priority);
+    }
+
+    /**
+     * Registries a subscriber to then event dispatcher
+     */
+    public function addSubscriber(SubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
+            $this->addListener($eventName, [$subscriber, $action]);
+        }
     }
 
     /**
@@ -68,21 +104,34 @@ class Dispatcher
     }
 
     /**
-     * Registries a listener for the event.
+     * Gets all listeners of the event or all registered listeners.
+     *
+     * @param  string|null  $eventName
+     *
+     * @return mixed[]
      */
-    public function addListener(string $eventName, ListenerInterface|callable $listener, int $priority = EventPriority::NORMAL): void
+    public function getListeners(string $eventName = null): array
     {
-        if (!isset($this->listeners[$eventName])) {
-            $this->listeners[$eventName] = new ListenerQueue();
+        if (!is_null($eventName)) {
+            $listensForAnything = $this->getListenersForAnyEvent();
+
+            if (in_array($eventName, $this->catchAllEventNames)) {
+                return $listensForAnything;
+            }
+
+            return isset($this->listeners[$eventName]) ? array_merge($this->listeners[$eventName]->all(), $listensForAnything) : $listensForAnything;
+        }
+        $listeners = [];
+        foreach ($this->listeners as $listener) {
+            $listeners = array_merge($listeners, $listener->all());
         }
 
-        if ($listener instanceof Closure || is_callable($listener)) {
-            $newListener = CallableEventManager::create($listener);
-        } else {
-            $newListener = $listener;
-        }
+        return $listeners;
+    }
 
-        $this->listeners[$eventName]->push($newListener, $priority);
+    public function getListenersForAnyEvent(): array
+    {
+        return isset($this->listeners[$this->allEventsNamespace]) ? $this->listeners[$this->allEventsNamespace]->all() : [];
     }
 
     /**
@@ -94,36 +143,32 @@ class Dispatcher
      */
     public function getListenersForEvent($event): array
     {
-        $eventName = $event instanceof Event ? $event->eventName() : (string) $event;
+        $eventName = $event instanceof Event ? $event->eventName() : (string)$event;
 
         return $this->getListeners($eventName);
     }
 
-    /**
-     * Gets all listeners of the event or all registered listeners.
-     *
-     * @param  string|null  $eventName
-     * @return mixed[]
-     */
-    public function getListeners(string $eventName = null): array
+    public function hasListener(string $eventName, $listener): bool
     {
-        if (!is_null($eventName)) {
-            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName]->all() : [];
+        if (!isset($this->listeners[$eventName])) {
+            return false;
         }
-        $listeners = [];
-        foreach ($this->listeners as $listener) {
-            $listeners = array_merge($listeners, $listener->all());
+
+        if (is_callable($listener)) {
+            $listener = CallableEventManager::findByCallable($listener);
         }
-        return $listeners;
+
+        return $this->listeners[$eventName]->contains($listener);
     }
 
-    /**
-     * Registries a subscriber to then event dispatcher
-     */
-    public function addSubscriber(SubscriberInterface $subscriber): void
+    public function removeAllListeners($eventName = null): void
     {
-        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
-            $this->addListener($eventName, [$subscriber, $action]);
+        if (!is_null($eventName) && isset($this->listeners[$eventName])) {
+            $this->listeners[$eventName]->clear();
+        } else {
+            foreach ($this->listeners as $listener) {
+                $listener->clear();
+            }
         }
     }
 
@@ -145,30 +190,6 @@ class Dispatcher
         foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
             $this->removeListener($eventName, [$subscriber, $action]);
         }
-    }
-
-    public function removeAllListeners($eventName = null): void
-    {
-        if (!is_null($eventName) && isset($this->listeners[$eventName])) {
-            $this->listeners[$eventName]->clear();
-        } else {
-            foreach ($this->listeners as $listener) {
-                $listener->clear();
-            }
-        }
-    }
-
-    public function hasListener(string $eventName, $listener): bool
-    {
-        if (!isset($this->listeners[$eventName])) {
-            return false;
-        }
-
-        if (is_callable($listener)) {
-            $listener = CallableEventManager::findByCallable($listener);
-        }
-
-        return $this->listeners[$eventName]->contains($listener);
     }
 
 }

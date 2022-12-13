@@ -6,15 +6,27 @@ use Myerscode\Config\Config;
 use Myerscode\Utilities\Files\Exceptions\NotADirectoryException;
 use Myerscode\Utilities\Files\Utility as FileService;
 
-class Manager
+class Manager implements ManagerInterface
 {
     protected bool $shouldCacheConfig = true;
 
     protected bool $ignoreCached = false;
 
-    public function __construct(protected readonly string $basePath)
+    protected bool $usingCachedConfig = false;
+
+    public function __construct(protected readonly string $rootPath)
     {
         //
+    }
+
+    /**
+     * Where is the cache being stored
+     *
+     * @return string
+     */
+    protected function cacheLocation(): string
+    {
+        return $this->rootPath . '/.acorn/config.php';
     }
 
     protected function buildConfig(array $configLocations, array $data): Config
@@ -42,9 +54,7 @@ class Manager
     {
         $config = new Config();
 
-        $appRoot = dirname($this->basePath);
-
-        $cachedConfigLocation = $appRoot . '/.acorn/config.php';
+        $cachedConfigLocation = $this->cacheLocation();
 
         $cachedConfig = FileService::make($cachedConfigLocation);
 
@@ -56,21 +66,21 @@ class Manager
 
         $config->loadData(['cachedConfig' => 'true', 'cachedConfigLocation' => $cachedConfigLocation]);
 
+        $this->usingCachedConfig = true;
+
         return $config;
     }
 
     protected function cacheConfig(array $config): void
     {
-        $appRoot = dirname($this->basePath);
-
-        $cachedConfigLocation = $appRoot . '/.acorn/config.php';
+        $cachedConfigLocation = $this->cacheLocation();
 
         $template = "<?php return " . var_export($config, true) . ";";
 
         FileService::make($cachedConfigLocation)->touch()->setContent($template);
     }
 
-    public function loadConfig(array $configLocations, array $data): Config
+    public function loadConfig(array $configLocations, array $data = []): Config
     {
         $config = false;
 
@@ -89,7 +99,8 @@ class Manager
     }
 
     /**
-     * Should the manager ignoring the cache
+     * Is the manager ignoring the cache
+     *
      * @return bool
      */
     public function isIgnoringCache(): bool
@@ -97,16 +108,31 @@ class Manager
         return $this->ignoreCached;
     }
 
-    public function dontIgnoreCache(): self
+    /**
+     * Tell the manager to never ignore the cache
+     *
+     * @return $this
+     */
+    public function doNotIgnoreCache(): self
     {
         return $this->setIgnoreCachedConfig(false);
     }
 
+    /**
+     * Tell the manager to ignore the cache, even if one exists
+     *
+     * @return $this
+     */
     public function shouldIgnoreCache(): self
     {
         return $this->setIgnoreCachedConfig(true);
     }
 
+    /**
+     * Set if the manager should ignore the cache
+     *
+     * @return $this
+     */
     public function setIgnoreCachedConfig(bool $ignoreCachedConfig): self
     {
         $this->ignoreCached = $ignoreCachedConfig;
@@ -115,7 +141,19 @@ class Manager
     }
 
     /**
+     * Check if the manager has loaded a configuration from a cache
+     * If the manager has not loaded the configuration yet, it will always return false
+     *
+     * @return bool
+     */
+    public function isUsingCachedConfig(): bool
+    {
+        return $this->usingCachedConfig;
+    }
+
+    /**
      * Is the manager going to cache the config when loaded
+     *
      * @return bool
      */
     public function isCachingConfig(): bool
@@ -123,16 +161,31 @@ class Manager
         return $this->shouldCacheConfig;
     }
 
+    /**
+     * Tell the manager to never cache a compiled config file
+     *
+     * @return $this
+     */
     public function doNotCacheConfig(): self
     {
         return $this->setShouldCacheConfig(false);
     }
 
+    /**
+     * Tell the manager to cache a compiled config file
+     *
+     * @return $this
+     */
     public function shouldCacheConfig(): self
     {
         return $this->setShouldCacheConfig(true);
     }
 
+    /**
+     * Set if the manager should cache the config
+     *
+     * @return $this
+     */
     public function setShouldCacheConfig(bool $shouldCacheConfig): self
     {
         $this->shouldCacheConfig = $shouldCacheConfig;

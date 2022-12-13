@@ -7,7 +7,7 @@ abstract class Listener implements ListenerInterface
     /**
      * @var string[]|string
      */
-    protected $listensFor;
+    protected string|array $listensFor = [];
 
     /**
      * Should the listener action be queued or handled synchronously
@@ -21,10 +21,6 @@ abstract class Listener implements ListenerInterface
      */
     public function listensFor(): array|string
     {
-        if ($this->listensFor === null) {
-            return [];
-        }
-
         return $this->listensFor;
     }
 

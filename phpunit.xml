@@ -3,6 +3,7 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         backupGlobals="false"
 >
     <coverage processUncoveredFiles="true">
         <include>

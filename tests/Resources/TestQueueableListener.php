@@ -13,7 +13,7 @@ class TestQueueableListener extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = TestQueueableEvent::class;
+    protected string|array $listensFor = TestQueueableEvent::class;
 
     public function handle(Event $event): void
     {

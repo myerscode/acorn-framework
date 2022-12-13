@@ -10,7 +10,7 @@ class TestListener extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = TestEvent::class;
+    protected string|array $listensFor = TestEvent::class;
 
     public function handle(TestEvent $testEvent): void
     {

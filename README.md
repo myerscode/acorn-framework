@@ -3,7 +3,7 @@
 
 ## Docs
 
-Commands
+[Commands](./docs/commands.md)
 
 [Events](./docs/events.md)
 

@@ -61,7 +61,7 @@ class PackageDiscovery
             if ($providers === true) {
                 $packageLocation = $this->locatePackage($package);
                 $providerDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app/Providers';
-                $providerClasses[$package]['providers'] = $providerDirectory;
+                $providerClasses[$package] = $providerDirectory;
             }
         }
 

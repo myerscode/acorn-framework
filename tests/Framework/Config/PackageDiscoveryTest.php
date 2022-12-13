@@ -7,7 +7,7 @@ use Tests\BaseTestCase;
 
 class PackageDiscoveryTest extends BaseTestCase
 {
-    protected string $appDirectory = 'tests/mocks/demo-app';
+    protected string $appDirectory = 'tests/Mocks/DemoApp';
 
     public function testCanDiscoverAcornProvidersInPackages(): void
     {

@@ -9,20 +9,22 @@ use Tests\Resources\TestEvent;
 
 class EventTest extends BaseTestCase
 {
+    public function testEventCanStopPropagation(): void
+    {
+        $testEvent = new TestEvent();
+
+        $this->assertFalse($testEvent->isPropagationStopped());
+
+        $testEvent->stopPropagation();
+
+        $this->assertTrue($testEvent->isPropagationStopped());
+    }
+
     public function testEventHasName(): void
     {
-        $testEvent = null;
         $testEvent = new TestEvent();
 
         $this->assertEquals(TestEvent::class, $testEvent->eventName());
-    }
-
-    public function testNamedEventWithCustomName(): void
-    {
-        $namedEvent = null;
-        $namedEvent = new NamedEvent('test.event.name');
-
-        $this->assertEquals('test.event.name', $namedEvent->eventName());
     }
 
     public function testNamedEventMustHaveName(): void
@@ -32,15 +34,10 @@ class EventTest extends BaseTestCase
         new NamedEvent('');
     }
 
-    public function testEventCanStopPropagation(): void
+    public function testNamedEventWithCustomName(): void
     {
-        $testEvent = null;
-        $testEvent = new TestEvent();
+        $namedEvent = new NamedEvent('test.event.name');
 
-        $this->assertFalse($testEvent->isPropagationStopped());
-
-        $testEvent->stopPropagation();
-
-        $this->assertTrue($testEvent->isPropagationStopped());
+        $this->assertEquals('test.event.name', $namedEvent->eventName());
     }
 }

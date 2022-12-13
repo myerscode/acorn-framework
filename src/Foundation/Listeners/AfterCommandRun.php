@@ -2,7 +2,7 @@
 
 namespace Myerscode\Acorn\Foundation\Listeners;
 
-use Myerscode\Acorn\Foundation\Console\Output;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Framework\Events\Listener;
 
@@ -11,9 +11,9 @@ class AfterCommandRun extends Listener
     /**
      * @var string[]|string
      */
-    protected $listensFor = CommandAfterEvent::class;
+    protected string|array $listensFor = CommandAfterEvent::class;
 
-    public function __construct(private readonly Output $output)
+    public function __construct(private readonly DisplayOutput $output)
     {
         //
     }

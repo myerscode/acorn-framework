@@ -2,75 +2,36 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 
 trait InteractsWithOutput
 {
-    protected ConsoleOutputInterface $output;
-
-    protected array $verbosityMap = [
-            'v' => OutputInterface::VERBOSITY_VERBOSE,
-            'vv' => OutputInterface::VERBOSITY_VERY_VERBOSE,
-            'vvv' => OutputInterface::VERBOSITY_DEBUG,
-            'quiet' => OutputInterface::VERBOSITY_QUIET,
-            'normal' => OutputInterface::VERBOSITY_NORMAL,
-        ];
+    protected DisplayOutputInterface $output;
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
      */
-    public function debug(string $message): void
+    public function debug(string|array $message): void
     {
         $this->output->debug($message);
     }
 
-    public function error(string $string): void
+    public function error(string|array $message): void
     {
-        $this->output->error($string);
+        $this->output->error($message);
     }
 
-    public function info(string $string, int|string $verbosity = null): void
+    public function info(string|array $message): void
     {
-        $this->line($string, 'info', $verbosity);
-    }
-
-    public function line(string $string, string $style = null, int|string $verbosity = null): void
-    {
-        $styled = $style ? sprintf('<%s>%s</%s>', $style, $string, $style) : $string;
-
-        $this->output->writeln($styled, $this->parseVerbosity($verbosity));
+        $this->output->info($message);
     }
 
     /**
-     * Get the verbosity level in terms of Symfony's OutputInterface level.
+     * Returns whether verbosity is debug (-vvv).
      */
-    protected function parseVerbosity(string|int|null $level = null): int
+    public function isDebug(): bool
     {
-        if (isset($this->verbosityMap[$level])) {
-            $level = $this->verbosityMap[$level];
-        } elseif (!is_int($level)) {
-            $level = $this->verbosityMap['normal'];
-        }
-
-        return $level;
-    }
-
-    public function verbose(string $message): void
-    {
-        $this->output->verbose($message);
-    }
-
-    public function veryVerbose(string $message): void
-    {
-        $this->output->veryVerbose($message);
-    }
-
-    /**
-     * Gets the current verbosity of the output.
-     */
-    public function verbosity(): int
-    {
-        return $this->output->getVerbosity();
+        return $this->output->isDebug();
     }
 
     /**
@@ -97,11 +58,31 @@ trait InteractsWithOutput
         return $this->output->isVeryVerbose();
     }
 
-    /**
-     * Returns whether verbosity is debug (-vvv).
-     */
-    public function isDebug(): bool
+    public function line(string|array $message): void
     {
-        return $this->output->isDebug();
+        $this->output->line($message);
+    }
+
+    public function success(string|array $message): void
+    {
+        $this->output->success($message);
+    }
+
+    public function verbose(string|array $message): void
+    {
+        $this->output->verbose($message);
+    }
+
+    /**
+     * Gets the current verbosity of the output.
+     */
+    public function verbosity(): int
+    {
+        return $this->output->getVerbosity();
+    }
+
+    public function veryVerbose(string|array $message): void
+    {
+        $this->output->veryVerbose($message);
     }
 }

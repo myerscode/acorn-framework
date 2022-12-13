@@ -9,7 +9,7 @@ use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Config\PackageDiscovery;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
-use Myerscode\Acorn\Framework\Console\ConsoleOutputInterface;
+use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
@@ -54,6 +54,8 @@ class Application extends SymfonyApplication
      */
     protected LoggerInterface $logger;
 
+    protected array $discoveredPackages = [];
+
     protected array $discoveredCommandDirectories = [];
 
     protected array $discoveredProviders = [];
@@ -82,9 +84,22 @@ class Application extends SymfonyApplication
         parent::__construct(self::APP_NAME, self::APP_VERSION);
     }
 
-    public function dispatcher(): Dispatcher
+    public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
     {
-        return $this->container()->get(Dispatcher::class);
+        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
+            $symfonyCommand->setLogger($this->logger());
+        }
+
+        return parent::add($symfonyCommand);
+    }
+
+    public function commandsDiscoveryDirectories(): array
+    {
+        return array_filter([
+            config('app.dir.commands'),
+            config('framework.dir.commands'),
+            ...$this->discoveredCommandDirectories,
+        ]);
     }
 
     public function container(): Container
@@ -92,9 +107,98 @@ class Application extends SymfonyApplication
         return $this->container;
     }
 
-    protected function configureConsole(): void
+    public function discoveredPackages(): array
     {
-        $this->configureIO($this->input(), $this->output());
+        return $this->discoveredPackages;
+    }
+
+    public function dispatcher(): Dispatcher
+    {
+        return $this->container()->get(Dispatcher::class);
+    }
+
+    public function eventDiscoveryDirectories(): array
+    {
+        return array_filter([
+            config('app.dir.listeners'),
+            config('framework.dir.listeners'),
+        ]);
+    }
+
+    public function handle(InputInterface $input = null, OutputInterface $output = null): Result
+    {
+        $throwException = null;
+
+        try {
+            $exitCode = parent::run($input, $output);
+        } catch (Exception $exception) {
+            $throwException = $exception;
+            $exitCode = 1;
+        }
+
+        return new Result($exitCode, $throwException);
+    }
+
+    public function input(): ConsoleInputInterface
+    {
+        return $this->container->get('input');
+    }
+
+    public function loadedServiceProviders(): array
+    {
+        return $this->container->loadedProviders();
+    }
+
+    /**
+     * Get the logger instance.
+     */
+    public function logger(): LogInterface
+    {
+        return $this->container->get('logger');
+    }
+
+    public function output(): DisplayOutputInterface
+    {
+        return $this->container->get('output');
+    }
+
+    /**
+     * Load events files and register them to the handler
+     */
+    protected function bindAppEvents(): void
+    {
+        $eventDiscoveryDirs = $this->eventDiscoveryDirectories();
+
+        foreach ($eventDiscoveryDirs as $eventDiscoveryDir) {
+            try {
+                foreach (FileService::make($eventDiscoveryDir)->files() as $file) {
+                    $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
+                    /** @var  $file \Symfony\Component\Finder\SplFileInfo */
+                    $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                    try {
+                        if (is_subclass_of($eventRegisterClass, Listener::class)) {
+                            $listener = $this->container->get($eventRegisterClass);
+
+                            $listensFor = $listener->listensFor();
+                            if (is_string($listensFor)) {
+                                $events = [$listensFor];
+                            } elseif (is_array($listensFor)) {
+                                $events = $listensFor;
+                            }
+                            foreach ($events as $event) {
+                                $this->dispatcher()->addListener($event, $listener);
+                            }
+                        } else {
+                            throw new InvalidListenerException(sprintf('%s is not a valid Listener', $eventRegisterClass));
+                        }
+                    } catch (InvalidListenerException $invalidListenerException) {
+                        $this->output()->debug($invalidListenerException->getMessage());
+                    }
+                }
+            } catch (NotADirectoryException) {
+                $this->output()->debug(sprintf('Could not find directory %s to load events from', $eventDiscoveryDir));
+            }
+        }
     }
 
     protected function bindCommandEvents(): void
@@ -116,60 +220,27 @@ class Application extends SymfonyApplication
         $this->setDispatcher($eventDispatcher);
     }
 
-    public function eventDiscoveryDirectories(): array
+    protected function configureConsole(): void
     {
-        return array_filter([
-            config('app.dir.listeners'),
-            config('framework.dir.listeners'),
-        ]);
+        $this->configureIO($this->input(), $this->output());
     }
 
     /**
-     * Load events files and register them to the handler
+     * Look through installed packages and locate packages to load commands and services from
+     *
+     * @return void
      */
-    protected function bindAppEvents(): void
+    protected function discoverPackages(): void
     {
-        $eventDiscoveryDirs = $this->eventDiscoveryDirectories();
+        $finder = new PackageDiscovery(config('app.root'));
 
-        foreach ($eventDiscoveryDirs as $eventDiscoveryDir) {
-            try {
-                foreach (FileService::make($eventDiscoveryDir)->files() as $file) {
-                    $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
-                    /** @var  $file \Symfony\Component\Finder\SplFileInfo */
-                    $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                    try {
-                        if (is_subclass_of($eventRegisterClass, Listener::class, true)) {
-                            $listener = $this->container->get($eventRegisterClass);
-                            $listensFor = $listener->listensFor();
-                            if (is_string($listensFor)) {
-                                $events = [$listensFor];
-                            } elseif (is_array($listensFor)) {
-                                $events = $listensFor;
-                            } else {
-                                throw new InvalidListenerException(sprintf('%s contains invalid listener configuration', $eventRegisterClass));
-                            }
+        $this->discoveredPackages = $finder->found;
+        $this->discoveredCommandDirectories = $finder->locateCommands();
+        $this->discoveredProviders = $finder->locateProviders();
 
-                            foreach ($events as $event) {
-                                $this->dispatcher()->addListener($event, $listener);
-                            }
-                        }
-                    } catch (InvalidListenerException $invalidListenerException) {
-                        $this->output()->debug($invalidListenerException->getMessage());
-                    }
-                }
-            } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load events from', $eventDiscoveryDir));
-            }
+        foreach ($finder->found as $package => $meta) {
+            $this->output()->debug(sprintf('Discovered %s', $package));
         }
-    }
-
-    public function commandsDiscoveryDirectories(): array
-    {
-        return array_filter([
-            config('app.dir.commands'),
-            config('framework.dir.commands'),
-            ...$this->discoveredCommandDirectories,
-        ]);
     }
 
     protected function loadCommands(): void
@@ -184,78 +255,19 @@ class Application extends SymfonyApplication
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                             $this->add($this->container->get($commandClass));
                         } else {
-                            $this->output()->debug(sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory));
+                            $this->output()->debug(
+                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory)
+                            );
                         }
-                    } catch (FileFormatExpection | ReflectionException) {
-                        $this->output()->debug(sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory));
+                    } catch (FileFormatExpection|ReflectionException) {
+                        $this->output()->debug(
+                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory)
+                        );
                     }
                 }
             } catch (NotADirectoryException) {
                 $this->output()->debug(sprintf('Could not find directory %s to load commands from', $commandDiscoveryDirectory));
             }
-        }
-    }
-
-    /**
-     * Look for userland providers
-     * @return array
-     */
-    protected function providerDiscoveryDirectories(): array
-    {
-        return array_filter([
-            config('app.dir.providers'),
-            $this->discoveredProviders,
-        ]);
-    }
-
-    /**
-     * Get list of service providers
-     *
-     * @return array
-     */
-    protected function serviceProviders(): array
-    {
-        $providerDiscoveryDirectories = $this->providerDiscoveryDirectories();
-
-        $serviceProviders = [ ];
-
-        foreach ($providerDiscoveryDirectories as $providerDirectory) {
-            try {
-                foreach (FileService::make($providerDirectory)->files() as $file) {
-                    $serviceProviders[] = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                }
-            } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
-            }
-        }
-
-        return array_filter($serviceProviders);
-    }
-
-    /**
-     * Look through installed packages and locate packages to load commands and services from
-     *
-     * @return void
-     */
-    protected function discoverPackages(): void
-    {
-        $finder = new PackageDiscovery(config('executing.dir.base'));
-        foreach ($finder->found as $package => $meta) {
-            $this->output()->debug(sprintf('Discovered %s', $package));
-            $this->discoveredCommandDirectories = $finder->locateCommands();
-            $this->discoveredProviders = $finder->locateProviders();
-        }
-    }
-
-    /**
-     * Load service providers from the framework into the container
-     *
-     * @return void
-     */
-    protected function registerFrameworkProviders(): void
-    {
-        foreach (config('framework.providers', []) as $provider) {
-            $this->container->addServiceProvider($provider);
         }
     }
 
@@ -271,45 +283,52 @@ class Application extends SymfonyApplication
         }
     }
 
-    public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
+    /**
+     * Look for userland providers
+     *
+     * @return array
+     */
+    protected function providerDiscoveryDirectories(): array
     {
-
-        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
-            $symfonyCommand->setLogger($this->logger());
-        }
-
-        return parent::add($symfonyCommand);
-    }
-
-    public function input(): ConsoleInputInterface
-    {
-        return $this->container->get('input');
-    }
-
-    public function output(): ConsoleOutputInterface
-    {
-        return $this->container->get('output');
+        return array_filter([
+            config('app.dir.providers'),
+            ...$this->discoveredProviders,
+        ]);
     }
 
     /**
-     * Get the logger instance.
+     * Load service providers from the framework into the container
+     *
+     * @return void
      */
-    public function logger(): LogInterface
+    protected function registerFrameworkProviders(): void
     {
-        return $this->container->get('logger');
+        foreach (config('framework.providers', []) as $provider) {
+            $this->container->addServiceProvider($provider);
+        }
     }
 
-    public function handle(InputInterface $input = null, OutputInterface $output = null): Result
+    /**
+     * Get list of service providers
+     *
+     * @return array
+     */
+    protected function serviceProviders(): array
     {
-        $throwException = null;
+        $providerDiscoveryDirectories = $this->providerDiscoveryDirectories();
 
-        try {
-            $exitCode = parent::run($input, $output);
-        } catch (Exception $exception) {
-            $throwException = $exception;
-            $exitCode = 1;
+        $serviceProviders = [];
+
+        foreach ($providerDiscoveryDirectories as $providerDirectory) {
+            try {
+                foreach (FileService::make($providerDirectory)->files() as $file) {
+                    $serviceProviders[] = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                }
+            } catch (NotADirectoryException) {
+                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
+            }
         }
 
-        return new Result($exitCode, $throwException);
+        return array_filter($serviceProviders);
     }
 }

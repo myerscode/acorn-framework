@@ -2,12 +2,13 @@
 
 namespace Myerscode\Acorn\Foundation;
 
-use Myerscode\Acorn\Foundation\Console\Output;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Config\Config;
 use Myerscode\Utilities\Strings\Utility as TextUtility;
+use Myerscode\Utilities\Bags\DotUtility as BagUtility;
 
 /**
  * Get a configuration value from the application
@@ -65,12 +66,17 @@ function text(string|TextUtility $text = ''): TextUtility
     return new TextUtility($text);
 }
 
-function output(): Output
+function bag(array|BagUtility $bag = []): BagUtility
+{
+    return new BagUtility($bag);
+}
+
+function output(): DisplayOutput
 {
     return Container::getInstance()->get('output');
 }
 
-function input(): Output
+function input(): DisplayOutput
 {
     return Container::getInstance()->get('input');
 }
