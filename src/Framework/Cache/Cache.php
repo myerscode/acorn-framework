@@ -2,22 +2,17 @@
 
 namespace Myerscode\Acorn\Framework\Cache;
 
-use Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException;
-use Myerscode\Utilities\Bags\Utility as Bag;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
+use Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException;
+use Myerscode\Utilities\Bags\Utility as Bag;
 
 class Cache implements CacheInterface
 {
     public function __construct(protected readonly DriverInterface $driver, protected readonly string $namespace = '')
     {
         //
-    }
-
-    protected function namespacedKey(string $key): string
-    {
-        return `$this->namespace.$key`;
     }
 
     /**
@@ -34,9 +29,19 @@ class Cache implements CacheInterface
         return $this->set($key, $value, $ttl);
     }
 
-    public function clear(): bool
+    public function count(): int
     {
-        return $this->driver->flush();
+        return $this->driver->count();
+    }
+
+    public function delete(string $key): bool
+    {
+        return $this->driver->delete($this->namespacedKey($key));
+    }
+
+    public function deleteMultiple(iterable $keys): bool
+    {
+        return $this->driver->deleteMultiple($this->namespacedKeys($keys));
     }
 
     public function driver(): DriverInterface
@@ -44,14 +49,9 @@ class Cache implements CacheInterface
         return $this->driver;
     }
 
-    public function delete(string $key): bool
+    public function flush(): void
     {
-        return $this->driver->forget($this->namespacedKey($key));
-    }
-
-    public function deleteMultiple(iterable $keys): bool
-    {
-        // TODO: Implement deleteMultiple() method.
+        $this->driver->clear();
     }
 
     /**
@@ -62,21 +62,6 @@ class Cache implements CacheInterface
     public function forget(string $key): bool
     {
         return $this->delete($key);
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $this->driver->get($this->namespacedKey($key), $default);
-    }
-
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        return (new Bag($keys))->map(function ($key) use ($default) {
-            $this->get($key, $default);
-        })->value();
     }
 
     public function has(string $key): bool
@@ -98,29 +83,6 @@ class Cache implements CacheInterface
         return $value;
     }
 
-    /**
-     * @inheritDoc
-     *
-     * @see set
-     */
-    public function put(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool
-    {
-        return $this->driver->set($this->namespacedKey($key), $value, $ttl);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function set(string $key, mixed $value, int|DateInterval $ttl = null): bool
-    {
-        return $this->driver->set($this->namespacedKey($key), $value, $ttl);
-    }
-
-    public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
-    {
-        // TODO: Implement setMultiple() method.
-    }
-
     public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $callback): mixed
     {
         $value = $this->get($key);
@@ -129,8 +91,46 @@ class Cache implements CacheInterface
             return $value;
         }
 
-        $this->put($key, $value = $callback(), $ttl);
+        $this->set($key, $value = $callback(), $ttl);
 
         return $value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function set(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool
+    {
+        return $this->driver->set($this->namespacedKey($key), $value, $ttl);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return $this->driver->get($this->namespacedKey($key), $default);
+    }
+
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    {
+        return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
+    }
+
+    public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
+    {
+        return $this->driver->setMultiple($values, $ttl);
+    }
+
+    protected function namespacedKey(string $key): string
+    {
+        return $this->namespace.$key;
+    }
+
+    protected function namespacedKeys(iterable $keys): array
+    {
+        return (new Bag($keys))->map(function ($key) {
+            return $this->namespacedKey($key);
+        })->value();
     }
 }

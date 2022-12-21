@@ -2,27 +2,16 @@
 
 namespace Myerscode\Acorn\Framework\Cache;
 
-use Psr\SimpleCache\CacheInterface as RepositoryInterface;
 use Closure;
-use DateTimeInterface;
 use DateInterval;
+use DateTimeInterface;
 
-interface CacheInterface extends RepositoryInterface
+interface CacheInterface
 {
     /**
-     * Retrieve an item from the cache and delete it.
+     * Remove all items from the cache.
      */
-    public function pull(string $key, mixed $default = null): mixed;
-
-    /**
-     * Store an item in the cache, even if value exists.
-     */
-    public function put(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool;
-
-    /**
-     * Get an item from the cache, or execute the given Closure and store the result then return the new value.
-     */
-    public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $callback): mixed;
+    public function flush(): void;
 
     /**
      * Remove an item from the cache.
@@ -38,4 +27,19 @@ interface CacheInterface extends RepositoryInterface
      * Determine if an item does not exist in the cache.
      */
     public function isMissing(string $key): bool;
+
+    /**
+     * Retrieve an item from the cache and delete it.
+     */
+    public function pull(string $key, mixed $default = null): mixed;
+
+    /**
+     * Get an item from the cache, or execute the given Closure and store the result then return the new value.
+     */
+    public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $callback): mixed;
+
+    /**
+     * Store an item in the cache, even if value exists.
+     */
+    public function set(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool;
 }
