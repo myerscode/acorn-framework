@@ -7,7 +7,7 @@ use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
 use Tests\BaseTestCase;
 
-class FoundationDriverTest extends BaseTestCase
+class DriverTest extends BaseTestCase
 {
     /**
      * @dataProvider dataProvider

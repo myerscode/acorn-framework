@@ -15,4 +15,9 @@ return [
     'output' => \Myerscode\Acorn\Foundation\Console\Display\DisplayOutput::class,
     'logger' => \Myerscode\Acorn\Framework\Log\NullLogger::class,
     'queue' => \Myerscode\Acorn\Foundation\Queue\SynchronousQueue::class,
+    'cache' => [
+        'driver' => \Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache::class,
+        'namespace' => 'acorn',
+        'config' => [],
+    ],
 ];

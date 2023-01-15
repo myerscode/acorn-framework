@@ -93,7 +93,7 @@ class FileCacheDriver implements DriverInterface
      */
     public function getMultiple(iterable $keys, $default = null): iterable
     {
-        $values = array();
+        $values = [];
         foreach ($keys as $key) {
             $values[$key] = $this->get($key, $default);
         }
