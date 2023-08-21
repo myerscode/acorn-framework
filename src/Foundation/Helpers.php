@@ -6,9 +6,10 @@ use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\EventInterface;
+use Myerscode\Acorn\Framework\Terminal\Terminal;
 use Myerscode\Config\Config;
-use Myerscode\Utilities\Strings\Utility as TextUtility;
 use Myerscode\Utilities\Bags\DotUtility as BagUtility;
+use Myerscode\Utilities\Strings\Utility as TextUtility;
 
 /**
  * Get a configuration value from the application
@@ -79,4 +80,9 @@ function output(): DisplayOutput
 function input(): DisplayOutput
 {
     return Container::getInstance()->get('input');
+}
+
+function terminal(): Terminal
+{
+    return Container::getInstance()->get(Terminal::class);
 }

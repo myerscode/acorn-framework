@@ -5,6 +5,7 @@ namespace Tests\Foundation;
 use Myerscode\Acorn\Foundation\Console\Input\Input;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
+use Myerscode\Acorn\Framework\Terminal\Terminal;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
@@ -14,6 +15,7 @@ use Tests\Resources\TestEvent;
 use function Myerscode\Acorn\Foundation\config;
 use function Myerscode\Acorn\Foundation\container;
 use function Myerscode\Acorn\Foundation\dispatch;
+use function Myerscode\Acorn\Foundation\terminal;
 
 class HelpersTest extends BaseTestCase
 {
@@ -48,5 +50,10 @@ class HelpersTest extends BaseTestCase
         dispatch(new TestEvent());
 
         $this->assertEquals(1, $listener->counter());
+    }
+
+    public function testTerminalHelper(): void
+    {
+        $this->assertInstanceOf(Terminal::class, terminal());
     }
 }
