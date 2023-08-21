@@ -3,6 +3,7 @@
 namespace Myerscode\Acorn\Foundation;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
+use Myerscode\Acorn\Foundation\Console\Input\Input;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\EventInterface;
@@ -77,7 +78,7 @@ function output(): DisplayOutput
     return Container::getInstance()->get('output');
 }
 
-function input(): DisplayOutput
+function input(): Input
 {
     return Container::getInstance()->get('input');
 }
