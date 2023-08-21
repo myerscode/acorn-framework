@@ -9,7 +9,7 @@ use function Myerscode\Acorn\Foundation\config;
 
 class ShowConfigCommand extends Command
 {
-    protected string $signature = 'config';
+    protected string $signature = 'config:show';
 
     protected string $description = 'Show all loaded configuration';
 
