@@ -8,6 +8,8 @@ use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
 
+use function Myerscode\Acorn\Foundation\output;
+
 class Terminal
 {
     /**
@@ -196,6 +198,16 @@ class Terminal
     }
 
     /**
+     * Is TTY supported on the running platform
+     *
+     * @return bool
+     */
+    public function isTtySupported(): bool
+    {
+        return Process::isTtySupported();
+    }
+
+    /**
      * Set output handler.
      *
      * @param  Closure|DisplayOutput  $output
@@ -226,8 +238,12 @@ class Terminal
 
         $process = Process::fromShellCommandline(...$parameters);
 
-        if ($this->tty && $process->isTtySupported()) {
+        if ($this->tty && $this->isTtySupported()) {
             $process->setTty($this->tty);
+        } else {
+            if ($this->tty && !$this->isTtySupported()) {
+                output()->warning("Tried setting tty on Terminal command - but it is not supported!");
+            }
         }
 
         if (!is_null($this->idleTimeout())) {

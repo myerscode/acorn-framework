@@ -3,12 +3,16 @@
 namespace Tests\Framework\Terminal;
 
 use Mockery;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
 use Myerscode\Acorn\Framework\Terminal\FailedResponse;
 use Myerscode\Acorn\Framework\Terminal\Terminal;
+use Symfony\Component\Console\Output\OutputInterface;
 use Tests\BaseTestCase;
 use Tests\Support\InteractsWithProcess;
 use Tests\Support\InteractsWithTerminal;
+
+use function Myerscode\Acorn\Foundation\container;
 
 class ConsoleTest extends BaseTestCase
 {
@@ -134,13 +138,22 @@ class ConsoleTest extends BaseTestCase
         $this->assertTrue($response->successful());
     }
 
-    public function testSetTTY()
+    public function testSetTty()
     {
         $console = (new Terminal())->enableTty();
-        $this->assertTrue($console->process()->isTty());
+
+        if ($console->process()->isTtySupported()) {
+            $this->assertTrue($console->process()->isTty());
+        } else {
+            $this->assertFalse($console->process()->isTty());
+        }
 
         $console = (new Terminal())->disableTty();
-        $this->assertFalse($console->process()->isTty());
+        if ($console->process()->isTtySupported()) {
+            $this->assertFalse($console->process()->isTty());
+        } else {
+            $this->assertFalse($console->process()->isTty());
+        }
     }
 
     public function testSleep()
@@ -186,5 +199,23 @@ class ConsoleTest extends BaseTestCase
         $console = (new Terminal())->timeout(20);
 
         $this->assertEquals(20, $console->process()->getTimeout());
+    }
+
+    public function testTtyIsDisabled()
+    {
+        $output = $this->createStreamOutput();
+
+        container()->swap(DisplayOutput::class, $output);
+        container()->swap('output', $output);
+        $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
+
+        $console = $this->mockedTerminal(function ($mock) {
+            $mock->shouldReceive('isTtySupported')->andReturn(false);
+        });
+
+        $console->enableTty();
+        $console->run('echo ');
+
+        $this->assertEquals("[WARNING] Tried setting tty on Terminal command - but it is not supported!", $output->output());
     }
 }

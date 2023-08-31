@@ -13,10 +13,10 @@ class FailedResponseTest extends BaseTestCase
 
     public function testSetError()
     {
-//        $process = Process::fromShellCommandline('ls -la');
         $process = $this->mockedFailedProcess(function ($mock) {
             $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
+
         $response = new FailedResponse($process, 1);
         $response->setError(new ProcessFailedException($process));
 
