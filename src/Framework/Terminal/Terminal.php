@@ -12,6 +12,14 @@ use function Myerscode\Acorn\Foundation\output;
 
 class Terminal
 {
+
+    /**
+     * Environment variables.
+     *
+     * @var array $environmentVariables
+     */
+    protected array $environmentVariables = [];
+
     /**
      * Timeout.
      */
@@ -163,6 +171,11 @@ class Terminal
         return $this->tty(true);
     }
 
+    public function environmentVariables(): array
+    {
+        return $this->environmentVariables;
+    }
+
     /**
      * How long between outputs will the terminal wait
      *
@@ -231,7 +244,7 @@ class Terminal
         $parameters = [
             (is_string($this->command) ? Command::make($this->command) : $this->command)->instructions(),
             $this->cwd ?? null,
-            [],
+            $this->environmentVariables(),
             '',
             $this->timeout,
         ];
@@ -361,6 +374,18 @@ class Terminal
     public function timeoutWhenOutputIsIdle(?int $idleTimeout): self
     {
         $this->idleTimeout = $idleTimeout;
+
+        return $this;
+    }
+
+    /**
+     * Set environment variables that the process will use.
+     *
+     * @return $this
+     */
+    public function withEnvironmentVariables(array $envVars): self
+    {
+        $this->environmentVariables = $envVars;
 
         return $this;
     }

@@ -119,6 +119,23 @@ class ConsoleTest extends BaseTestCase
         $this->assertFalse($console->inBackground());
     }
 
+    public function testPassesNewEnvironmentVariables()
+    {
+        $console = (new Terminal());
+
+        $voidOutput = $this->createStreamOutput();
+
+        $console->run('echo Hello $APP_NAME', $voidOutput);
+
+        $this->assertEquals('Hello Acorn', $voidOutput->output());
+
+        $voidOutput = $this->createStreamOutput();
+
+        $console->withEnvironmentVariables(['MY_NAME' => 'Fred'])->run('echo Hello $MY_NAME', $voidOutput);
+
+        $this->assertEquals('Hello Fred', $voidOutput->output());
+    }
+
     public function testRetries()
     {
         $console = $this->mockedTerminalWithProcess(

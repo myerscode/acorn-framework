@@ -24,5 +24,6 @@
         <testdoxHtml outputFile="./.reports/tests/tests.html"/>
     </logging>
     <php>
+        <env name="APP_NAME" value="Acorn"/>
     </php>
 </phpunit>

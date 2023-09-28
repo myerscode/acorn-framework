@@ -78,3 +78,18 @@ use function Myerscode\Acorn\Foundation\terminal;
 
 terminal()->sleep(15)->run('ls -la');
 ```
+
+## Environment Variables
+
+When you run a command - the it will have access to the same environment variables as the current PHP process.
+
+If you would like to run a command with extra environment variables, you may use the withEnvironmentVariables method.
+
+The `withEnvironmentVariables` method accepts an array of key-value pairs, which will then be made available in the
+command when it runs.
+
+```php
+use function Myerscode\Acorn\Foundation\terminal;
+
+terminal()->withEnvironmentVariables(['DIRECTORY' => 'app'])->run('ls -la $DIRECTORY');
+```
