@@ -173,6 +173,10 @@ class ConsoleTest extends BaseTestCase
 
     public function testSetTty(): void
     {
+        $output = $this->createVoidOutput();
+        container()->swap(DisplayOutput::class, $output);
+        container()->swap('output', $output);
+
         $console = (new Terminal())->enableTty();
 
         if ($console->process()->isTtySupported()) {
