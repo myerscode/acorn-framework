@@ -141,9 +141,17 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        $terminal->withEnvironmentVariables(['MY_NAME' => 'Fred'])->run('echo Hello $MY_NAME', $voidOutput);
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Command specific to Windows
+            $runCommand = 'echo Hello %MY_NAME%';
+        } else {
+            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
+            $runCommand = 'echo Hello $MY_NAME';
+        }
 
-        $this->assertSame('Hello Fred', $voidOutput->output());
+        $terminal->withEnvironmentVariables(['MY_NAME' => 'Corgis'])->run($runCommand, $voidOutput);
+
+        $this->assertSame('Hello Corgis', $voidOutput->output());
     }
 
     public function testRetries(): void
