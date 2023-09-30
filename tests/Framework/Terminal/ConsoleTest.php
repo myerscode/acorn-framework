@@ -2,11 +2,13 @@
 
 namespace Tests\Framework\Terminal;
 
+use Exception;
 use Mockery;
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
 use Myerscode\Acorn\Framework\Terminal\FailedResponse;
 use Myerscode\Acorn\Framework\Terminal\Terminal;
+use Myerscode\Acorn\Framework\Terminal\TerminalResponse;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tests\BaseTestCase;
 use Tests\Support\InteractsWithProcess;
@@ -19,62 +21,62 @@ class ConsoleTest extends BaseTestCase
     use InteractsWithProcess;
     use InteractsWithTerminal;
 
-    public function testCanHandleExceptionInUnderlyingProcess()
+    public function testCanHandleExceptionInUnderlyingProcess(): void
     {
-        $process = $this->mockedFailedProcess(function ($process) {
-            $process->shouldReceive('start')->andThrow(new \Exception());
-            $process->shouldReceive('run')->andThrow(new \Exception());
+        $process = $this->mockedFailedProcess(static function ($process): void {
+            $process->shouldReceive('start')->andThrow(new Exception());
+            $process->shouldReceive('run')->andThrow(new Exception());
             $process->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
 
 
-        $console = Mockery::mock(Terminal::class);
+        $legacyMock = Mockery::mock(Terminal::class);
 
-        $console->makePartial()
+        $legacyMock->makePartial()
             ->shouldReceive('process')
             ->andReturn($process);
 
-        $console->throw();
+        $legacyMock->throw();
 
         $this->expectException(ProcessFailedException::class);
 
-        $console->run('ls -la');
+        $legacyMock->run('ls -la');
     }
 
-    public function testClosureCallback()
+    public function testClosureCallback(): void
     {
-        $console = (new Terminal());
+        $terminal = (new Terminal());
         $output = '';
 
-        $console->run('echo Hello Acorn', function ($data) use (&$output) {
+        $terminal->run('echo Hello Acorn', static function ($data) use (&$output): void {
             $output = $data;
         });
 
-        $this->assertEquals('Hello Acorn', $output);
+        $this->assertSame('Hello Acorn', $output);
     }
 
-    public function testCommand()
+    public function testCommand(): void
     {
-        $console = (new Terminal())->command('ls -la');
+        $terminal = (new Terminal())->command('ls -la');
 
-        $this->assertEquals('ls -la', $console->process()->getCommandLine());
+        $this->assertSame('ls -la', $terminal->process()->getCommandLine());
     }
 
-    public function testDisplayCallback()
+    public function testDisplayCallback(): void
     {
-        $console = (new Terminal());
+        $terminal = (new Terminal());
 
         $voidOutput = $this->createStreamOutput();
 
-        $console->run('echo Hello Acorn', $voidOutput);
+        $terminal->run('echo Hello Acorn', $voidOutput);
 
-        $this->assertEquals('Hello Acorn', $voidOutput->output());
+        $this->assertSame('Hello Acorn', $voidOutput->output());
     }
 
-    public function testDontThrow()
+    public function testDontThrow(): void
     {
         $console = $this->mockedTerminalWithProcess(
-            $this->mockedFailedProcess(function ($mock) {
+            $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
             })
         );
@@ -86,60 +88,60 @@ class ConsoleTest extends BaseTestCase
         $this->assertInstanceOf(FailedResponse::class, $response);
     }
 
-    public function testIdleTimeout()
+    public function testIdleTimeout(): void
     {
-        $console = (new Terminal())->timeoutWhenOutputIsIdle(10);
+        $terminal = (new Terminal())->timeoutWhenOutputIsIdle(10);
 
-        $this->assertEquals(10, $console->process()->getIdleTimeout());
+        $this->assertSame(10.0, $terminal->process()->getIdleTimeout());
 
-        $console->dontTimeoutWhenOutputIsIdle();
+        $terminal->dontTimeoutWhenOutputIsIdle();
 
-        $this->assertEquals(null, $console->process()->getIdleTimeout());
+        $this->assertEquals(null, $terminal->process()->getIdleTimeout());
     }
 
-    public function testIn()
+    public function testIn(): void
     {
-        $console = (new Terminal())->in('my/directory');
+        $terminal = (new Terminal())->in('my/directory');
 
-        $this->assertEquals('my/directory', $console->process()->getWorkingDirectory());
+        $this->assertSame('my/directory', $terminal->process()->getWorkingDirectory());
     }
 
-    public function testInBackground()
+    public function testInBackground(): void
     {
-        $console = (new Terminal());
+        $terminal = (new Terminal());
 
         $voidOutput = $this->createStreamOutput();
 
-        $console->run('echo Hello Acorn', $voidOutput);
+        $terminal->run('echo Hello Acorn', $voidOutput);
 
-        $console->async('echo Hello Acorn');
-        $this->assertTrue($console->inBackground());
+        $terminal->async('echo Hello Acorn');
+        $this->assertTrue($terminal->inBackground());
 
-        $console->block()->run('echo Hello Acorn');
-        $this->assertFalse($console->inBackground());
+        $terminal->block()->run('echo Hello Acorn');
+        $this->assertFalse($terminal->inBackground());
     }
 
-    public function testPassesNewEnvironmentVariables()
+    public function testPassesNewEnvironmentVariables(): void
     {
-        $console = (new Terminal());
+        $terminal = (new Terminal());
 
         $voidOutput = $this->createStreamOutput();
 
-        $console->run('echo Hello $APP_NAME', $voidOutput);
+        $terminal->run('echo Hello $APP_NAME', $voidOutput);
 
-        $this->assertEquals('Hello Acorn', $voidOutput->output());
+        $this->assertSame('Hello Acorn', $voidOutput->output());
 
         $voidOutput = $this->createStreamOutput();
 
-        $console->withEnvironmentVariables(['MY_NAME' => 'Fred'])->run('echo Hello $MY_NAME', $voidOutput);
+        $terminal->withEnvironmentVariables(['MY_NAME' => 'Fred'])->run('echo Hello $MY_NAME', $voidOutput);
 
-        $this->assertEquals('Hello Fred', $voidOutput->output());
+        $this->assertSame('Hello Fred', $voidOutput->output());
     }
 
-    public function testRetries()
+    public function testRetries(): void
     {
         $console = $this->mockedTerminalWithProcess(
-            $this->mockedFailedProcess(function ($mock) {
+            $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
                 $mock->shouldReceive('isSuccessful')
                     ->times(4)
@@ -147,15 +149,13 @@ class ConsoleTest extends BaseTestCase
             })
         );
 
-        $response = $this->catch(ProcessFailedException::class)->from(function () use ($console) {
-            return $console->retries(3)->run('ls -la');
-        });
+        $response = $this->catch(ProcessFailedException::class)->from(static fn(): TerminalResponse => $console->retries(3)->run('ls -la'));
 
-        $this->assertEquals(3, $console->attempts());
+        $this->assertSame(3, $console->attempts());
         $this->assertTrue($response->successful());
     }
 
-    public function testSetTty()
+    public function testSetTty(): void
     {
         $console = (new Terminal())->enableTty();
 
@@ -166,24 +166,20 @@ class ConsoleTest extends BaseTestCase
         }
 
         $console = (new Terminal())->disableTty();
-        if ($console->process()->isTtySupported()) {
-            $this->assertFalse($console->process()->isTty());
-        } else {
-            $this->assertFalse($console->process()->isTty());
-        }
+        $this->assertFalse($console->process()->isTty());
     }
 
-    public function testSleep()
+    public function testSleep(): void
     {
-        $console = (new Terminal())->sleep(5);
+        $terminal = (new Terminal())->sleep(5);
 
-        $this->assertEquals(5, $console->sleepsFor());
+        $this->assertSame(5, $terminal->sleepsFor());
     }
 
-    public function testSleepsBetweenRetries()
+    public function testSleepsBetweenRetries(): void
     {
         $console = $this->mockedTerminalWithProcess(
-            $this->mockedFailedProcess(function ($mock) {
+            $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
                 $mock->shouldReceive('isSuccessful')
                     ->times(3)
@@ -191,15 +187,15 @@ class ConsoleTest extends BaseTestCase
             })
         );
 
-        $response = $console->retries(3)->sleep(5)->run('ls -la');
+        $terminalResponse = $console->retries(3)->sleep(5)->run('ls -la');
 
-        $this->assertEquals(10, $response->sleptFor());
+        $this->assertSame(10, $terminalResponse->sleptFor());
     }
 
-    public function testThrowsExceptionIfCommandFails()
+    public function testThrowsExceptionIfCommandFails(): void
     {
         $console = $this->mockedTerminalWithProcess(
-            $this->mockedFailedProcess(function ($mock) {
+            $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
             })
         );
@@ -211,28 +207,29 @@ class ConsoleTest extends BaseTestCase
         $console->run('ls -la');
     }
 
-    public function testTimeout()
+    public function testTimeout(): void
     {
-        $console = (new Terminal())->timeout(20);
+        $terminal = (new Terminal())->timeout(20);
 
-        $this->assertEquals(20, $console->process()->getTimeout());
+        $this->assertSame(20.0, $terminal->process()->getTimeout());
     }
 
-    public function testTtyIsDisabled()
+    public function testTtyIsDisabled(): void
     {
         $output = $this->createStreamOutput();
 
         container()->swap(DisplayOutput::class, $output);
         container()->swap('output', $output);
+
         $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
 
-        $console = $this->mockedTerminal(function ($mock) {
+        $terminal = $this->mockedTerminal(static function ($mock): void {
             $mock->shouldReceive('isTtySupported')->andReturn(false);
         });
 
-        $console->enableTty();
-        $console->run('echo ');
+        $terminal->enableTty();
+        $terminal->run('echo ');
 
-        $this->assertEquals("[WARNING] Tried setting tty on Terminal command - but it is not supported!", $output->output());
+        $this->assertSame("[WARNING] Tried setting tty on Terminal command - but it is not supported!", $output->output());
     }
 }

@@ -11,15 +11,15 @@ trait InteractsWithTerminal
 
     public function mockedTerminal(callable $mockTerminalCallback = null): Terminal
     {
-        $mockedTerminal = Mockery::mock(Terminal::class);
+        $legacyMock = Mockery::mock(Terminal::class);
 
-        $mockedTerminal->makePartial();
+        $legacyMock->makePartial();
 
         if (!is_null($mockTerminalCallback)) {
-            $mockTerminalCallback($mockedTerminal);
+            $mockTerminalCallback($legacyMock);
         }
 
-        return $mockedTerminal;
+        return $legacyMock;
     }
 
     public function mockedTerminalWithProcess(Process $process): Terminal

@@ -24,7 +24,7 @@ class EventTest extends BaseTestCase
     {
         $testEvent = new TestEvent();
 
-        $this->assertEquals(TestEvent::class, $testEvent->eventName());
+        $this->assertSame(TestEvent::class, $testEvent->eventName());
     }
 
     public function testNamedEventMustHaveName(): void
@@ -38,6 +38,6 @@ class EventTest extends BaseTestCase
     {
         $namedEvent = new NamedEvent('test.event.name');
 
-        $this->assertEquals('test.event.name', $namedEvent->eventName());
+        $this->assertSame('test.event.name', $namedEvent->eventName());
     }
 }

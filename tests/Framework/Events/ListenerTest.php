@@ -14,12 +14,12 @@ class ListenerTest extends BaseTestCase
     {
         $listener = new TestListener();
 
-        $this->assertEquals(TestEvent::class, $listener->listensFor());
+        $this->assertSame(TestEvent::class, $listener->listensFor());
 
         $listener = new TestMultiEventListener();
-        $this->assertEquals([TestEvent::class,'another.test.event'], $listener->listensFor());
+        $this->assertSame([TestEvent::class,'another.test.event'], $listener->listensFor());
 
         $listener = new TestEmptyListener();
-        $this->assertEquals([], $listener->listensFor());
+        $this->assertSame([], $listener->listensFor());
     }
 }

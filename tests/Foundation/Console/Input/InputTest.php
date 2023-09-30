@@ -10,7 +10,7 @@ class InputTest extends TestCase
     /**
      * @backupGlobals enabled
      */
-    public function testParametersParsedFromArgs()
+    public function testParametersParsedFromArgs(): void
     {
         $_SERVER['argv'] = ['acorn', 'list', '--all'];
         $_SERVER['argc'] = 3;
@@ -23,12 +23,12 @@ class InputTest extends TestCase
     /**
      * @backupGlobals enabled
      */
-    public function testParametersParsedFromArray()
+    public function testParametersParsedFromArray(): void
     {
         $manualInput = ['acorn', 'list', '--commands'];
 
         $input = new Input($manualInput);
 
-        $this->assertEquals($manualInput, $input->parameters());
+        $this->assertSame($manualInput, $input->parameters());
     }
 }

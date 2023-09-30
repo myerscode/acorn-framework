@@ -2,6 +2,7 @@
 
 namespace Tests\Foundation\Cache\Driver;
 
+use Iterator;
 use Myerscode\Acorn\Foundation\Cache\Driver\FileCacheDriver;
 use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
@@ -9,123 +10,122 @@ use Tests\BaseTestCase;
 
 class DriverTest extends BaseTestCase
 {
-    /**
-     * @dataProvider dataProvider
-     */
-    public function testClear(DriverInterface $cache)
+    public static function dataProvider(): Iterator
     {
-        $cache->set('key', 'value', 3600);
-
-        $this->assertGreaterThan(0, $cache->count());
-
-        $cache->clear();
-
-        $this->assertEquals(0, $cache->count());
+        yield RuntimeCache::class => [new RuntimeCache()];
+        yield FileCacheDriver::class => [new FileCacheDriver(self::createTempDirectory('file_cache_testing'))];
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testDelete(DriverInterface $cache)
+    public function testClear(DriverInterface $driver): void
     {
-        $cache->set('key', 'value');
+        $driver->set('key', 'value', 3600);
 
-        $this->assertEquals('value', $cache->get('key'));
+        $this->assertGreaterThan(0, $driver->count());
 
-        $this->assertTrue($cache->delete('key'));
+        $driver->clear();
 
-        $this->assertNull($cache->get('key'));
-
-        $this->assertFalse($cache->delete('key'));
+        $this->assertSame(0, $driver->count());
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testDeleteMultiple(DriverInterface $cache)
+    public function testDelete(DriverInterface $driver): void
     {
-        $cache->set('key1', 'value1');
-        $cache->set('key2', 'value2');
-        $cache->set('key3', 'value3');
-        $this->assertTrue($cache->deleteMultiple(['key1', 'key2']));
-        $this->assertNull($cache->get('key1'));
-        $this->assertNull($cache->get('key2'));
-        $this->assertNotNull($cache->get('key3'));
+        $driver->set('key', 'value');
+
+        $this->assertSame('value', $driver->get('key'));
+
+        $this->assertTrue($driver->delete('key'));
+
+        $this->assertNull($driver->get('key'));
+
+        $this->assertFalse($driver->delete('key'));
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testGet(DriverInterface $cache)
+    public function testDeleteMultiple(DriverInterface $driver): void
+    {
+        $driver->set('key1', 'value1');
+        $driver->set('key2', 'value2');
+        $driver->set('key3', 'value3');
+        $this->assertTrue($driver->deleteMultiple(['key1', 'key2']));
+        $this->assertNull($driver->get('key1'));
+        $this->assertNull($driver->get('key2'));
+        $this->assertNotNull($driver->get('key3'));
+    }
+
+    /**
+     * @dataProvider dataProvider
+     */
+    public function testGet(DriverInterface $driver): void
     {
         $default = 'default';
 
         // Test when the key is not in the cache
-        $result = $cache->get('key', $default);
-        $this->assertEquals($default, $result);
+        $result = $driver->get('key', $default);
+        $this->assertSame($default, $result);
 
         // Set a value in the cache that has expired
-        $cache->set('key', 'value', -3600);
-        $result = $cache->get('key', $default);
-        $this->assertEquals($default, $result);
+        $driver->set('key', 'value', -3600);
+        $result = $driver->get('key', $default);
+        $this->assertSame($default, $result);
 
         // Set a value in the cache that has not expired
-        $cache->set('key', 'value', 3600);
-        $result = $cache->get('key', $default);
-        $this->assertEquals('value', $result);
+        $driver->set('key', 'value', 3600);
+        $result = $driver->get('key', $default);
+        $this->assertSame('value', $result);
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testGetMultiple(DriverInterface $cache)
+    public function testGetMultiple(DriverInterface $driver): void
     {
-        $cache->set('key1', 'value1');
-        $cache->set('key2', 'value2');
-        $values = $cache->getMultiple(['key1', 'key2', 'non-existent-key']);
+        $driver->set('key1', 'value1');
+        $driver->set('key2', 'value2');
+
+        $values = $driver->getMultiple(['key1', 'key2', 'non-existent-key']);
         $this->assertSame(['key1' => 'value1', 'key2' => 'value2', 'non-existent-key' => null], $values);
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testHas(DriverInterface $cache)
+    public function testHas(DriverInterface $driver): void
     {
-        $this->assertFalse($cache->has('non-existent-key'));
+        $this->assertFalse($driver->has('non-existent-key'));
 
-        $cache->set('key', 'value');
-        $this->assertTrue($cache->has('key'));
+        $driver->set('key', 'value');
+        $this->assertTrue($driver->has('key'));
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testSet(DriverInterface $cache)
+    public function testSet(DriverInterface $driver): void
     {
         // Set a value in the cache
-        $cache->set('key', 'value');
-        $this->assertEquals('value', $cache->get('key'));
+        $driver->set('key', 'value');
+        $this->assertSame('value', $driver->get('key'));
 
         // Set a new value for the same key in the cache
-        $cache->set('key', 'new value', 3600);
-        $this->assertEquals('new value', $cache->get('key'));
+        $driver->set('key', 'new value', 3600);
+        $this->assertSame('new value', $driver->get('key'));
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testSetMultiple(DriverInterface $cache)
+    public function testSetMultiple(DriverInterface $driver): void
     {
-        $this->assertTrue($cache->setMultiple(['key1' => 'value1', 'key2' => 'value2']));
-        $this->assertSame('value1', $cache->get('key1'));
-        $this->assertSame('value2', $cache->get('key2'));
-    }
-
-    protected function dataProvider(): array
-    {
-        return [
-            RuntimeCache::class => [new RuntimeCache()],
-            FileCacheDriver::class => [new FileCacheDriver($this->createTempDirectory('file_cache_testing'))],
-        ];
+        $this->assertTrue($driver->setMultiple(['key1' => 'value1', 'key2' => 'value2']));
+        $this->assertSame('value1', $driver->get('key1'));
+        $this->assertSame('value2', $driver->get('key2'));
     }
 }

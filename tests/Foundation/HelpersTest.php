@@ -38,10 +38,10 @@ class HelpersTest extends BaseTestCase
         $this->container()->get('config')->store()->set('corgis', ['long' => 'Gerald', 'short' => 'Rupert']);
 
         $this->assertIsArray(config());
-        $this->assertEquals('Gerald', config('corgis.long'));
-        $this->assertEquals('Rupert', config('corgis.short'));
-        $this->assertEquals(['long' => 'Gerald', 'short' => 'Rupert'], config('corgis'));
-        $this->assertEquals('Audrey', config('rabbit', 'Audrey'));
+        $this->assertSame('Gerald', config('corgis.long'));
+        $this->assertSame('Rupert', config('corgis.short'));
+        $this->assertSame(['long' => 'Gerald', 'short' => 'Rupert'], config('corgis'));
+        $this->assertSame('Audrey', config('rabbit', 'Audrey'));
     }
 
     public function testContainerHelper(): void
@@ -53,33 +53,33 @@ class HelpersTest extends BaseTestCase
     public function testDispatchHelper(): void
     {
         $dispatcher = $this->dispatcher();
-        $listener = new CountingListener();
-        $dispatcher->addListener(TestEvent::class, $listener);
+        $countingListener = new CountingListener();
+        $dispatcher->addListener(TestEvent::class, $countingListener);
 
         container()->swap(Dispatcher::class, $dispatcher);
 
         dispatch(new TestEvent());
 
-        $this->assertEquals(1, $listener->counter());
+        $this->assertSame(1, $countingListener->counter());
     }
 
     public function testEmitHelper(): void
     {
         $dispatcher = $this->dispatcher();
-        $listener = new CountingListener();
-        $dispatcher->addListener(TestEvent::class, $listener);
+        $countingListener = new CountingListener();
+        $dispatcher->addListener(TestEvent::class, $countingListener);
 
         container()->swap(Dispatcher::class, $dispatcher);
 
         $counter = 0;
 
-        $dispatcher->addListener('test.event', function () use (&$counter): void {
+        $dispatcher->addListener('test.event', static function () use (&$counter) : void {
             $counter = 7749;
         });
 
         emit('test.event');
 
-        $this->assertEquals(7749, $counter);
+        $this->assertSame(7749, $counter);
     }
 
     public function testInputHelper(): void

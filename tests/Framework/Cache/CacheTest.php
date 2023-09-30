@@ -2,6 +2,7 @@
 
 namespace Tests\Framework\Cache;
 
+use Iterator;
 use Myerscode\Acorn\Foundation\Cache\Driver\FileCacheDriver;
 use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 use Myerscode\Acorn\Framework\Cache\Cache;
@@ -10,12 +11,16 @@ use Tests\BaseTestCase;
 
 class CacheTest extends BaseTestCase
 {
-
+    public static function dataProvider(): Iterator
+    {
+        yield RuntimeCache::class => [new RuntimeCache()];
+        yield FileCacheDriver::class => [new FileCacheDriver(self::createTempDirectory('file_cache_testing'))];
+    }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testAdd(DriverInterface $driver)
+    public function testAdd(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -26,13 +31,13 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDelete(DriverInterface $driver)
+    public function testDelete(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
         $cache->set('key', 'value');
 
-        $this->assertEquals('value', $cache->get('key'));
+        $this->assertSame('value', $cache->get('key'));
 
         $this->assertTrue($cache->delete('key'));
 
@@ -42,7 +47,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDeleteMultiple(DriverInterface $driver)
+    public function testDeleteMultiple(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -58,7 +63,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testDriver(DriverInterface $driver)
+    public function testDriver(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -69,7 +74,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testFlush(DriverInterface $driver)
+    public function testFlush(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -81,19 +86,19 @@ class CacheTest extends BaseTestCase
 
         $cache->flush();
 
-        $this->assertEquals(0, $cache->count());
+        $this->assertSame(0, $cache->count());
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testForget(DriverInterface $driver)
+    public function testForget(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
         $cache->set('key', 'value');
 
-        $this->assertEquals('value', $cache->get('key'));
+        $this->assertSame('value', $cache->get('key'));
 
         $this->assertTrue($cache->delete('key'));
 
@@ -105,7 +110,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testGet(DriverInterface $driver)
+    public function testGet(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -113,23 +118,23 @@ class CacheTest extends BaseTestCase
 
         // Test when the key is not in the cache
         $result = $cache->get('key', $default);
-        $this->assertEquals($default, $result);
+        $this->assertSame($default, $result);
 
         // Set a value in the cache that has expired
         $cache->set('key', 'value', -3600);
         $result = $cache->get('key', $default);
-        $this->assertEquals($default, $result);
+        $this->assertSame($default, $result);
 
         // Set a value in the cache that has not expired
         $cache->set('key', 'value', 3600);
         $result = $cache->get('key', $default);
-        $this->assertEquals('value', $result);
+        $this->assertSame('value', $result);
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testGetMultiple(DriverInterface $driver)
+    public function testGetMultiple(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -144,7 +149,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testHas(DriverInterface $driver)
+    public function testHas(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -158,7 +163,7 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testIsMissing(DriverInterface $driver)
+    public function testIsMissing(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -172,13 +177,13 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testPull(DriverInterface $driver)
+    public function testPull(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
         $this->assertTrue($cache->set('key', 'value'));
 
-        $this->assertEquals('value', $cache->pull('key'));
+        $this->assertSame('value', $cache->pull('key'));
 
         $this->assertNull($cache->pull('key'));
     }
@@ -186,32 +191,32 @@ class CacheTest extends BaseTestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testRemember(DriverInterface $driver)
+    public function testRemember(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
-        $this->assertEquals('value', $cache->remember('key', 1000, fn() => 'value'));
-        $this->assertEquals('value', $cache->remember('key', 1000, fn() => 'value2'));
+        $this->assertSame('value', $cache->remember('key', 1000, static fn(): string => 'value'));
+        $this->assertSame('value', $cache->remember('key', 1000, static fn(): string => 'value2'));
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testSet(DriverInterface $driver)
+    public function testSet(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
         $cache->set('key', 'value');
-        $this->assertEquals('value', $cache->get('key'));
+        $this->assertSame('value', $cache->get('key'));
 
         $cache->set('key', 'value2');
-        $this->assertEquals('value2', $cache->get('key'));
+        $this->assertSame('value2', $cache->get('key'));
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testSetMultiple(DriverInterface $driver)
+    public function testSetMultiple(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
@@ -223,13 +228,5 @@ class CacheTest extends BaseTestCase
     protected function cacheProvider(DriverInterface $driver): Cache
     {
         return (new Cache($driver));
-    }
-
-    protected function dataProvider(): array
-    {
-        return [
-            RuntimeCache::class => [new RuntimeCache()],
-            FileCacheDriver::class => [new FileCacheDriver($this->createTempDirectory('file_cache_testing'))],
-        ];
     }
 }

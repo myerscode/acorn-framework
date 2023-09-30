@@ -36,12 +36,12 @@ class ConsoleServiceProviderTest extends BaseTestCase
 
     public function testServicesAreRegistered(): void
     {
-        $consoleServiceProvider = new ConsoleProvider();
+        $consoleProvider = new ConsoleProvider();
 
-        $this->assertTrue($consoleServiceProvider->provides(Input::class));
-        $this->assertTrue($consoleServiceProvider->provides('input'));
-        $this->assertTrue($consoleServiceProvider->provides(DisplayOutput::class));
-        $this->assertTrue($consoleServiceProvider->provides('output'));
+        $this->assertTrue($consoleProvider->provides(Input::class));
+        $this->assertTrue($consoleProvider->provides('input'));
+        $this->assertTrue($consoleProvider->provides(DisplayOutput::class));
+        $this->assertTrue($consoleProvider->provides('output'));
     }
 
 

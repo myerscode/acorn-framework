@@ -112,15 +112,15 @@ class InteractsWithOutputTest extends BaseTestCase
 
         $output->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
 
-        $this->assertEquals(OutputInterface::VERBOSITY_DEBUG, $trait->verbosity());
+        $this->assertSame(OutputInterface::VERBOSITY_DEBUG, $trait->verbosity());
 
         $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
 
-        $this->assertEquals(OutputInterface::VERBOSITY_NORMAL, $trait->verbosity());
+        $this->assertSame(OutputInterface::VERBOSITY_NORMAL, $trait->verbosity());
 
         $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
 
-        $this->assertEquals(OutputInterface::VERBOSITY_VERBOSE, $trait->verbosity());
+        $this->assertSame(OutputInterface::VERBOSITY_VERBOSE, $trait->verbosity());
     }
 
     public function testVerbosity(): void

@@ -11,8 +11,8 @@ class FileCacheDriverTest extends BaseTestCase
     {
         $cacheDir = $this->createTempDirectory('file_cache_testing');
 
-        $cache = new FileCacheDriver($cacheDir);
+        $fileCacheDriver = new FileCacheDriver($cacheDir);
 
-        $this->assertEquals($cacheDir, $cache->cacheDir());
+        $this->assertSame($cacheDir, $fileCacheDriver->cacheDir());
     }
 }

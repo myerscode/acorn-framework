@@ -12,7 +12,7 @@ class CallableEventManagerTest extends BaseTestCase
 
     public function testCanClearEvents(): void
     {
-        $this->dispatcher()->addListener('my-special-event', function (): void {
+        $this->dispatcher()->addListener('my-special-event', static function () : void {
         });
 
         $this->assertNotCount(0, CallableEventManager::listeners());
@@ -28,7 +28,7 @@ class CallableEventManagerTest extends BaseTestCase
 
         $this->assertCount(0, CallableEventManager::listeners());
 
-        $this->dispatcher()->addListener('my-special-event', function (): void {
+        $this->dispatcher()->addListener('my-special-event', static function () : void {
         });
 
         $this->assertCount(1, CallableEventManager::listeners());
@@ -37,7 +37,7 @@ class CallableEventManagerTest extends BaseTestCase
     public function testFindCallable(): void
     {
         $dispatcher = $this->dispatcher();
-        $callable = function (): void {
+        $callable = static function () : void {
         };
         $dispatcher->addListener('my-special-event', $callable);
         $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());

@@ -2,6 +2,7 @@
 
 namespace Tests\Framework;
 
+use Myerscode\Acorn\Framework\Console\Result;
 use Exception;
 use Myerscode\Acorn\Application;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
@@ -29,15 +30,15 @@ class ApplicationTest extends BaseTestCase
     {
         $application = new Application($this->container());
 
-        $this->assertEquals(Application::APP_NAME, $application->getName());
-        $this->assertEquals(Application::APP_VERSION, $application->getVersion());
+        $this->assertSame(Application::APP_NAME, $application->getName());
+        $this->assertSame(Application::APP_VERSION, $application->getVersion());
     }
 
     public function testEventsAreLoaded(): void
     {
-        $app = new Application($this->newContainer());
+        $application = new Application($this->newContainer());
 
-        $dispatcher = $app->dispatcher();
+        $dispatcher = $application->dispatcher();
 
         $this->assertGreaterThanOrEqual(3, $dispatcher->getListeners());
         $this->assertCount(1, $dispatcher->getListenersForEvent(CommandAfterEvent::class));
@@ -63,19 +64,19 @@ class ApplicationTest extends BaseTestCase
 
     public function testEmitsError(): void
     {
-        $dispatcher = $this->spy(Dispatcher::class, [new SynchronousQueue()]);
+        $legacyMock = $this->spy(Dispatcher::class, [new SynchronousQueue()]);
 
         $application = new Application($this->container());
 
         $application->add(new CommandThatErrorsCommand());
 
-        container()->swap(Dispatcher::class, $dispatcher);
+        container()->swap(Dispatcher::class, $legacyMock);
 
-        $input = $this->createInput(['error-command']);
+        $consoleInput = $this->createInput(['error-command']);
 
-        $result = $this->catch(Exception::class)->from(fn() => $application->handle($input, $this->createVoidOutput($input)));
+        $result = $this->catch(Exception::class)->from(fn(): Result => $application->handle($consoleInput, $this->createVoidOutput($consoleInput)));
 
-        $dispatcher->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
+        $legacyMock->shouldHaveReceived('emit')->with(CommandErrorEvent::class, ConsoleErrorEvent::class)->once();
 
         $this->assertEquals(true, $result->failed());
     }
@@ -122,7 +123,7 @@ class ApplicationTest extends BaseTestCase
 
         $demoProviderCount = 1;
 
-        $frameworkProviderCount = count($this->appConfig()->value('framework.providers', []));
+        $frameworkProviderCount = is_countable($this->appConfig()->value('framework.providers', [])) ? count($this->appConfig()->value('framework.providers', [])) : 0;
 
         $expectedCount = $frameworkProviderCount + $demoProviderCount;
 

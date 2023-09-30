@@ -9,15 +9,15 @@ trait InteractsWithProcess
 {
     public function mockProcess(callable $mockProcessCallback = null): Process
     {
-        $process = Mockery::mock(Process::class);
+        $legacyMock = Mockery::mock(Process::class);
 
-        $process->makePartial();
+        $legacyMock->makePartial();
 
         if (!is_null($mockProcessCallback)) {
-            $mockProcessCallback($process);
+            $mockProcessCallback($legacyMock);
         }
 
-        return $process;
+        return $legacyMock;
     }
 
     public function mockedFailedProcess(callable $mockProcessCallback = null): Process

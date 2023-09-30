@@ -15,36 +15,36 @@ class TerminalResponseTest extends BaseTestCase
 {
     use InteractsWithProcess;
 
-    public function testAttempts()
+    public function testAttempts(): void
     {
         $response = $this->response($this->mockProcess(), 7);
 
-        $this->assertEquals(7, $response->attempt());
+        $this->assertSame(7, $response->attempt());
     }
 
-    public function testError()
+    public function testError(): void
     {
         $response = $this->response($this->mockProcess());
 
         $this->assertNull($response->error());
     }
 
-    public function testExitCode()
+    public function testExitCode(): void
     {
         $process = $this->mockedSuccessfulProcess();
 
         $response = $this->response($process);
 
-        $this->assertEquals(0, $response->exitCode());
+        $this->assertSame(0, $response->exitCode());
 
         $process = $this->mockedFailedProcess();
 
         $response = $this->response($process);
 
-        $this->assertEquals(1, $response->exitCode());
+        $this->assertSame(1, $response->exitCode());
     }
 
-    public function testFailed()
+    public function testFailed(): void
     {
         $process = $this->mockedFailedProcess();
 
@@ -54,25 +54,25 @@ class TerminalResponseTest extends BaseTestCase
         $this->assertFalse($response->successful());
     }
 
-    public function testOutput()
+    public function testOutput(): void
     {
-        $console = (new Terminal());
+        $terminal = (new Terminal());
 
         $voidOutput = $this->createStreamOutput();
 
-        $response = $console->run('echo Hello Acorn', $voidOutput);
+        $terminalResponse = $terminal->run('echo Hello Acorn', $voidOutput);
 
-        $this->assertEquals('Hello Acorn', $response->output());
+        $this->assertSame('Hello Acorn', $terminalResponse->output());
     }
 
-    public function testSleptFor()
+    public function testSleptFor(): void
     {
         $response = $this->response($this->mockProcess(), 7, 490);
 
-        $this->assertEquals(490, $response->sleptFor());
+        $this->assertSame(490, $response->sleptFor());
     }
 
-    public function testSuccessful()
+    public function testSuccessful(): void
     {
         $process = $this->mockedSuccessfulProcess();
 
@@ -82,9 +82,9 @@ class TerminalResponseTest extends BaseTestCase
         $this->assertFalse($response->failed());
     }
 
-    public function testThrowIfFailed()
+    public function testThrowIfFailed(): void
     {
-        $process = $this->mockedFailedProcess(function ($mock) {
+        $process = $this->mockedFailedProcess(static function ($mock) : void {
             $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
 
@@ -95,7 +95,7 @@ class TerminalResponseTest extends BaseTestCase
         $response->throw();
     }
 
-    public function testThrowIfNotFailed()
+    public function testThrowIfNotFailed(): void
     {
         $process = $this->mockedSuccessfulProcess();
 

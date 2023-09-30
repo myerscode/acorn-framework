@@ -12,14 +12,14 @@ class InteractsWithInputTest extends BaseTestCase
     {
         [$trait] = $this->createTrait();
 
-        $this->assertEquals('Corgi', $trait->argument('breed'));
+        $this->assertSame('Corgi', $trait->argument('breed'));
     }
 
     public function testArguments(): void
     {
         [$trait] = $this->createTrait();
 
-        $this->assertEquals(['breed' => 'Corgi'], $trait->arguments());
+        $this->assertSame(['breed' => 'Corgi'], $trait->arguments());
     }
 
     public function testHasArgument(): void
@@ -48,7 +48,7 @@ class InteractsWithInputTest extends BaseTestCase
 
         $this->assertEquals(true, $trait->option('fluff'));
 
-        $this->assertEquals('ball', $trait->option('toy'));
+        $this->assertSame('ball', $trait->option('toy'));
 
         $this->assertEquals(false, $trait->option('dog'));
     }
@@ -91,12 +91,12 @@ class InteractsWithInputTest extends BaseTestCase
             $signature = '{breed} {--fluff} {--toy=ball}';
         }
 
-        $input = $this->createInput($userInput, $signature);
+        $consoleInput = $this->createInput($userInput, $signature);
 
-        $output = $this->createStreamOutput($input);
+        $output = $this->createStreamOutput($consoleInput);
 
-        $this->setObjectProperties($trait, ['input' => $input, 'output' => $output]);
+        $this->setObjectProperties($trait, ['input' => $consoleInput, 'output' => $output]);
 
-        return [$trait, $input, $output];
+        return [$trait, $consoleInput, $output];
     }
 }

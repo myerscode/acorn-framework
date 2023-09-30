@@ -16,9 +16,9 @@ class KernelTest extends BaseTestCase
 
     public function testCanGetConfig(): void
     {
-        $kernel = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
+        $legacyMock = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
 
-        $this->assertInstanceOf(ConfigManager::class, $kernel->config());
+        $this->assertInstanceOf(ConfigManager::class, $legacyMock->config());
     }
 
     public function testCanGetInput(): void
@@ -55,7 +55,7 @@ class KernelTest extends BaseTestCase
             ])
             ->makePartial();
 
-        $this->assertEquals(1, $kernel->run());
+        $this->assertSame(1, $kernel->run());
     }
 
     public function testCanRun(): void
@@ -69,7 +69,7 @@ class KernelTest extends BaseTestCase
             ])
             ->makePartial();
 
-        $this->assertEquals(0, $kernel->run());
+        $this->assertSame(0, $kernel->run());
     }
 
     public function testHandlesErrors(): void
@@ -83,7 +83,7 @@ class KernelTest extends BaseTestCase
             ])
             ->makePartial();
 
-        $this->assertEquals(1, $kernel->run());
+        $this->assertSame(1, $kernel->run());
     }
 
     public function testHandlesMissingCommand(): void
@@ -97,6 +97,6 @@ class KernelTest extends BaseTestCase
             ])
             ->makePartial();
 
-        $this->assertEquals(1, $kernel->run());
+        $this->assertSame(1, $kernel->run());
     }
 }

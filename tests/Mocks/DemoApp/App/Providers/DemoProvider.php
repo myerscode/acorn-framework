@@ -12,6 +12,6 @@ class DemoProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->getContainer()->add('demo', fn() => "Demo Provider");
+        $this->getContainer()->add('demo', static fn(): string => "Demo Provider");
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Framework\Console;
 
+use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithCommands;
 use Symfony\Component\Console\Input\InputArgument;
@@ -40,7 +41,7 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
@@ -59,7 +60,7 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
@@ -79,7 +80,7 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
         ]);
 
@@ -96,7 +97,7 @@ class CommandTest extends BaseTestCase
     {
         $command = $this->makeTestCommand();
 
-        $configInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput([
+        $configInput = new ConfigInput([
             'argument-a' => 'test-first-argument',
             '--option-a' => 'test-first-option',
         ]);
@@ -123,10 +124,10 @@ class CommandTest extends BaseTestCase
 
         $display = $this->call($command, ['name' => 'Gerald']);
 
-        $this->assertEquals('Hello Gerald', $display);
+        $this->assertSame('Hello Gerald', $display);
 
         $display = $this->call(SimpleOutputCommand::class, ['name' => 'Rupert']);
 
-        $this->assertEquals('Hello Rupert', $display);
+        $this->assertSame('Hello Rupert', $display);
     }
 }

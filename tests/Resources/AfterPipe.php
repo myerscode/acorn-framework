@@ -2,6 +2,7 @@
 
 namespace Tests\Resources;
 
+use Closure;
 use Myerscode\Acorn\Framework\Pipeline\PipeInterface;
 
 class AfterPipe implements PipeInterface
@@ -10,7 +11,7 @@ class AfterPipe implements PipeInterface
     {
     }
 
-    public function handle($object, \Closure $next)
+    public function handle($object, Closure $next)
     {
         $response = $next($object);
 

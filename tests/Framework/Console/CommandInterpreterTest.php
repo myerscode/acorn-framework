@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 class CommandInterpreterTest extends BaseTestCase
 {
-    public function parser(): \Myerscode\Acorn\Framework\Console\CommandInterpreter
+    public function parser(): CommandInterpreter
     {
         return new CommandInterpreter();
     }
@@ -126,10 +126,10 @@ class CommandInterpreterTest extends BaseTestCase
 
         $this->assertTrue($results[1][0]->isArray());
         $this->assertFalse($results[1][0]->isRequired());
-        $this->assertEquals(['defaultArgumentValue1', 'defaultArgumentValue2'], $results[1][0]->getDefault());
+        $this->assertSame(['defaultArgumentValue1', 'defaultArgumentValue2'], $results[1][0]->getDefault());
         $this->assertTrue($results[2][0]->acceptValue());
         $this->assertTrue($results[2][0]->isArray());
-        $this->assertEquals(['defaultOptionValue1', 'defaultOptionValue2'], $results[2][0]->getDefault());
+        $this->assertSame(['defaultOptionValue1', 'defaultOptionValue2'], $results[2][0]->getDefault());
     }
 
     public function testArgumentDefaultValue(): void

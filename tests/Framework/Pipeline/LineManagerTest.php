@@ -21,7 +21,7 @@ class LineManagerTest extends TestCase
 
         $response = $lineManager->send(new PipedObject)->through('test');
 
-        $this->assertEquals(['before', 'after'], $response->passedThrough);
+        $this->assertSame(['before', 'after'], $response->passedThrough);
     }
 
     public function testRegisteringPipelineWithObjects(): void
@@ -35,7 +35,7 @@ class LineManagerTest extends TestCase
 
         $response = $lineManager->send(new PipedObject)->through('test');
 
-        $this->assertEquals(['123', '456'], $response->passedThrough);
+        $this->assertSame(['123', '456'], $response->passedThrough);
     }
 
     public function testCanBePassedThroughMultiplePipelines(): void
@@ -54,6 +54,6 @@ class LineManagerTest extends TestCase
 
         $response = $lineManager->send(new PipedObject)->through(['first', 'second']);
 
-        $this->assertEquals(['123', '456', 'abc', 'xyz'], $response->passedThrough);
+        $this->assertSame(['123', '456', 'abc', 'xyz'], $response->passedThrough);
     }
 }

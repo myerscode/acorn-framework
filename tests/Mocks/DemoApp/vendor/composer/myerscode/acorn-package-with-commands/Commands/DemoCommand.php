@@ -16,6 +16,6 @@ class DemoCommand extends Command
 
     public function handle(): void
     {
-        emit(DemoEvent::class, time() + rand(0, 1000));
+        emit(DemoEvent::class, time() + random_int(0, 1000));
     }
 }

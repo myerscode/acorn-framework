@@ -12,50 +12,6 @@ use Tests\Resources\PipedObject;
 
 class PipelineTest extends TestCase
 {
-    public function testLayersAreRunInCorrectOrder(): void
-    {
-        $pipeline = new Pipeline();
-        $end = $pipeline
-            ->pipes(new BeforePipe(1))
-            ->pipes(new AfterPipe(4))
-            ->pipes(new BeforePipe(3))
-            ->pipes(new AfterPipe(2))
-            ->flush(new PipedObject, function ($object) {
-                $object->passedThrough[] = 'core';
-
-                return $object;
-            });
-
-        $this->assertEquals([
-            1, 3, 'core', 2, 4,
-        ], $end->passedThrough);
-    }
-
-    public function testCanAddASinglePipe(): void
-    {
-        $stdClass = new StdClass();
-        $pipeline = (new Pipeline)->pipes(new BeforePipe)->flush($stdClass);
-
-        $this->assertEquals(['before'], $pipeline->passedThrough);
-
-        $stdClass = new StdClass();
-        $pipeline = (new Pipeline(AfterPipe::class))->flush($stdClass);
-
-        $this->assertEquals(['after'], $pipeline->passedThrough);
-    }
-
-    public function testPipesCanBeDefinedByClass(): void
-    {
-        $stdClass = new StdClass();
-
-        $pipeline = (new Pipeline)->pipes([
-            BeforePipe::class,
-            AfterPipe::class,
-        ])->flush($stdClass);
-
-        $this->assertEquals(['before', 'after'], $pipeline->passedThrough);
-    }
-
     public function testAddingAnPipelineAndArrayWorks(): void
     {
         $pipeline1 = (new Pipeline)->pipes([
@@ -70,15 +26,32 @@ class PipelineTest extends TestCase
 
         $end = $pipeline1
             ->pipes($pipeline)
-            ->flush(new PipedObject, function ($object) {
+            ->flush(new PipedObject, static function ($object) {
                 $object->passedThrough[] = 'core';
 
                 return $object;
             });
 
-        $this->assertEquals([
-            1, 3, 'core', 2, 4,
+        $this->assertSame([
+            '1',
+            '3',
+            'core',
+            '2',
+            '4',
         ], $end->passedThrough);
+    }
+
+    public function testCanAddASinglePipe(): void
+    {
+        $stdClass = new StdClass();
+        $pipeline = (new Pipeline)->pipes(new BeforePipe)->flush($stdClass);
+
+        $this->assertSame(['before'], $pipeline->passedThrough);
+
+        $stdClass = new StdClass();
+        $pipeline = (new Pipeline(AfterPipe::class))->flush($stdClass);
+
+        $this->assertSame(['after'], $pipeline->passedThrough);
     }
 
     public function testDefaultHandler(): void
@@ -95,8 +68,42 @@ class PipelineTest extends TestCase
             new AfterPipe(4),
         ])->flush($stdClass);
 
-        $this->assertEquals([
-            1, 2, 4, 3,
+        $this->assertSame([
+            '1',
+            '2',
+            '4',
+            '3',
+        ], $end->passedThrough);
+    }
+
+    public function testInvalidPipelineException(): void
+    {
+        $pipeline = new Pipeline();
+        $this->expectException(InvalidPipeException::class);
+
+        $pipeline->pipes('invalid argument');
+    }
+
+    public function testLayersAreRunInCorrectOrder(): void
+    {
+        $pipeline = new Pipeline();
+        $end = $pipeline
+            ->pipes(new BeforePipe(1))
+            ->pipes(new AfterPipe(4))
+            ->pipes(new BeforePipe(3))
+            ->pipes(new AfterPipe(2))
+            ->flush(new PipedObject, static function ($object) {
+                $object->passedThrough[] = 'core';
+
+                return $object;
+            });
+
+        $this->assertSame([
+            '1',
+            '3',
+            'core',
+            '2',
+            '4',
         ], $end->passedThrough);
     }
 
@@ -110,20 +117,25 @@ class PipelineTest extends TestCase
 
         $end = $pipeline->pipes([
             new BeforePipe(1),
-            fn(): int => 2,
+            static fn(): int => 2,
             new AfterPipe(3),
         ])->flush($stdClass);
 
-        $this->assertEquals([
-            1, 3,
+        $this->assertSame([
+            '1',
+            '3',
         ], $end->passedThrough);
     }
 
-    public function testInvalidPipelineException(): void
+    public function testPipesCanBeDefinedByClass(): void
     {
-        $pipeline = new Pipeline();
-        $this->expectException(InvalidPipeException::class);
+        $stdClass = new StdClass();
 
-        $pipeline->pipes('invalid argument');
+        $pipeline = (new Pipeline)->pipes([
+            BeforePipe::class,
+            AfterPipe::class,
+        ])->flush($stdClass);
+
+        $this->assertSame(['before', 'after'], $pipeline->passedThrough);
     }
 }

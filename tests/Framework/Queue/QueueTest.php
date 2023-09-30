@@ -39,7 +39,7 @@ class QueueTest extends BaseTestCase
 
         $listenerQueue->clear();
 
-        $this->assertEquals([], $listenerQueue->all());
+        $this->assertSame([], $listenerQueue->all());
     }
 
     public function testQueueCanCheckIfItContainsSomething(): void
@@ -71,7 +71,6 @@ class QueueTest extends BaseTestCase
 
     public function testQueueCanHaveItemsRemoved(): void
     {
-        $listenerQueue = null;
         $listenerQueue = new ListenerQueue();
 
         $listener1 = new TestEmptyListener();

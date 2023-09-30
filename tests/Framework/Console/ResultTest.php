@@ -8,29 +8,29 @@ use InvalidArgumentException;
 
 class ResultTest extends BaseTestCase
 {
-    public function testResultKnowsCommandWasSuccessful()
+    public function testResultKnowsCommandWasSuccessful(): void
     {
         $result = new Result(0);
         $this->assertTrue($result->wasSuccessful());
         $this->assertFalse($result->failed());
     }
 
-    public function testResultKnowsCommandFailed()
+    public function testResultKnowsCommandFailed(): void
     {
-        $result = new Result(rand(1, 10000));
+        $result = new Result(random_int(1, 10000));
         $this->assertTrue($result->failed());
         $this->assertFalse($result->wasSuccessful());
     }
 
-    public function testResultKnowsException()
+    public function testResultKnowsException(): void
     {
         $result = new Result(1, new InvalidArgumentException());
         $this->assertInstanceOf(InvalidArgumentException::class, $result->error());
     }
 
-    public function testResultKnowsExitCode()
+    public function testResultKnowsExitCode(): void
     {
         $result = new Result(1, new InvalidArgumentException());
-        $this->assertEquals(1, $result->exitCode());
+        $this->assertSame(1, $result->exitCode());
     }
 }

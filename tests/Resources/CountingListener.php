@@ -15,6 +15,6 @@ class CountingListener extends Listener
 
     public function handle(): void
     {
-        $this->counter++;
+        ++$this->counter;
     }
 }

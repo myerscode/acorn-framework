@@ -11,17 +11,17 @@ class FailedResponseTest extends BaseTestCase
 {
     use InteractsWithProcess;
 
-    public function testSetError()
+    public function testSetError(): void
     {
-        $process = $this->mockedFailedProcess(function ($mock) {
+        $process = $this->mockedFailedProcess(static function ($mock) : void {
             $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
 
-        $response = new FailedResponse($process, 1);
-        $response->setError(new ProcessFailedException($process));
+        $failedResponse = new FailedResponse($process, 1);
+        $failedResponse->setError(new ProcessFailedException($process));
 
-        $this->assertInstanceOf(ProcessFailedException::class, $response->error());
+        $this->assertInstanceOf(ProcessFailedException::class, $failedResponse->error());
 
-        $this->assertEquals($process, $response->process());
+        $this->assertEquals($process, $failedResponse->process());
     }
 }

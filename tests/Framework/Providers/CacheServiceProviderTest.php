@@ -24,9 +24,9 @@ class CacheServiceProviderTest extends BaseTestCase
 
     public function testServicesAreRegistered(): void
     {
-        $consoleServiceProvider = new CacheProvider();
+        $cacheProvider = new CacheProvider();
 
-        $this->assertTrue($consoleServiceProvider->provides(Cache::class));
-        $this->assertTrue($consoleServiceProvider->provides('cache'));
+        $this->assertTrue($cacheProvider->provides(Cache::class));
+        $this->assertTrue($cacheProvider->provides('cache'));
     }
 }

@@ -18,6 +18,6 @@ class CountingQueue extends SynchronousQueue
 
     public function push(JobInterface $job): void
     {
-        $this->pushCounter++;
+        ++$this->pushCounter;
     }
 }

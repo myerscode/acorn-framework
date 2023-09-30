@@ -11,15 +11,15 @@ class PackageDiscoveryTest extends BaseTestCase
 
     public function testCanDiscoverAcornProvidersInPackages(): void
     {
-        $discovery = new PackageDiscovery($this->appBase());
+        $packageDiscovery = new PackageDiscovery($this->appBase());
 
-        $this->assertCount(2, $discovery->locateProviders());
+        $this->assertCount(2, $packageDiscovery->locateProviders());
     }
 
     public function testCanDiscoverAcornCommandsInPackages(): void
     {
-        $discovery = new PackageDiscovery($this->appBase());
+        $packageDiscovery = new PackageDiscovery($this->appBase());
 
-        $this->assertCount(2, $discovery->locateCommands());
+        $this->assertCount(2, $packageDiscovery->locateCommands());
     }
 }

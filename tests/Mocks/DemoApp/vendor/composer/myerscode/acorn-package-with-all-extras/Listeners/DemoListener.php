@@ -10,13 +10,13 @@ class DemoListener extends Listener
 {
     protected string|array $listensFor = DemoEvent::class;
 
-    public function __construct(protected DisplayOutput $output)
+    public function __construct(protected DisplayOutput $displayOutput)
     {
         //
     }
 
-    public function __invoke(DemoEvent $event): void
+    public function __invoke(DemoEvent $demoEvent): void
     {
-        $this->output->info(DemoEvent::class.' event emitted at '.$event->timestamp);
+        $this->displayOutput->info(DemoEvent::class.' event emitted at '.$demoEvent->timestamp);
     }
 }

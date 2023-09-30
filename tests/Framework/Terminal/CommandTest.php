@@ -7,21 +7,21 @@ use Tests\BaseTestCase;
 
 class CommandTest extends BaseTestCase
 {
-    public function testInstructions()
+    public function testInstructions(): void
     {
         $command = Command::make('ls -la');
 
-        $this->assertEquals('ls -la', $command->instructions());
+        $this->assertSame('ls -la', $command->instructions());
     }
 
-    public function testMake()
+    public function testMake(): void
     {
         $command = Command::make('ls -la');
 
         $this->assertInstanceOf(Command::class, $command);
     }
 
-    public function testMakeFromAnotherCommand()
+    public function testMakeFromAnotherCommand(): void
     {
         $command = Command::make(Command::make('ls -la'));
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Framework\Events;
 
+use stdClass;
 use Myerscode\Acorn\Framework\Events\CallableListener;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidCallableConstructException;
 use Tests\BaseTestCase;
@@ -11,8 +12,7 @@ class CallableListenerTest extends BaseTestCase
 
     public function testCallableListenerAcceptsClosures(): void
     {
-        $closure = function (): void {
-
+        $closure = static function () : void {
         };
         $callableListener = new CallableListener($closure);
 
@@ -36,6 +36,6 @@ class CallableListenerTest extends BaseTestCase
     public function testCallableListenerThrowsErrorIfNotClosureOrCallable(): void
     {
         $this->expectException(InvalidCallableConstructException::class);
-        new CallableListener(new \stdClass());
+        new CallableListener(new stdClass());
     }
 }
