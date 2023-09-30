@@ -127,7 +127,15 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        $terminal->run('echo Hello $APP_NAME', $voidOutput);
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Command specific to Windows
+            $runCommand = 'echo Hello %APP_NAME%';
+        } else {
+            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
+            $runCommand = 'echo Hello $APP_NAME';
+        }
+
+        $terminal->run($runCommand, $voidOutput);
 
         $this->assertSame('Hello Acorn', $voidOutput->output());
 
