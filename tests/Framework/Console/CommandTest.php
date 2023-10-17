@@ -4,6 +4,7 @@ namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Console\Command;
+use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithCommands;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -35,6 +36,22 @@ class CommandTest extends BaseTestCase
                 //
             }
         };
+    }
+
+    public function testCallingCommandFromAnotherCommandThatFails(): void
+    {
+        $command = new class extends Command {
+            protected string $signature = 'anon';
+
+            public function handle(): void
+            {
+                $this->call('foo-bar');
+            }
+        };
+
+        $this->expectException(SubCommandFailedException::class);
+
+        $this->call($command);
     }
 
     public function testCanGetAllCommandArguments(): void

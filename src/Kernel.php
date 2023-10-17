@@ -8,7 +8,7 @@ use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
-use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
 
 class Kernel
 {
@@ -105,8 +105,8 @@ class Kernel
     protected function configLocations(): array
     {
         return [
-            __DIR__.'/Config',
-            $this->basePath.'/Config',
+            __DIR__ . '/Config',
+            $this->basePath . '/Config',
         ];
     }
 

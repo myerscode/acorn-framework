@@ -10,6 +10,7 @@ use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Acorn\Framework\Terminal\Terminal;
 use Myerscode\Config\Config;
 use Myerscode\Utilities\Bags\DotUtility as BagUtility;
+use Myerscode\Utilities\Files\Utility as FileUtility;
 use Myerscode\Utilities\Strings\Utility as TextUtility;
 
 /**
@@ -61,6 +62,11 @@ function dispatch(EventInterface $event): void
 function emit($eventName, $params = null): void
 {
     Container::getInstance()->get(Dispatcher::class)->emit($eventName, $params);
+}
+
+function file(string|FileUtility $path = ''): FileUtility
+{
+    return new FileUtility($path);
 }
 
 function text(string|TextUtility $text = ''): TextUtility

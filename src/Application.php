@@ -15,6 +15,7 @@ use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
 use Myerscode\Acorn\Framework\Log\LogInterface;
 use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
 use Myerscode\Utilities\Files\Exceptions\NotADirectoryException;
@@ -29,6 +30,7 @@ use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Symfony\Component\Console\Event\ConsoleTerminateEvent;
+use Symfony\Component\Console\Exception\CommandNotFoundException as SymfonyCommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -60,6 +62,8 @@ class Application extends SymfonyApplication
 
     protected array $discoveredProviders = [];
 
+    protected string $defaultCommand = 'list';
+
     public function __construct(private readonly Container $container)
     {
         $this->registerFrameworkProviders();
@@ -82,6 +86,9 @@ class Application extends SymfonyApplication
         $this->loadCommands();
 
         parent::__construct(self::APP_NAME, self::APP_VERSION);
+
+        // reset the internal default command, so we can control it from here due to it being private and no accessor
+        $this->setDefaultCommand($this->defaultCommand);
     }
 
     public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
@@ -130,7 +137,11 @@ class Application extends SymfonyApplication
         $throwException = null;
 
         try {
+            // this happens within the run, but we want to capture the SymfonyCommandNotFoundException and handle it ourselves
+            $this->find($this->getCommandName($input) ?? $this->defaultCommand);
             $exitCode = parent::run($input, $output);
+        } catch (SymfonyCommandNotFoundException $e) {
+            throw new CommandNotFoundException($e->getMessage(), $e->getAlternatives(), $e->getCode(), $e);
         } catch (Exception $exception) {
             $throwException = $exception;
             $exitCode = 1;

@@ -2,12 +2,12 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
-use Exception;
 use League\Container\Container;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
+use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -50,14 +50,6 @@ abstract class Command extends SymfonyCommand
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function getAliases(): array
-    {
-        return array_unique(array_merge([get_called_class()], parent::getAliases()));
-    }
-
-    /**
      * What to run when the command is executed
      *
      * @return mixed
@@ -72,18 +64,22 @@ abstract class Command extends SymfonyCommand
      *
      * @return int Exit code
      *
-     * @throws Exception
+     * @throws SubCommandFailedException
      */
     protected function call(string $commandName, array $parameters = []): int
     {
-        $symfonyCommand = $this->getApplication()->find($commandName);
+        try {
+            $symfonyCommand = $this->getApplication()->find($commandName);
 
-        $parameters = array_merge($parameters, ['command' => $commandName]);
-        $arrayInput = new \Myerscode\Acorn\Foundation\Console\Input\ConfigInput($parameters);
+            $parameters = array_merge($parameters, ['command' => $commandName]);
+            $arrayInput = new ConfigInput($parameters);
 
-        return $symfonyCommand->run($arrayInput, $this->output);
+            return $symfonyCommand->run($arrayInput, $this->output);
+        } catch (ExceptionInterface $e) {
+            throw new SubCommandFailedException($e);
+        }
     }
-
+    
     protected function configureWithSignature(): void
     {
         [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
@@ -100,6 +96,14 @@ abstract class Command extends SymfonyCommand
         $this->handle();
 
         return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAliases(): array
+    {
+        return array_unique(array_merge([get_called_class()], parent::getAliases()));
     }
 
     /**

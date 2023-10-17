@@ -450,12 +450,12 @@ class Terminal
     {
         if ($output instanceof DisplayOutputInterface) {
             return function ($type, $data) use ($output) {
-                return $output->output->write(trim($data));
+                $output->output->write(trim($data));
             };
         }
 
         return function ($type, $data) use ($output) {
-            return $output(trim($data));
+            $output(trim($data));
         };
     }
 
