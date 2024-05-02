@@ -3,8 +3,9 @@
 namespace Myerscode\Acorn\Framework\Terminal\Exception;
 
 use Exception;
+use Myerscode\Acorn\Framework\Terminal\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException as SymfonyProcessFailedException;
-use Symfony\Component\Process\Process;
+
 
 class ProcessFailedException extends SymfonyProcessFailedException
 {
