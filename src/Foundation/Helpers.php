@@ -29,7 +29,7 @@ function config(string $key = null, $default = null)
     $config = Container::getInstance()->get('config');
 
     if ($key) {
-        return $config->store()->get($key, $default);
+        return $config->store()->get(trim($key), $default);
     }
 
     return $config->values();
