@@ -24,6 +24,11 @@ abstract class Command extends SymfonyCommand
     protected Container $container;
 
     /**
+     * Should the command be hidden
+     */
+    protected bool $hide = false;
+
+    /**
      * The console command name/handle used to call it
      */
     protected ?string $name = null;
@@ -47,6 +52,7 @@ abstract class Command extends SymfonyCommand
         }
 
         $this->setDescription($this->description);
+        $this->setHidden($this->hide);
     }
 
     /**
@@ -79,7 +85,7 @@ abstract class Command extends SymfonyCommand
             throw new SubCommandFailedException($e);
         }
     }
-    
+
     protected function configureWithSignature(): void
     {
         [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
