@@ -33,6 +33,7 @@ trait InteractsWithProcess
 
         $process->shouldReceive('isSuccessful')->andReturn(false);
         $process->shouldReceive('getExitCode')->andReturn(1);
+        $process->shouldReceive('getWorkingDirectory')->andReturn(getcwd());
 
         return $process;
     }
