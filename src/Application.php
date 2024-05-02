@@ -303,6 +303,7 @@ class Application extends SymfonyApplication
     {
         return array_filter([
             config('app.dir.providers'),
+            config('executing.dir.providers'),
             ...$this->discoveredProviders,
         ]);
     }
@@ -332,8 +333,11 @@ class Application extends SymfonyApplication
 
         foreach ($providerDiscoveryDirectories as $providerDirectory) {
             try {
+                $this->output()->debug(sprintf('Loading providers from %s', $providerDirectory));
                 foreach (FileService::make($providerDirectory)->files() as $file) {
-                    $serviceProviders[] = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                    $providerClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+                    $serviceProviders[] = $providerClass;
+                    $this->output()->debug(sprintf('Found Service Provider [%s]', $providerClass));
                 }
             } catch (NotADirectoryException) {
                 $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
