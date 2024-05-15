@@ -259,12 +259,18 @@ class Application extends SymfonyApplication
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
 
         foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
+            $this->output()->debug(
+                sprintf('Looking for commands in %s', $commandDiscoveryDirectory)
+            );
             try {
                 foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                         if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
                             $this->add($this->container->get($commandClass));
+                            $this->output()->debug(
+                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory)
+                            );
                         } else {
                             $this->output()->debug(
                                 sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory)
