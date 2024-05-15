@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/autoload.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd" backupGlobals="false" cacheDirectory=".phpunit.cache">
-  <coverage>
-    <report>
-      <clover outputFile="./.reports/clover/coverage.xml"/>
-      <html outputDirectory="./.reports/coverage"/>
-    </report>
-  </coverage>
-  <testsuites>
-    <testsuite name="Unit">
-      <directory suffix="Test.php">./tests/Framework</directory>
-      <directory suffix="Test.php">./tests/Foundation</directory>
-    </testsuite>
-  </testsuites>
-  <logging>
-    <testdoxHtml outputFile="./.reports/tests/tests.html"/>
-  </logging>
-  <php>
-    <env name="APP_NAME" value="Acorn"/>
-  </php>
-  <source>
-    <include>
-      <directory suffix=".php">./src</directory>
-    </include>
-  </source>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/autoload.php" colors="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd" backupGlobals="false"
+         cacheDirectory=".phpunit.cache">
+    <coverage>
+        <report>
+            <clover outputFile="./.reports/clover/coverage.xml"/>
+            <html outputDirectory="./.reports/coverage"/>
+        </report>
+    </coverage>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Framework</directory>
+            <directory suffix="Test.php">./tests/Foundation</directory>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <testdoxHtml outputFile="./.reports/tests/tests.html"/>
+    </logging>
+    <php>
+        <env name="APP_NAME" value="Acorn"/>
+        <env name="SHELL_VERBOSITY" value="3"/>
+    </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
 </phpunit>
