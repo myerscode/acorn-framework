@@ -243,6 +243,8 @@ class Application extends SymfonyApplication
      */
     protected function discoverPackages(): void
     {
+        $this->output()->debug(sprintf('Looking for packages in %s', config('app.root')));
+
         $finder = new PackageDiscovery(config('app.root'));
 
         $this->discoveredPackages = $finder->found;
