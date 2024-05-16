@@ -257,7 +257,9 @@ class Application extends SymfonyApplication
     protected function loadCommands(): void
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
-
+        $this->output()->debug(
+            sprintf('Looking for commands in directories: %s', implode(", ", $commandsDiscoveryDirectories))
+        );
         foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
             $this->output()->debug(
                 sprintf('Looking for commands in %s', $commandDiscoveryDirectory)
