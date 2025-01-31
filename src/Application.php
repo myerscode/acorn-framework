@@ -243,6 +243,8 @@ class Application extends SymfonyApplication
      */
     protected function discoverPackages(): void
     {
+        $this->output()->debug(sprintf('Looking for packages in %s', config('app.root')));
+
         $finder = new PackageDiscovery(config('app.root'));
 
         $this->discoveredPackages = $finder->found;
@@ -257,7 +259,9 @@ class Application extends SymfonyApplication
     protected function loadCommands(): void
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
-
+        $this->output()->debug(
+            sprintf('Looking for commands in directories: %s', implode(", ", $commandsDiscoveryDirectories))
+        );
         foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
             $this->output()->debug(
                 sprintf('Looking for commands in %s', $commandDiscoveryDirectory)

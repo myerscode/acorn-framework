@@ -6,24 +6,16 @@ use Myerscode\PackageDiscovery\Finder;
 
 class PackageDiscovery
 {
-    private Finder $finder;
-
     readonly public array $found;
-
     readonly protected array $providers;
-
     readonly protected array $commands;
+    private Finder $finder;
 
     public function __construct(string $root)
     {
         $this->finder = new Finder($root);
 
         $this->found = $this->finder->discover('acorn');
-    }
-
-    protected function locatePackage(string $package): string
-    {
-        return trim($this->finder->locate($package));
     }
 
     /**
@@ -39,7 +31,7 @@ class PackageDiscovery
             $commands = $meta['commands'] ?? false;
             if ($commands === true) {
                 $packageLocation = $this->locatePackage($package);
-                $commandDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app/Commands';
+                $commandDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Commands';
                 $commandLocations[$package] = $commandDirectory;
             }
         }
@@ -60,11 +52,16 @@ class PackageDiscovery
             $providers = $meta['providers'] ?? false;
             if ($providers === true) {
                 $packageLocation = $this->locatePackage($package);
-                $providerDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app/Providers';
+                $providerDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Providers';
                 $providerClasses[$package] = $providerDirectory;
             }
         }
 
         return $providerClasses;
+    }
+
+    protected function locatePackage(string $package): string
+    {
+        return trim($this->finder->locate($package));
     }
 }
