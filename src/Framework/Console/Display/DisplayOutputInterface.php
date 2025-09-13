@@ -48,10 +48,6 @@ interface DisplayOutputInterface extends OutputInterface
 
     public function success(string|array $message);
 
-    /**
-     * @param  array  $headers
-     * @param  array  $rows
-     */
     public function table(array $headers, array $rows);
 
     public function text(string|array $message);

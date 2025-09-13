@@ -13,15 +13,14 @@ class CallableListener implements ListenerInterface
         if ($callable instanceof Closure) {
             return;
         }
+
         if (is_callable($callable)) {
             return;
         }
+
         throw new InvalidCallableConstructException();
     }
 
-    /**
-     * @return mixed
-     */
     public function getCallable(): Callable
     {
         return $this->callable;

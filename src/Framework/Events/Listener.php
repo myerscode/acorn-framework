@@ -11,8 +11,6 @@ abstract class Listener implements ListenerInterface
 
     /**
      * Should the listener action be queued or handled synchronously
-     *
-     * @var boolean
      */
     protected bool $shouldQueue = false;
 

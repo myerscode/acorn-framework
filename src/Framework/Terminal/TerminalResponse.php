@@ -6,11 +6,12 @@ use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
 
 abstract class TerminalResponse implements TerminalResponseInterface
 {
-    protected ?ProcessFailedException $exception;
+    protected ?ProcessFailedException $exception = null;
 
     public function __construct(protected Process $process, protected int $attempt, protected int $sleptFor = 0)
     {
     }
+
 //
 //    /**
 //     * Get the process output.
@@ -36,7 +37,7 @@ abstract class TerminalResponse implements TerminalResponseInterface
      */
     public function error(): ?ProcessFailedException
     {
-        return (isset($this->exception)) ? $this->exception : null;
+        return $this->exception ?? null;
     }
 
     /**

@@ -2,14 +2,13 @@
 
 namespace Tests\Foundation\Console\Input;
 
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use Myerscode\Acorn\Foundation\Console\Input\Input;
 use PHPUnit\Framework\TestCase;
 
 class InputTest extends TestCase
 {
-    /**
-     * @backupGlobals enabled
-     */
+    #[BackupGlobals(true)]
     public function testParametersParsedFromArgs(): void
     {
         $_SERVER['argv'] = ['acorn', 'list', '--all'];
@@ -20,9 +19,7 @@ class InputTest extends TestCase
         $this->assertEquals($_SERVER['argv'], $input->parameters());
     }
 
-    /**
-     * @backupGlobals enabled
-     */
+    #[BackupGlobals(true)]
     public function testParametersParsedFromArray(): void
     {
         $manualInput = ['acorn', 'list', '--commands'];

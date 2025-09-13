@@ -8,8 +8,6 @@ interface ConsoleInputInterface extends InputInterface
 {
     /**
      * Get all parsed parameters given at input
-     *
-     * @return array
      */
     public function parameters(): array;
 }

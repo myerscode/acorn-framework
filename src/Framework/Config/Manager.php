@@ -21,8 +21,6 @@ class Manager implements ManagerInterface
 
     /**
      * Where is the cache being stored
-     *
-     * @return string
      */
     protected function cacheLocation(): string
     {
@@ -100,8 +98,6 @@ class Manager implements ManagerInterface
 
     /**
      * Is the manager ignoring the cache
-     *
-     * @return bool
      */
     public function isIgnoringCache(): bool
     {
@@ -143,8 +139,6 @@ class Manager implements ManagerInterface
     /**
      * Check if the manager has loaded a configuration from a cache
      * If the manager has not loaded the configuration yet, it will always return false
-     *
-     * @return bool
      */
     public function isUsingCachedConfig(): bool
     {
@@ -153,8 +147,6 @@ class Manager implements ManagerInterface
 
     /**
      * Is the manager going to cache the config when loaded
-     *
-     * @return bool
      */
     public function isCachingConfig(): bool
     {

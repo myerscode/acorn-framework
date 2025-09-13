@@ -12,7 +12,7 @@ class CommandThatErrorsCommand extends Command
         $this->setName('error-command');
     }
 
-    function handle(): void
+    public function handle(): void
     {
         throw new Exception();
     }

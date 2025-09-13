@@ -12,12 +12,12 @@ class DependencyManager extends Container
         $this->definitions->remove($id);
     }
 
-    public function swap(string $id, $concrete = null, bool $shared = null): DefinitionInterface
+    public function swap(string $id, $concrete = null, ?bool $shared = null): DefinitionInterface
     {
         if ($this->has($id)) {
             $this->remove($id);
         }
 
-        return $this->add($id, $concrete, $shared);
+        return $this->add($id, $concrete);
     }
 }

@@ -3,6 +3,8 @@
 namespace Myerscode\Acorn\Framework\Container;
 
 use League\Container\ReflectionContainer;
+use League\Container\ServiceProvider\ServiceProviderInterface;
+use Myerscode\Acorn\Framework\Providers\ServiceProvider;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -12,7 +14,9 @@ class Container
      * The current globally available container (if any).
      */
     protected static ?Container $instance = null;
+
     protected array $loadedProviders = [];
+
     private readonly DependencyManager $container;
 
     public function __construct()
@@ -20,7 +24,7 @@ class Container
         $this->container = new DependencyManager(new Definitions());
         $this->container
             ->delegate(
-                (new ReflectionContainer())->cacheResolutions()
+                new ReflectionContainer(true)
             )
             ->defaultToShared();
 
@@ -49,22 +53,31 @@ class Container
      *
      * @see DependencyManager::add()
      */
-    public function add(string $id, mixed $concrete = null, bool $shared = null): void
+    public function add(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
-        $this->container->add($id, $concrete, $shared);
+        $this->container->add($id, $concrete);
     }
 
     /**
      * Load a service provider into the container
      *
      * @param $serviceProvider
-     *
-     * @return void
      */
-    public function addServiceProvider($serviceProvider): void
+    public function addServiceProvider(ServiceProviderInterface|string $serviceProvider): void
     {
-        if (!in_array($serviceProvider, $this->loadedProviders)) {
-            $this->loadedProviders[] = $serviceProvider;
+        if (!is_subclass_of($serviceProvider, ServiceProvider::class)) {
+            throw new \InvalidArgumentException("$serviceProvider must be a ServiceProvider");
+        }
+
+        if (is_string($serviceProvider)) {
+            $serviceProvider =  new $serviceProvider();
+        }
+
+        $serviceProviderName = get_class($serviceProvider);
+
+
+        if (!in_array($serviceProviderName, $this->loadedProviders)) {
+            $this->loadedProviders[] = $serviceProviderName;
             $this->container->addServiceProvider($serviceProvider);
         }
     }
@@ -72,9 +85,7 @@ class Container
     /**
      * Retrieve an instance from the container
      *
-     * @param  string  $id
      *
-     * @return mixed
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -88,8 +99,6 @@ class Container
 
     /**
      * Returns a list of service providers that have been added to the container
-     *
-     * @return array
      */
     public function loadedProviders(): array
     {
@@ -99,9 +108,7 @@ class Container
     /**
      * Remove a service from the container
      *
-     * @param  string  $id
      *
-     * @return void
      *
      * @see DependencyManager::swap()
      */
@@ -113,13 +120,10 @@ class Container
     /**
      * Swap the defined instance in the container with a new implementation
      *
-     * @param  string  $id
-     * @param  null  $concrete
-     * @param  bool|null  $shared
      *
      * @see DependencyManager::swap()
      */
-    public function swap(string $id, $concrete = null, bool $shared = null): void
+    public function swap(string $id, $concrete = null, ?bool $shared = null): void
     {
         $this->container->swap($id, $concrete, $shared);
     }

@@ -92,12 +92,12 @@ class RuntimeCache implements DriverInterface
     /**
      * @inheritDoc
      */
-    public function set(string $key, mixed $value, int|DateInterval $ttl = null): bool
+    public function set(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
-        $this->cache[$key] = array(
+        $this->cache[$key] = [
             'value' => $value,
             'expiry' => time() + ($ttl ?? $this->defaultCacheExpiration),
-        );
+        ];
 
         return true;
     }

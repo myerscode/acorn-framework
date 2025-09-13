@@ -106,11 +106,10 @@ class Dispatcher
     /**
      * Gets all listeners of the event or all registered listeners.
      *
-     * @param  string|null  $eventName
      *
      * @return mixed[]
      */
-    public function getListeners(string $eventName = null): array
+    public function getListeners(?string $eventName = null): array
     {
         if (!is_null($eventName)) {
             $listensForAnything = $this->getListenersForAnyEvent();
@@ -121,6 +120,7 @@ class Dispatcher
 
             return isset($this->listeners[$eventName]) ? array_merge($this->listeners[$eventName]->all(), $listensForAnything) : $listensForAnything;
         }
+
         $listeners = [];
         foreach ($this->listeners as $listener) {
             $listeners = array_merge($listeners, $listener->all());

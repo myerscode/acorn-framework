@@ -2,7 +2,7 @@
 
 namespace Myerscode\Acorn\Foundation\Console\Display;
 
-use LitEmoji\LitEmoji;
+use Override;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Formats a caution admonition.
      */
-    public function caution(array|string $message)
+    #[Override]
+    public function caution(array|string $message): void
     {
         parent::caution($message);
     }
@@ -36,7 +37,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Formats a command comment.
      */
-    public function comment(array|string $message)
+    #[Override]
+    public function comment(array|string $message): void
     {
         parent::comment($message);
     }
@@ -52,11 +54,13 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Formats an error result bar.
      */
-    public function error(array|string $message)
+    #[Override]
+    public function error(array|string $message): void
     {
         parent::error($message);
     }
 
+    #[Override]
     public function info(string|array $message): void
     {
         $this->block($this->decorateLines($message, ":blue_circle: "), null, 'fg=blue', ' ', true);
@@ -65,6 +69,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Returns whether verbosity is debug (-vvv).
      */
+    #[Override]
     public function isDebug(): bool
     {
         return parent::isDebug();
@@ -73,6 +78,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Returns whether verbosity is quiet (-q).
      */
+    #[Override]
     public function isQuiet(): bool
     {
         return parent::isQuiet();
@@ -81,6 +87,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Returns whether verbosity is verbose (-v).
      */
+    #[Override]
     public function isVerbose(): bool
     {
         return parent::isVerbose();
@@ -89,12 +96,13 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Returns whether verbosity is very verbose (-vv).
      */
+    #[Override]
     public function isVeryVerbose(): bool
     {
         return parent::isVeryVerbose();
     }
 
-    public function line(string|array $string, string $style = null, int|string $verbosity = null): void
+    public function line(string|array $string, ?string $style = null, int|string|null $verbosity = null): void
     {
         $styled = $style ? sprintf('<%s>%s</%s>', $style, $string, $style) : $string;
 
@@ -104,29 +112,31 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Formats a note admonition.
      */
-    public function note(string|array $message)
+    #[Override]
+    public function note(string|array $message): void
     {
         parent::note($message);
     }
 
+    #[Override]
     public function success(string|array $message): void
     {
         $this->block($this->decorateLines($message, ":green_circle: "), null, 'fg=green', ' ', false);
     }
 
-    public function table(array $headers = [], array $rows = []): Table
+    #[Override]
+    public function table(array $headers = [], array $rows = []): void
     {
         $table = new Table($this->output);
 
         $table->setHeaders($headers)->setRows($rows);
-
-        return $table;
     }
 
     /**
      * Formats informational text.
      */
-    public function text(array|string $message)
+    #[Override]
+    public function text(array|string $message): void
     {
         parent::text($message);
     }
@@ -158,7 +168,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     /**
      * Formats an warning result bar.
      */
-    public function warning(array|string $message)
+    #[Override]
+    public function warning(array|string $message): void
     {
         parent::warning($message);
     }
@@ -167,12 +178,12 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     {
         $messages = is_array($messages) ? array_values($messages) : [$messages];
 
-        return array_map(fn($message) => $this->encodeLine("$prefix$message$postfix"), $messages);
+        return array_map(fn($message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
     }
 
     protected function encodeLine(string $messages): string
     {
-        return LitEmoji::encodeUnicode($messages);
+        return $messages;
     }
 
     /**

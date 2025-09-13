@@ -17,8 +17,8 @@ class ClearConfigCacheCommand extends Command
     {
         $cachedLocation = config('cachedConfigLocation');
 
-        $this->info("Clearing $cachedLocation");
+        $this->info('Clearing ' . $cachedLocation);
 
-        terminal()->run("rm -f $cachedLocation");
+        terminal()->run('rm -f ' . $cachedLocation);
     }
 }

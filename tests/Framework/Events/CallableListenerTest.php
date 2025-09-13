@@ -22,7 +22,7 @@ class CallableListenerTest extends BaseTestCase
     public function testCallableListenerAcceptsCallables(): void
     {
         $callable = new class {
-            public function __invoke()
+            public function __invoke(): void
             {
 
             }

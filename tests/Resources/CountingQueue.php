@@ -2,6 +2,7 @@
 
 namespace Tests\Resources;
 
+use Override;
 use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 
@@ -16,6 +17,7 @@ class CountingQueue extends SynchronousQueue
         return $this->pushCounter;
     }
 
+    #[Override]
     public function push(JobInterface $job): void
     {
         ++$this->pushCounter;

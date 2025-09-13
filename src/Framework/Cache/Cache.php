@@ -20,7 +20,7 @@ class Cache implements CacheInterface
      *
      * @see set
      */
-    public function add(string $key, mixed $value, int|DateInterval $ttl = null): bool
+    public function add(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
         if ($this->has($key)) {
             return false;
@@ -117,7 +117,7 @@ class Cache implements CacheInterface
         return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
     }
 
-    public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
+    public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         return $this->driver->setMultiple($values, $ttl);
     }
@@ -129,8 +129,6 @@ class Cache implements CacheInterface
 
     protected function namespacedKeys(iterable $keys): array
     {
-        return (new Bag($keys))->map(function ($key) {
-            return $this->namespacedKey($key);
-        })->value();
+        return (new Bag($keys))->map(fn($key): string => $this->namespacedKey($key))->value();
     }
 }

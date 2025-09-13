@@ -23,11 +23,10 @@ class Kernel
 
     private readonly Application $application;
 
-    private bool $booted;
+    private bool $booted = false;
 
     public function __construct(string $basePath = '')
     {
-        $this->booted = false;
         $this->container = new Container();
         $this->setBasePath($basePath);
         $this->setRootPath($basePath);
@@ -75,7 +74,7 @@ class Kernel
         } catch (CommandNotFoundException $commandNotFoundException) {
             $this->output()->error($commandNotFoundException->getMessage());
         } catch (Exception $exception) {
-            $message = empty($exception->getMessage()) ? $exception::class : $exception->getMessage();
+            $message = in_array($exception->getMessage(), ['', '0'], true) ? $exception::class : $exception->getMessage();
             $this->output()->error($message);
         }
 

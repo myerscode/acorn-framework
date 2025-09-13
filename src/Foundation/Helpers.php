@@ -12,16 +12,17 @@ use Myerscode\Config\Config;
 use Myerscode\Utilities\Bags\DotUtility as BagUtility;
 use Myerscode\Utilities\Files\Utility as FileUtility;
 use Myerscode\Utilities\Strings\Utility as TextUtility;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Get a configuration value from the application
  *
- * @param  string|null  $key
- * @param  null  $default
- *
  * @return array|mixed|null
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
  */
-function config(string $key = null, $default = null)
+function config(?string $key = null, $default = null): mixed
 {
     /**
      * @var $config Config
@@ -37,10 +38,8 @@ function config(string $key = null, $default = null)
 
 /**
  * Get the available container instance.
- *
- * @param  string|null  $abstract
  */
-function container(string $abstract = null): mixed
+function container(?string $abstract = null): mixed
 {
     if (is_null($abstract)) {
         return Container::getInstance();
@@ -50,9 +49,9 @@ function container(string $abstract = null): mixed
 }
 
 /**
- * @param $event
  *
- * @return mixed
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
  */
 function dispatch(EventInterface $event): void
 {
@@ -79,16 +78,28 @@ function bag(array|BagUtility $bag = []): BagUtility
     return new BagUtility($bag);
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function output(): DisplayOutput
 {
     return Container::getInstance()->get('output');
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function input(): Input
 {
     return Container::getInstance()->get('input');
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function terminal(): Terminal
 {
     return Container::getInstance()->get(Terminal::class);

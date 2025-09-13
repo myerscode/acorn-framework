@@ -6,7 +6,7 @@ use Myerscode\Acorn\Framework\Console\Command;
 
 class TestCommand extends Command
 {
-    function handle(): void
+    public function handle(): void
     {
         // TODO: Implement handle() method.
     }

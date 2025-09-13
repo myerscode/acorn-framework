@@ -124,7 +124,7 @@ class DispatcherTest extends BaseTestCase
         $dispatcher = $this->dispatcher();
 
         $callable = new class() {
-            public function __invoke($event)
+            public function __invoke($event): void
             {
                 $event->counter = 100;
             }
@@ -390,7 +390,7 @@ class DispatcherTest extends BaseTestCase
         $callable = new class {
             public bool $shouldQueue = true;
 
-            public function __invoke()
+            public function __invoke(): void
             {
                 //
             }

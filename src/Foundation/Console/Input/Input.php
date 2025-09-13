@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputDefinition;
 
 class Input extends ArgvInput implements ConsoleInputInterface
 {
-    public function __construct(protected array|null $argInput = null, InputDefinition $definition = null)
+    public function __construct(protected array|null $argInput = null, ?InputDefinition $definition = null)
     {
         $this->argInput ??= $_SERVER['argv'] ?? [];
         
@@ -17,8 +17,6 @@ class Input extends ArgvInput implements ConsoleInputInterface
 
     /**
      * Get all parsed parameters given at input
-     *
-     * @return array
      */
     public function parameters(): array
     {

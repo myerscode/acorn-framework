@@ -11,7 +11,7 @@ abstract class ServiceProvider extends AbstractServiceProvider
      * know that a service is provided by this service
      * provider. Every service that is registered via
      * this service provider must have an alias added
-     * to this array or it will be ignored.
+     * to this array, or it will be ignored.
      *
      * @var array
      */
@@ -24,4 +24,9 @@ abstract class ServiceProvider extends AbstractServiceProvider
      * within this method must be declared in the `$provides` array.
      */
     abstract public function register(): void;
+
+    public function provides(string $id): bool
+    {
+        return in_array($id, $this->provides);
+    }
 }

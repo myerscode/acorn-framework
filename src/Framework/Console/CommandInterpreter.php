@@ -49,7 +49,7 @@ class CommandInterpreter
 
     /**
      * Extract all of the parameters from the tokens.
-     * @return array<int, array<\Symfony\Component\Console\Input\InputArgument|\Symfony\Component\Console\Input\InputOption>>
+     * @return array<int, array<InputArgument|InputOption>>
      */
     protected function parameters(array $tokens): array
     {
@@ -77,10 +77,10 @@ class CommandInterpreter
         $matches = [];
 
         return match (true) {
-            text($token)->endsWith('?*') => new InputArgument(trim($token, '?*'), InputArgument::IS_ARRAY, $description),
-            text($token)->endsWith('*') => new InputArgument(trim($token, '*'), InputArgument::IS_ARRAY | InputArgument::REQUIRED, $description),
-            text($token)->endsWith('?') => new InputArgument(trim($token, '?'), InputArgument::OPTIONAL, $description),
-            text($token)->endsWith(['=', '=']) => new InputArgument(trim($token, '='), InputArgument::OPTIONAL, $description, null),
+            text($token)->endsWith('?*') => new InputArgument(trim((string) $token, '?*'), InputArgument::IS_ARRAY, $description),
+            text($token)->endsWith('*') => new InputArgument(trim((string) $token, '*'), InputArgument::IS_ARRAY | InputArgument::REQUIRED, $description),
+            text($token)->endsWith('?') => new InputArgument(trim((string) $token, '?'), InputArgument::OPTIONAL, $description),
+            text($token)->endsWith(['=', '=']) => new InputArgument(trim((string) $token, '='), InputArgument::OPTIONAL, $description, null),
             text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument($matches[1], InputArgument::IS_ARRAY, $description,
                 preg_split('#,\s?#', (string) $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]),
@@ -105,10 +105,10 @@ class CommandInterpreter
         }
 
         return match (true) {
-            text($token)->endsWith('=') => new InputOption(trim($token, '='), $shortcut, InputOption::VALUE_OPTIONAL, $description),
-            text($token)->endsWith('=*') => new InputOption(trim($token, '=*'), $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+            text($token)->endsWith('=') => new InputOption(trim((string) $token, '='), $shortcut, InputOption::VALUE_OPTIONAL, $description),
+            text($token)->endsWith('=*') => new InputOption(trim((string) $token, '=*'), $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
                 $description),
-            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, $description, preg_split('#,\s?#', $matches[2])),
+            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, $description, preg_split('#,\s?#', (string) $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL, $description, $matches[2]),
             default => new InputOption($token, $shortcut, InputOption::VALUE_NONE, $description),
         };

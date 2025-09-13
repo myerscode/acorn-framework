@@ -6,8 +6,6 @@ class LineManager
 {
     /**
      * Thing that will be passed through the pipelines
-     *
-     * @var mixed
      */
     private mixed $object;
 
@@ -28,17 +26,12 @@ class LineManager
         return $this;
     }
 
-    /**
-     * @param  string|array  $pipeNames
-     *
-     * @return mixed
-     */
     public function through(string|array $pipeNames): mixed
     {
         if (is_string($pipeNames) && isset($this->pipes[$pipeNames])) {
             $pipes =  $this->pipes[$pipeNames]->toArray();
         } else {
-            $pipes = array_values(array_filter($this->pipes, fn($name) => in_array($name, $pipeNames), ARRAY_FILTER_USE_KEY));
+            $pipes = array_values(array_filter($this->pipes, fn($name): bool => in_array($name, $pipeNames), ARRAY_FILTER_USE_KEY));
         }
 
         return (new Pipeline($pipes))->flush($this->object);

@@ -14,6 +14,7 @@ class Definitions extends DefinitionAggregate
                 unset($this->definitions[$index]);
             }
         }
+
         $this->definitions = array_values($this->definitions);
     }
 }

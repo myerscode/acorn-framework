@@ -7,7 +7,7 @@ use Myerscode\Acorn\Framework\Terminal\Process;
 
 trait InteractsWithProcess
 {
-    public function mockProcess(callable $mockProcessCallback = null): Process
+    public function mockProcess(?callable $mockProcessCallback = null): Process
     {
         $legacyMock = Mockery::mock(Process::class);
 
@@ -20,7 +20,7 @@ trait InteractsWithProcess
         return $legacyMock;
     }
 
-    public function mockedFailedProcess(callable $mockProcessCallback = null): Process
+    public function mockedFailedProcess(?callable $mockProcessCallback = null): Process
     {
         $process = $this->mockProcess($mockProcessCallback);
 
@@ -38,7 +38,7 @@ trait InteractsWithProcess
         return $process;
     }
 
-    public function mockedSuccessfulProcess(callable $mockProcessCallback = null): Process
+    public function mockedSuccessfulProcess(?callable $mockProcessCallback = null): Process
     {
         $process = $this->mockProcess($mockProcessCallback);
 

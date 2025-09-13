@@ -2,6 +2,7 @@
 
 namespace Myerscode\Acorn;
 
+use Override;
 use Exception;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
@@ -39,20 +40,12 @@ use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
 {
-    /**
-     * @var string
-     */
-    final const APP_NAME = 'Acorn';
+    public const string APP_NAME = 'Acorn';
 
-    /**
-     * @var string
-     */
-    final const APP_VERSION = '1.0.0';
+    public const string APP_VERSION = '1.0.0';
 
     /**
      * The logger instance.
-     *
-     * @var LoggerInterface
      */
     protected LoggerInterface $logger;
 
@@ -132,7 +125,7 @@ class Application extends SymfonyApplication
         ]);
     }
 
-    public function handle(InputInterface $input = null, OutputInterface $output = null): Result
+    public function handle(?InputInterface $input = null, ?OutputInterface $output = null): Result
     {
         $throwException = null;
 
@@ -196,6 +189,7 @@ class Application extends SymfonyApplication
                             } elseif (is_array($listensFor)) {
                                 $events = $listensFor;
                             }
+
                             foreach ($events as $event) {
                                 $this->dispatcher()->addListener($event, $listener);
                             }
@@ -238,8 +232,6 @@ class Application extends SymfonyApplication
 
     /**
      * Look through installed packages and locate packages to load commands and services from
-     *
-     * @return void
      */
     protected function discoverPackages(): void
     {
@@ -251,7 +243,7 @@ class Application extends SymfonyApplication
         $this->discoveredCommandDirectories = $finder->locateCommands();
         $this->discoveredProviders = $finder->locateProviders();
 
-        foreach ($finder->found as $package => $meta) {
+        foreach (array_keys($finder->found) as $package) {
             $this->output()->debug(sprintf('Discovered %s', $package));
         }
     }
@@ -294,8 +286,6 @@ class Application extends SymfonyApplication
 
     /**
      * Load service providers from user land into the container
-     *
-     * @return void
      */
     protected function loadServiceProviders(): void
     {
@@ -306,8 +296,6 @@ class Application extends SymfonyApplication
 
     /**
      * Look for userland providers
-     *
-     * @return array
      */
     protected function providerDiscoveryDirectories(): array
     {
@@ -320,8 +308,6 @@ class Application extends SymfonyApplication
 
     /**
      * Load service providers from the framework into the container
-     *
-     * @return void
      */
     protected function registerFrameworkProviders(): void
     {
@@ -332,8 +318,6 @@ class Application extends SymfonyApplication
 
     /**
      * Get list of service providers
-     *
-     * @return array
      */
     protected function serviceProviders(): array
     {

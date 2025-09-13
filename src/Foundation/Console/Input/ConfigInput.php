@@ -8,15 +8,13 @@ use Symfony\Component\Console\Input\InputDefinition;
 
 class ConfigInput extends ArrayInput implements ConsoleInputInterface
 {
-    public function __construct(protected array $parameterArray = [], InputDefinition $inputDefinition = null)
+    public function __construct(protected array $parameterArray = [], ?InputDefinition $inputDefinition = null)
     {
         parent::__construct($parameterArray, $inputDefinition);
     }
 
     /**
      * Get all parsed parameters given at input
-     *
-     * @return array
      */
     public function parameters(): array
     {

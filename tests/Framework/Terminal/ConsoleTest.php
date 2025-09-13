@@ -127,13 +127,7 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Command specific to Windows
-            $runCommand = 'echo Hello %APP_NAME%';
-        } else {
-            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
-            $runCommand = 'echo Hello $APP_NAME';
-        }
+        $runCommand = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'echo Hello %APP_NAME%' : 'echo Hello $APP_NAME';
 
         $terminal->run($runCommand, $voidOutput);
 
@@ -141,13 +135,7 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Command specific to Windows
-            $runCommand = 'echo Hello %MY_NAME%';
-        } else {
-            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
-            $runCommand = 'echo Hello $MY_NAME';
-        }
+        $runCommand = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'echo Hello %MY_NAME%' : 'echo Hello $MY_NAME';
 
         $terminal->withEnvironmentVariables(['MY_NAME' => 'Corgis'])->run($runCommand, $voidOutput);
 

@@ -6,14 +6,12 @@ class Event implements EventInterface, NamedEventInterface
 {
     /**
      * Whether the event propagation is stopped.
-     *
-     * @var boolean
      */
     protected bool $propagationStopped = false;
 
     public function eventName(): string
     {
-        return $this::class;
+        return static::class;
     }
 
     /**

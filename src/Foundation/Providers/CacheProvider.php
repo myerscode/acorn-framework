@@ -10,8 +10,7 @@ use function Myerscode\Acorn\Foundation\config;
 
 class CacheProvider extends ServiceProvider
 {
-    protected $provides
-        = [
+    protected $provides = [
             'cache',
             Cache::class,
             DriverInterface::class,

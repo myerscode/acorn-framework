@@ -49,10 +49,7 @@ class Pipeline
      * Run middleware around core function and pass an
      * object through it
      *
-     * @param  mixed  $object
-     * @param  Closure|null  $core
      *
-     * @return mixed
      */
     public function flush(mixed $object, ?Closure $core = null): mixed
     {
@@ -98,10 +95,7 @@ class Pipeline
      * Get an onion layer function.
      * This function will get the object from a previous layer and pass it inwards
      *
-     * @param  Closure  $nextLayer
-     * @param  PipeCollectionInterface|PipeInterface|string  $pipe
      *
-     * @return callable
      */
     private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): callable
     {
