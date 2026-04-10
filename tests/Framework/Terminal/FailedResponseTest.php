@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
@@ -7,7 +9,7 @@ use Myerscode\Acorn\Framework\Terminal\FailedResponse;
 use Tests\BaseTestCase;
 use Tests\Support\InteractsWithProcess;
 
-class FailedResponseTest extends BaseTestCase
+final class FailedResponseTest extends BaseTestCase
 {
     use InteractsWithProcess;
 

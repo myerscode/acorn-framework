@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework;
 
 use Myerscode\Acorn\Framework\Container\Container;
 use Tests\BaseTestCase;
 
-class ContainerTest extends BaseTestCase
+final class ContainerTest extends BaseTestCase
 {
     public function testContainerCanCreateItselfStatically(): void
     {

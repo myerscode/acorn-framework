@@ -54,13 +54,13 @@ class Manager implements ManagerInterface
 
         $cachedConfigLocation = $this->cacheLocation();
 
-        $cachedConfig = FileService::make($cachedConfigLocation);
+        $utility = FileService::make($cachedConfigLocation);
 
-        if (!$cachedConfig->exists()) {
+        if (!$utility->exists()) {
             return false;
         }
 
-        $config->loadFile($cachedConfig->path());
+        $config->loadFile($utility->path());
 
         $config->loadData(['cachedConfig' => 'true', 'cachedConfigLocation' => $cachedConfigLocation]);
 

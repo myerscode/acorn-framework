@@ -9,8 +9,10 @@ use function Myerscode\Acorn\Foundation\config;
 
 class ShowConfigCommand extends Command
 {
+    #[\Override]
     protected string $signature = 'config:show';
 
+    #[\Override]
     protected string $description = 'Show all loaded configuration';
 
     public function handle(): void
@@ -21,8 +23,8 @@ class ShowConfigCommand extends Command
             $locations = config('configLocations');
         }
 
-        $bag = new Utility(config());
-        $config = $bag->flatten()->toArray();
+        $utility = new Utility(config());
+        $config = $utility->flatten()->toArray();
 
         $mapped = array_map(fn($key, $value): array => [$value], array_keys($locations), $locations);
 

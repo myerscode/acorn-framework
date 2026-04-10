@@ -54,7 +54,7 @@ class ListenerQueue
      */
     public function contains(ListenerInterface $listener): bool
     {
-        return $this->storage->contains($listener);
+        return $this->storage->offsetExists($listener);
     }
 
     /**
@@ -62,7 +62,7 @@ class ListenerQueue
      */
     public function push(ListenerInterface $listener, int $priority): void
     {
-        $this->storage->attach($listener, $priority);
+        $this->storage->offsetSet($listener, $priority);
         $this->queue->insert($listener, $priority);
     }
 
@@ -85,8 +85,8 @@ class ListenerQueue
      */
     public function remove(ListenerInterface $listener): void
     {
-        if ($this->storage->contains($listener)) {
-            $this->storage->detach($listener);
+        if ($this->storage->offsetExists($listener)) {
+            $this->storage->offsetUnset($listener);
             $this->refresh();
         }
     }

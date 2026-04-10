@@ -84,6 +84,7 @@ class Application extends SymfonyApplication
         $this->setDefaultCommand($this->defaultCommand);
     }
 
+    #[\Override]
     public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
     {
         if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
@@ -210,16 +211,16 @@ class Application extends SymfonyApplication
     {
         $eventDispatcher = new EventDispatcher;
 
-        $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event): void {
-            $this->dispatcher()->emit(CommandBeforeEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $consoleCommandEvent): void {
+            $this->dispatcher()->emit(CommandBeforeEvent::class, $consoleCommandEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event): void {
-            $this->dispatcher()->emit(CommandAfterEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $consoleTerminateEvent): void {
+            $this->dispatcher()->emit(CommandAfterEvent::class, $consoleTerminateEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
-            $this->dispatcher()->emit(CommandErrorEvent::class, $event);
+        $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $consoleErrorEvent): void {
+            $this->dispatcher()->emit(CommandErrorEvent::class, $consoleErrorEvent);
         });
 
         $this->setDispatcher($eventDispatcher);
@@ -237,13 +238,13 @@ class Application extends SymfonyApplication
     {
         $this->output()->debug(sprintf('Looking for packages in %s', config('app.root')));
 
-        $finder = new PackageDiscovery(config('app.root'));
+        $packageDiscovery = new PackageDiscovery(config('app.root'));
 
-        $this->discoveredPackages = $finder->found;
-        $this->discoveredCommandDirectories = $finder->locateCommands();
-        $this->discoveredProviders = $finder->locateProviders();
+        $this->discoveredPackages = $packageDiscovery->found;
+        $this->discoveredCommandDirectories = $packageDiscovery->locateCommands();
+        $this->discoveredProviders = $packageDiscovery->locateProviders();
 
-        foreach (array_keys($finder->found) as $package) {
+        foreach (array_keys($packageDiscovery->found) as $package) {
             $this->output()->debug(sprintf('Discovered %s', $package));
         }
     }
@@ -262,7 +263,7 @@ class Application extends SymfonyApplication
                 foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                        if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
+                        if (is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
                             $this->add($this->container->get($commandClass));
                             $this->output()->debug(
                                 sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory)
@@ -325,16 +326,16 @@ class Application extends SymfonyApplication
 
         $serviceProviders = [];
 
-        foreach ($providerDiscoveryDirectories as $providerDirectory) {
+        foreach ($providerDiscoveryDirectories as $providerDiscoveryDirectory) {
             try {
-                $this->output()->debug(sprintf('Loading providers from %s', $providerDirectory));
-                foreach (FileService::make($providerDirectory)->files() as $file) {
+                $this->output()->debug(sprintf('Loading providers from %s', $providerDiscoveryDirectory));
+                foreach (FileService::make($providerDiscoveryDirectory)->files() as $file) {
                     $providerClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     $serviceProviders[] = $providerClass;
                     $this->output()->debug(sprintf('Found Service Provider [%s]', $providerClass));
                 }
             } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
+                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDiscoveryDirectory));
             }
         }
 

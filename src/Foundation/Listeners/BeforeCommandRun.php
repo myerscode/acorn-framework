@@ -11,16 +11,17 @@ class BeforeCommandRun extends Listener
     /**
      * @var string[]|string
      */
+    #[\Override]
     protected string|array $listensFor = CommandBeforeEvent::class;
 
-    public function __construct(private readonly DisplayOutput $output)
+    public function __construct(private readonly DisplayOutput $displayOutput)
     {
         //
     }
 
-    public function __invoke(CommandBeforeEvent $event): void
+    public function __invoke(CommandBeforeEvent $commandBeforeEvent): void
     {
-        $message = sprintf('Before running command <info>%s</info>', $event->consoleCommandEvent->getCommand()->getName());
-        $this->output->verbose($message);
+        $message = sprintf('Before running command <info>%s</info>', $commandBeforeEvent->consoleCommandEvent->getCommand()->getName());
+        $this->displayOutput->verbose($message);
     }
 }

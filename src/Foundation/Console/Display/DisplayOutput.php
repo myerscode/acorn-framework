@@ -20,11 +20,6 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
             'normal' => OutputInterface::VERBOSITY_NORMAL,
         ];
 
-    public function __construct(readonly InputInterface $input, readonly OutputInterface $output)
-    {
-        parent::__construct($input, $output);
-    }
-
     /**
      * Formats a caution admonition.
      */

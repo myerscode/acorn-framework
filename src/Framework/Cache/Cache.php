@@ -129,6 +129,6 @@ class Cache implements CacheInterface
 
     protected function namespacedKeys(iterable $keys): array
     {
-        return (new Bag($keys))->map(fn($key): string => $this->namespacedKey($key))->value();
+        return new Bag($keys)->map(fn(string $key): string => $this->namespacedKey($key))->value();
     }
 }

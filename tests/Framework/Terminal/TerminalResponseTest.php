@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
@@ -11,7 +13,7 @@ use Myerscode\Acorn\Framework\Terminal\TerminalResponseInterface;
 use Tests\BaseTestCase;
 use Tests\Support\InteractsWithProcess;
 
-class TerminalResponseTest extends BaseTestCase
+final class TerminalResponseTest extends BaseTestCase
 {
     use InteractsWithProcess;
 
@@ -26,7 +28,7 @@ class TerminalResponseTest extends BaseTestCase
     {
         $response = $this->response($this->mockProcess());
 
-        $this->assertNull($response->error());
+        $this->assertNotInstanceOf(\Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException::class, $response->error());
     }
 
     public function testExitCode(): void

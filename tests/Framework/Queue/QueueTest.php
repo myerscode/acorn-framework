@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Queue;
 
 use Myerscode\Acorn\Framework\Events\ListenerQueue;
@@ -7,7 +9,7 @@ use Tests\BaseTestCase;
 use Tests\Resources\TestEmptyListener;
 use Tests\Resources\TestListener;
 
-class QueueTest extends BaseTestCase
+final class QueueTest extends BaseTestCase
 {
     public function testQueueCanGetAllItemsItContains(): void
     {

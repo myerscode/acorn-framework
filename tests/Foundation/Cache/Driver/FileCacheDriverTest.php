@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Foundation\Cache\Driver;
 
 use Myerscode\Acorn\Foundation\Cache\Driver\FileCacheDriver;
 use Tests\BaseTestCase;
 
-class FileCacheDriverTest extends BaseTestCase
+final class FileCacheDriverTest extends BaseTestCase
 {
     public function testCanGetCacheDir(): void
     {

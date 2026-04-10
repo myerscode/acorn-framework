@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Config;
 
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Config\Config;
 use Tests\BaseTestCase;
 
-class ManagerTest extends BaseTestCase
+final class ManagerTest extends BaseTestCase
 {
     public function testReturnsConfigObject(): void
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Pipeline;
 
 use Myerscode\Acorn\Framework\Pipeline\LineManager;
@@ -8,7 +10,7 @@ use Tests\Resources\AfterPipe;
 use Tests\Resources\BeforePipe;
 use Tests\Resources\PipedObject;
 
-class LineManagerTest extends TestCase
+final class LineManagerTest extends TestCase
 {
     public function testRegisteringPipelineWithClasses(): void
     {

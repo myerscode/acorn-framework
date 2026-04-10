@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework;
 
 use Myerscode\Acorn\Framework\Console\Result;
@@ -19,11 +21,12 @@ use Tests\Resources\App\Commands\CommandThatErrorsCommand;
 
 use function Myerscode\Acorn\Foundation\container;
 
-class ApplicationTest extends BaseTestCase
+final class ApplicationTest extends BaseTestCase
 {
     use InteractsWithContainer;
     use InteractsWithDispatcher;
 
+    #[\Override]
     protected string $appDirectory = 'tests/Mocks/DemoApp/App';
 
     public function testIsBuildable(): void

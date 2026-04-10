@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\CommandInterpreter;
 use Tests\BaseTestCase;
 use InvalidArgumentException;
 
-class CommandInterpreterTest extends BaseTestCase
+final class CommandInterpreterTest extends BaseTestCase
 {
     public function parser(): CommandInterpreter
     {

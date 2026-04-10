@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Providers;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
@@ -9,6 +11,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class ConsoleProvider extends ServiceProvider
 {
+    #[\Override]
     protected $provides
         = [
             DisplayOutput::class,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Console\Input;
 
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;

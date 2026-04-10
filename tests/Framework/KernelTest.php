@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework;
 
 use Exception;
@@ -11,7 +13,7 @@ use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Kernel;
 use Tests\BaseTestCase;
 
-class KernelTest extends BaseTestCase
+final class KernelTest extends BaseTestCase
 {
 
     public function testCanGetConfig(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;

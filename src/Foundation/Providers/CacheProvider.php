@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Providers;
 
 use Myerscode\Acorn\Framework\Cache\Cache;
@@ -10,6 +12,7 @@ use function Myerscode\Acorn\Foundation\config;
 
 class CacheProvider extends ServiceProvider
 {
+    #[\Override]
     protected $provides = [
             'cache',
             Cache::class,

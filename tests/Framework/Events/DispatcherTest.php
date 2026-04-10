@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Events;
 
 use stdClass;
@@ -23,7 +25,7 @@ use Tests\Resources\TestQueueableListener;
 use Tests\Resources\TestSinglePropertyEvent;
 use Tests\Resources\TestSubscriber;
 
-class DispatcherTest extends BaseTestCase
+final class DispatcherTest extends BaseTestCase
 {
     use InteractsWithDispatcher;
 

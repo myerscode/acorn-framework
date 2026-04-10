@@ -11,7 +11,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "league/container": "^4.2.4",
         "myerscode/config": "^2025",
         "myerscode/package-discovery": "2025",

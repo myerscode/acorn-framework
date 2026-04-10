@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Console\Display;
 
 use Symfony\Component\Console\Output\OutputInterface;

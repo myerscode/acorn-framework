@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
@@ -11,7 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\SimpleOutputCommand;
 
-class CommandTest extends BaseTestCase
+final class CommandTest extends BaseTestCase
 {
     use InteractsWithCommands;
 

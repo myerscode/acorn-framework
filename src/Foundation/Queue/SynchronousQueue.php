@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Queue;
 
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;

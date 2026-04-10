@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Providers;
 
 use Myerscode\Acorn\Framework\Log\NullLogger;
@@ -7,6 +9,7 @@ use Myerscode\Acorn\Framework\Providers\ServiceProvider;
 
 class LogProvider extends ServiceProvider
 {
+    #[\Override]
     protected $provides = [
         NullLogger::class,
         'logger',

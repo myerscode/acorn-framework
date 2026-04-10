@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\InteractsWithInput;
 use Myerscode\Acorn\Framework\Console\InteractsWithOutput;
 use Tests\BaseTestCase;
 
-class InteractsWithInputTest extends BaseTestCase
+final class InteractsWithInputTest extends BaseTestCase
 {
     public function testArgument(): void
     {

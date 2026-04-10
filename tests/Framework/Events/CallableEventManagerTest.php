@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
 
-class CallableEventManagerTest extends BaseTestCase
+final class CallableEventManagerTest extends BaseTestCase
 {
     use InteractsWithDispatcher;
 

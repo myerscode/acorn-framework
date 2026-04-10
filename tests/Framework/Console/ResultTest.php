@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\Result;
 use Tests\BaseTestCase;
 use InvalidArgumentException;
 
-class ResultTest extends BaseTestCase
+final class ResultTest extends BaseTestCase
 {
     public function testResultKnowsCommandWasSuccessful(): void
     {

@@ -77,11 +77,11 @@ abstract class Command extends SymfonyCommand
             $symfonyCommand = $this->getApplication()->find($commandName);
 
             $parameters = array_merge($parameters, ['command' => $commandName]);
-            $arrayInput = new ConfigInput($parameters);
+            $configInput = new ConfigInput($parameters);
 
-            return $symfonyCommand->run($arrayInput, $this->output);
+            return $symfonyCommand->run($configInput, $this->output);
         } catch (ExceptionInterface $exception) {
-            throw new SubCommandFailedException($exception);
+            throw new SubCommandFailedException($exception, $exception->getCode(), $exception);
         }
     }
 

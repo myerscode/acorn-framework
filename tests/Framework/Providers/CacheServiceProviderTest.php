@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Providers;
 
 use Myerscode\Acorn\Foundation\Providers\CacheProvider;
@@ -7,7 +9,7 @@ use Myerscode\Acorn\Framework\Cache\Cache;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Tests\BaseTestCase;
 
-class CacheServiceProviderTest extends BaseTestCase
+final class CacheServiceProviderTest extends BaseTestCase
 {
     use InteractsWithContainer;
 

@@ -10,6 +10,7 @@ use function Myerscode\Acorn\Foundation\config;
 
 class QueueProvider extends ServiceProvider
 {
+    #[\Override]
     protected $provides = [
         'queue',
         QueueInterface::class,

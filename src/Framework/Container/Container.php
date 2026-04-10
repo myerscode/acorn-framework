@@ -17,12 +17,12 @@ class Container
 
     protected array $loadedProviders = [];
 
-    private readonly DependencyManager $container;
+    private readonly DependencyManager $dependencyManager;
 
     public function __construct()
     {
-        $this->container = new DependencyManager(new Definitions());
-        $this->container
+        $this->dependencyManager = new DependencyManager(new Definitions());
+        $this->dependencyManager
             ->delegate(
                 new ReflectionContainer(true)
             )
@@ -55,7 +55,7 @@ class Container
      */
     public function add(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
-        $this->container->add($id, $concrete);
+        $this->dependencyManager->add($id, $concrete);
     }
 
     /**
@@ -66,19 +66,19 @@ class Container
     public function addServiceProvider(ServiceProviderInterface|string $serviceProvider): void
     {
         if (!is_subclass_of($serviceProvider, ServiceProvider::class)) {
-            throw new \InvalidArgumentException("$serviceProvider must be a ServiceProvider");
+            throw new \InvalidArgumentException($serviceProvider . ' must be a ServiceProvider');
         }
 
         if (is_string($serviceProvider)) {
             $serviceProvider =  new $serviceProvider();
         }
 
-        $serviceProviderName = get_class($serviceProvider);
+        $serviceProviderName = $serviceProvider::class;
 
 
         if (!in_array($serviceProviderName, $this->loadedProviders)) {
             $this->loadedProviders[] = $serviceProviderName;
-            $this->container->addServiceProvider($serviceProvider);
+            $this->dependencyManager->addServiceProvider($serviceProvider);
         }
     }
 
@@ -94,7 +94,7 @@ class Container
      */
     public function get(string $id): mixed
     {
-        return $this->container->get($id);
+        return $this->dependencyManager->get($id);
     }
 
     /**
@@ -114,7 +114,7 @@ class Container
      */
     public function remove(string $id): void
     {
-        $this->container->remove($id);
+        $this->dependencyManager->remove($id);
     }
 
     /**
@@ -125,6 +125,6 @@ class Container
      */
     public function swap(string $id, $concrete = null, ?bool $shared = null): void
     {
-        $this->container->swap($id, $concrete, $shared);
+        $this->dependencyManager->swap($id, $concrete, $shared);
     }
 }

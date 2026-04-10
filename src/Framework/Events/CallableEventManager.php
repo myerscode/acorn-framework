@@ -22,11 +22,11 @@ class CallableEventManager
 
     public static function create($callable): CallableListener
     {
-        $listener = new CallableListener($callable);
+        $callableListener = new CallableListener($callable);
 
-        self::$listeners[] = $listener;
+        self::$listeners[] = $callableListener;
 
-        return $listener;
+        return $callableListener;
     }
 
     /**

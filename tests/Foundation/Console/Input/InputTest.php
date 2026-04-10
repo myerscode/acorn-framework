@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Foundation\Console\Input;
 
 use PHPUnit\Framework\Attributes\BackupGlobals;
 use Myerscode\Acorn\Foundation\Console\Input\Input;
 use PHPUnit\Framework\TestCase;
 
-class InputTest extends TestCase
+final class InputTest extends TestCase
 {
     #[BackupGlobals(true)]
     public function testParametersParsedFromArgs(): void
@@ -16,7 +18,7 @@ class InputTest extends TestCase
 
         $input = new Input();
 
-        $this->assertEquals($_SERVER['argv'], $input->parameters());
+        $this->assertSame($_SERVER['argv'], $input->parameters());
     }
 
     #[BackupGlobals(true)]

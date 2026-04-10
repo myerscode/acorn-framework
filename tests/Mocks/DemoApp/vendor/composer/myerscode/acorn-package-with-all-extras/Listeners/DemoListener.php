@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Events\DemoEvent;
@@ -8,6 +10,7 @@ use Myerscode\Acorn\Framework\Events\Listener;
 
 class DemoListener extends Listener
 {
+    #[\Override]
     protected string|array $listensFor = DemoEvent::class;
 
     public function __construct(protected DisplayOutput $displayOutput)

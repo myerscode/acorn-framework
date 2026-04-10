@@ -69,7 +69,7 @@ class Pipeline
         // We create the onion by starting initially with the core and then
         // gradually wrap it in pipes. Each layer will have the next layer "curried"
         // into it and will have the current state (the object) passed to it.
-        $completeOnion = array_reduce($pipes, fn($nextLayer, $layer): Closure => $this->createLayer($nextLayer, $layer), $coreFunction);
+        $completeOnion = array_reduce($pipes, fn(\Closure $nextLayer, \Myerscode\Acorn\Framework\Pipeline\PipeCollectionInterface|\Myerscode\Acorn\Framework\Pipeline\PipeInterface|string $layer): Closure => $this->createLayer($nextLayer, $layer), $coreFunction);
 
         // We now have the complete onion and can start passing the object
         // down through the pipes.
@@ -100,7 +100,7 @@ class Pipeline
     private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): callable
     {
         if ($pipe instanceof PipeCollectionInterface) {
-            return fn($object) => $nextLayer( (new Pipeline($pipe->toArray()))->flush($object) );
+            return fn($object) => $nextLayer( new Pipeline($pipe->toArray())->flush($object) );
         }
 
         if (is_string($pipe)) {

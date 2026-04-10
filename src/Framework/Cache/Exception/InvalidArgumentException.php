@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Cache\Exception;
 
 use InvalidArgumentException as CoreInvalidArgumentException;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Cache;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -10,7 +12,7 @@ use Myerscode\Acorn\Framework\Cache\Cache;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
 use Tests\BaseTestCase;
 
-class CacheTest extends BaseTestCase
+final class CacheTest extends BaseTestCase
 {
     public static function dataProvider(): Iterator
     {

@@ -34,6 +34,6 @@ class LineManager
             $pipes = array_values(array_filter($this->pipes, fn($name): bool => in_array($name, $pipeNames), ARRAY_FILTER_USE_KEY));
         }
 
-        return (new Pipeline($pipes))->flush($this->object);
+        return new Pipeline($pipes)->flush($this->object);
     }
 }

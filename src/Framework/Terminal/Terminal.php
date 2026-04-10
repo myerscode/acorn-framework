@@ -276,13 +276,13 @@ class Terminal
 
             $process = $this->process();
 
-            $response = $this->executeProcess($process, $attempt, $sleptFor);
+            $terminalResponse = $this->executeProcess($process, $attempt, $sleptFor);
 
-            if ($this->inBackground() || $response->successful()) {
-                return $response;
+            if ($this->inBackground() || $terminalResponse->successful()) {
+                return $terminalResponse;
             }
 
-            throw new ProcessFailedException($response->process());
+            throw new ProcessFailedException($terminalResponse->process());
         }, $this->sleepsFor());
     }
 
