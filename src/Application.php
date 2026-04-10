@@ -84,14 +84,14 @@ class Application extends SymfonyApplication
         $this->setDefaultCommand($this->defaultCommand);
     }
 
-    #[\Override]
-    public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
+    #[Override]
+    public function addCommand(SymfonyCommand|callable $symfonyCommand): ?SymfonyCommand
     {
         if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
             $symfonyCommand->setLogger($this->logger());
         }
 
-        return parent::add($symfonyCommand);
+        return parent::addCommand($symfonyCommand);
     }
 
     public function commandsDiscoveryDirectories(): array
@@ -264,7 +264,7 @@ class Application extends SymfonyApplication
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                         if (is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
-                            $this->add($this->container->get($commandClass));
+                            $this->addCommand($this->container->get($commandClass));
                             $this->output()->debug(
                                 sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory)
                             );

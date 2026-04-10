@@ -71,7 +71,7 @@ final class ApplicationTest extends BaseTestCase
 
         $application = new Application($this->container());
 
-        $application->add(new CommandThatErrorsCommand());
+        $application->addCommand(new CommandThatErrorsCommand());
 
         container()->swap(Dispatcher::class, $legacyMock);
 
