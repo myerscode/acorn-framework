@@ -414,7 +414,7 @@ class Terminal
     {
         if ($output instanceof DisplayOutputInterface) {
             return function ($type, $data) use ($output): void {
-                $output->output->write(trim($data));
+                $output->write(trim($data));
             };
         }
 

@@ -2,6 +2,7 @@
     "name": "myerscode/acorn-framework",
     "description": "A framework for creating powerful PHP CLI applications",
     "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "Fred Myerscough",

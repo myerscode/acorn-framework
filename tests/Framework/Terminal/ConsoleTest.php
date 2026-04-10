@@ -85,9 +85,9 @@ final class ConsoleTest extends BaseTestCase
 
         $terminal->dontThrow();
 
-        $response = $terminal->run('ls -la');
+        $terminalResponse = $terminal->run('ls -la');
 
-        $this->assertInstanceOf(FailedResponse::class, $response);
+        $this->assertInstanceOf(FailedResponse::class, $terminalResponse);
     }
 
     public function testIdleTimeout(): void

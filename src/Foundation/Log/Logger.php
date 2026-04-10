@@ -11,6 +11,7 @@ use Psr\Log\LogLevel;
 class Logger implements LoggerInterface
 {
     protected string $logDirectory;
+
     protected string $logFileName;
 
     public function __construct(string $logDirectory, protected LogRotation $rotation = LogRotation::Single, protected string $logPrefix = 'acorn')

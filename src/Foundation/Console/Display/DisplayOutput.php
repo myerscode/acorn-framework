@@ -101,7 +101,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     {
         $styled = $style ? sprintf('<%s>%s</%s>', $style, $string, $style) : $string;
 
-        $this->output->writeln($styled, $this->parseVerbosity($verbosity));
+        $this->writeln($styled, $this->parseVerbosity($verbosity));
     }
 
     /**
@@ -122,7 +122,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     #[Override]
     public function table(array $headers = [], array $rows = []): void
     {
-        $table = new Table($this->output);
+        $table = new Table($this);
 
         $table->setHeaders($headers)->setRows($rows);
     }
