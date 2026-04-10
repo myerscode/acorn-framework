@@ -8,5 +8,4 @@ use LogicException;
 
 class EventConfigException extends LogicException
 {
-
 }

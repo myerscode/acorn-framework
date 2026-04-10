@@ -8,5 +8,4 @@ use Myerscode\Acorn\Framework\Events\Event;
 
 class HasListensForArrayEvent extends Event
 {
-
 }

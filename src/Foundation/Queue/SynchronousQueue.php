@@ -27,6 +27,11 @@ class SynchronousQueue implements QueueInterface
         //
     }
 
+    public function pop(): null|JobInterface
+    {
+        return null;
+    }
+
     /**
      * Insert an listener to the queue.
      */
@@ -41,10 +46,5 @@ class SynchronousQueue implements QueueInterface
     public function remove(JobInterface $job): void
     {
         //
-    }
-
-    public function pop(): null|JobInterface
-    {
-        return null;
     }
 }

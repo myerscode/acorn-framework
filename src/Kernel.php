@@ -19,11 +19,11 @@ class Kernel
 
     protected string $rootPath;
 
-    private readonly Container $container;
-
     private readonly Application $application;
 
     private bool $booted = false;
+
+    private readonly Container $container;
 
     public function __construct(string $basePath = '')
     {

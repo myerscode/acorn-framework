@@ -8,11 +8,11 @@ use Myerscode\PackageDiscovery\Finder;
 
 class PackageDiscovery
 {
-    readonly public array $found;
+    public readonly array $found;
 
-    readonly protected array $providers;
+    protected readonly array $commands;
 
-    readonly protected array $commands;
+    protected readonly array $providers;
 
     private readonly Finder $finder;
 

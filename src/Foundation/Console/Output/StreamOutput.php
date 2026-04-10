@@ -11,7 +11,7 @@ class StreamOutput extends SymfonyStreamOutput
         protected mixed $stream = null,
         int $verbosity = self::VERBOSITY_NORMAL,
         ?bool $decorated = null,
-        ?OutputFormatterInterface $formatter = null
+        ?OutputFormatterInterface $formatter = null,
     ) {
         if (is_null($stream)) {
             $this->stream = fopen('php://memory', 'w', false);

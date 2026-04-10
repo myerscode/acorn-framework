@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests;
 
 use Myerscode\Acorn\Testing\AcornTestCase;
+use Override;
 
 class BaseTestCase extends AcornTestCase
 {
-    #[\Override]
+    #[Override]
     protected string $appDirectory = 'tests/Resources/App';
 
     public static function createTempDirectory(string $name): string

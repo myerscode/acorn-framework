@@ -10,6 +10,29 @@ use Tests\BaseTestCase;
 
 final class ManagerTest extends BaseTestCase
 {
+    public function testCachingConfig(): void
+    {
+        $cacheLocation = __DIR__ . DIRECTORY_SEPARATOR;
+
+        $cacheFile = __DIR__ . DIRECTORY_SEPARATOR . '.acorn/config.php';
+
+        $manager = new Manager($cacheLocation);
+
+        $manager->shouldCacheConfig();
+
+        $this->assertFalse($manager->isUsingCachedConfig());
+
+        $manager->loadConfig([], []);
+
+        $this->assertFileExists($cacheFile);
+
+        $manager->loadConfig([], []);
+
+        $this->assertTrue($manager->isUsingCachedConfig());
+
+        // cleanup cached file
+        system('rm -rf -- ' . escapeshellarg($cacheLocation . '.acorn'));
+    }
     public function testReturnsConfigObject(): void
     {
         $manager = new Manager($this->appBase());
@@ -41,29 +64,5 @@ final class ManagerTest extends BaseTestCase
         $manager->doNotIgnoreCache();
 
         $this->assertFalse($manager-> isIgnoringCache());
-    }
-
-    public function testCachingConfig(): void
-    {
-        $cacheLocation = __DIR__ . DIRECTORY_SEPARATOR;
-
-        $cacheFile = __DIR__ . DIRECTORY_SEPARATOR . '.acorn/config.php';
-
-        $manager = new Manager($cacheLocation);
-
-        $manager->shouldCacheConfig();
-
-        $this->assertFalse($manager->isUsingCachedConfig());
-
-        $manager->loadConfig([], []);
-
-        $this->assertFileExists($cacheFile);
-
-        $manager->loadConfig([], []);
-
-        $this->assertTrue($manager->isUsingCachedConfig());
-
-        // cleanup cached file
-        system('rm -rf -- ' . escapeshellarg($cacheLocation . '.acorn'));
     }
 }

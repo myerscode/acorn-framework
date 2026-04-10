@@ -8,7 +8,7 @@ use Myerscode\Acorn\Framework\Events\Event;
 
 class TestPropertiesEvent extends Event
 {
-    public function __construct(readonly int $number, readonly string $word)
+    public function __construct(public readonly int $number, public readonly string $word)
     {
         //
     }

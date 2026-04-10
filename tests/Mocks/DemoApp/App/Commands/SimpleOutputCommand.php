@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Tests\Mocks\DemoApp\App\Commands;
 
 use Myerscode\Acorn\Framework\Console\Command;
+use Override;
 
 class SimpleOutputCommand extends Command
 {
-
-    #[\Override]
-    protected string $signature = 'simple {name : Say hello}';
-
-    #[\Override]
+    #[Override]
     protected string $description = 'A simple text command with text output.';
+
+    #[Override]
+    protected string $signature = 'simple {name : Say hello}';
 
     public function handle(): void
     {
-        $this->line("Hello " . $this->argument('name'));
+        $this->line('Hello ' . $this->argument('name'));
     }
 }

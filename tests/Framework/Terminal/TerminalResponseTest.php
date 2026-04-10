@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
-use Myerscode\Acorn\Framework\Terminal\OutputLine;
 use Myerscode\Acorn\Framework\Terminal\Process;
 use Myerscode\Acorn\Framework\Terminal\Terminal;
 use Myerscode\Acorn\Framework\Terminal\TerminalResponse;
@@ -86,7 +85,7 @@ final class TerminalResponseTest extends BaseTestCase
 
     public function testThrowIfFailed(): void
     {
-        $process = $this->mockedFailedProcess(static function ($mock) : void {
+        $process = $this->mockedFailedProcess(static function ($mock): void {
             $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
 

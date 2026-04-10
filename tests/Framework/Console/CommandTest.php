@@ -19,7 +19,7 @@ final class CommandTest extends BaseTestCase
 
     public function makeTestCommand(): Command
     {
-        return new class extends Command {
+        return new class () extends Command {
             protected function configure(): void
             {
                 $this
@@ -42,7 +42,7 @@ final class CommandTest extends BaseTestCase
 
     public function testCallingCommandFromAnotherCommandThatFails(): void
     {
-        $command = new class extends Command {
+        $command = new class () extends Command {
             protected string $signature = 'anon';
 
             public function handle(): void
@@ -132,7 +132,7 @@ final class CommandTest extends BaseTestCase
 
     public function testCommandCanCallAnotherCommand(): void
     {
-        $command = new class extends Command {
+        $command = new class () extends Command {
             protected string $signature = 'anon {name : The name to pass through}';
 
             public function handle(): void

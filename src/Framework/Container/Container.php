@@ -7,6 +7,7 @@ use League\Container\ServiceProvider\ServiceProviderInterface;
 use Myerscode\Acorn\Framework\Providers\ServiceProvider;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use InvalidArgumentException;
 
 class Container
 {
@@ -24,7 +25,7 @@ class Container
         $this->dependencyManager = new DependencyManager(new Definitions());
         $this->dependencyManager
             ->delegate(
-                new ReflectionContainer(true)
+                new ReflectionContainer(true),
             )
             ->defaultToShared();
 
@@ -66,7 +67,7 @@ class Container
     public function addServiceProvider(ServiceProviderInterface|string $serviceProvider): void
     {
         if (!is_subclass_of($serviceProvider, ServiceProvider::class)) {
-            throw new \InvalidArgumentException($serviceProvider . ' must be a ServiceProvider');
+            throw new InvalidArgumentException($serviceProvider . ' must be a ServiceProvider');
         }
 
         if (is_string($serviceProvider)) {

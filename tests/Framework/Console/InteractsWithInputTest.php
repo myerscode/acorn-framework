@@ -77,7 +77,7 @@ final class InteractsWithInputTest extends BaseTestCase
 
     private function createTrait($userInput = [], string $signature = ''): array
     {
-        $trait = new class {
+        $trait = new class () {
             use InteractsWithInput;
             use InteractsWithOutput;
         };

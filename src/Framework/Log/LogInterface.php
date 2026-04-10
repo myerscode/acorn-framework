@@ -8,5 +8,4 @@ use Psr\Log\LoggerInterface;
 
 interface LogInterface extends LoggerInterface
 {
-
 }

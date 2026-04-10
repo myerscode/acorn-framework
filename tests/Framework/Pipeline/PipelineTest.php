@@ -16,7 +16,7 @@ final class PipelineTest extends TestCase
 {
     public function testAddingAnPipelineAndArrayWorks(): void
     {
-        $pipeline1 = (new Pipeline)->pipes([
+        $pipeline1 = (new Pipeline())->pipes([
             new BeforePipe('1'),
             new AfterPipe('4'),
         ]);
@@ -28,7 +28,7 @@ final class PipelineTest extends TestCase
 
         $end = $pipeline1
             ->pipes($pipeline)
-            ->flush(new PipedObject, static function ($object) {
+            ->flush(new PipedObject(), static function ($object) {
                 $object->passedThrough[] = 'core';
 
                 return $object;
@@ -46,7 +46,7 @@ final class PipelineTest extends TestCase
     public function testCanAddASinglePipe(): void
     {
         $stdClass = new StdClass();
-        $pipeline = (new Pipeline)->pipes(new BeforePipe)->flush($stdClass);
+        $pipeline = (new Pipeline())->pipes(new BeforePipe())->flush($stdClass);
 
         $this->assertSame(['before'], $pipeline->passedThrough);
 
@@ -95,7 +95,7 @@ final class PipelineTest extends TestCase
             ->pipes(new AfterPipe('4'))
             ->pipes(new BeforePipe('3'))
             ->pipes(new AfterPipe('2'))
-            ->flush(new PipedObject, static function ($object) {
+            ->flush(new PipedObject(), static function ($object) {
                 $object->passedThrough[] = 'core';
 
                 return $object;
@@ -120,7 +120,7 @@ final class PipelineTest extends TestCase
 
         $end = $pipeline->pipes([
             new BeforePipe('1'),
-            static fn(): int => 2,
+            static fn (): int => 2,
             new AfterPipe('3'),
         ])->flush($stdClass);
 
@@ -134,7 +134,7 @@ final class PipelineTest extends TestCase
     {
         $stdClass = new StdClass();
 
-        $pipeline = (new Pipeline)->pipes([
+        $pipeline = (new Pipeline())->pipes([
             BeforePipe::class,
             AfterPipe::class,
         ])->flush($stdClass);

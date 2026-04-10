@@ -15,6 +15,14 @@ class Event implements EventInterface, NamedEventInterface
     }
 
     /**
+     * Checks whether propagation was stopped.
+     */
+    public function isPropagationStopped(): bool
+    {
+        return $this->propagationStopped;
+    }
+
+    /**
      * Stop event propagation.
      */
     public function stopPropagation(): self
@@ -22,13 +30,5 @@ class Event implements EventInterface, NamedEventInterface
         $this->propagationStopped = true;
 
         return $this;
-    }
-
-    /**
-     * Checks whether propagation was stopped.
-     */
-    public function isPropagationStopped(): bool
-    {
-        return $this->propagationStopped;
     }
 }

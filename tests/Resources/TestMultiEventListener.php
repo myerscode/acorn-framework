@@ -6,16 +6,17 @@ namespace Tests\Resources;
 
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Override;
 
 class TestMultiEventListener extends Listener
 {
     /**
      * @var string[]|string
      */
-    #[\Override]
+    #[Override]
     protected string|array $listensFor = [
         TestEvent::class,
-        'another.test.event'
+        'another.test.event',
     ];
 
     public function handle(Event $event): void

@@ -14,11 +14,6 @@ final class ContainerTest extends BaseTestCase
         $this->assertInstanceOf(Container::class, Container::getInstance());
     }
 
-    public function testContainerCreatesItself(): void
-    {
-        $this->assertInstanceOf(Container::class, Container::getInstance());
-    }
-
     public function testContainerCanFlushValues(): void
     {
         $container = Container::getInstance();
@@ -36,5 +31,10 @@ final class ContainerTest extends BaseTestCase
 
         $container->add('foo', 'bar');
         $this->assertSame('bar', $container->get('foo'));
+    }
+
+    public function testContainerCreatesItself(): void
+    {
+        $this->assertInstanceOf(Container::class, Container::getInstance());
     }
 }

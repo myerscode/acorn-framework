@@ -11,22 +11,6 @@ use Tests\Resources\TestListener;
 
 final class QueueTest extends BaseTestCase
 {
-    public function testQueueCanGetAllItemsItContains(): void
-    {
-        $listenerQueue = null;
-        $testEmptyListener = null;
-        $testListener = null;
-        $listenerQueue = new ListenerQueue();
-
-        $testEmptyListener = new TestEmptyListener();
-        $testListener = new TestListener();
-
-        $listenerQueue->push($testEmptyListener, 0);
-        $listenerQueue->push($testListener, 10);
-
-        $this->assertEquals([$testListener, $testEmptyListener], $listenerQueue->all());
-    }
-
     public function testQueueCanBeCleared(): void
     {
         $listenerQueue = null;
@@ -44,6 +28,19 @@ final class QueueTest extends BaseTestCase
         $this->assertSame([], $listenerQueue->all());
     }
 
+    public function testQueueCanBePushedTo(): void
+    {
+        $listenerQueue = null;
+        $testEmptyListener = null;
+        $listenerQueue = new ListenerQueue();
+
+        $testEmptyListener = new TestEmptyListener();
+
+        $listenerQueue->push($testEmptyListener, 0);
+
+        $this->assertEquals([$testEmptyListener], $listenerQueue->all());
+    }
+
     public function testQueueCanCheckIfItContainsSomething(): void
     {
         $listenerQueue = null;
@@ -57,18 +54,20 @@ final class QueueTest extends BaseTestCase
         $this->assertEquals(true, $listenerQueue->contains($testEmptyListener));
         $this->assertEquals(false, $listenerQueue->contains(new TestListener()));
     }
-
-    public function testQueueCanBePushedTo(): void
+    public function testQueueCanGetAllItemsItContains(): void
     {
         $listenerQueue = null;
         $testEmptyListener = null;
+        $testListener = null;
         $listenerQueue = new ListenerQueue();
 
         $testEmptyListener = new TestEmptyListener();
+        $testListener = new TestListener();
 
         $listenerQueue->push($testEmptyListener, 0);
+        $listenerQueue->push($testListener, 10);
 
-        $this->assertEquals([$testEmptyListener], $listenerQueue->all());
+        $this->assertEquals([$testListener, $testEmptyListener], $listenerQueue->all());
     }
 
     public function testQueueCanHaveItemsRemoved(): void

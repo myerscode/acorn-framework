@@ -11,14 +11,9 @@ class Result
         //
     }
 
-    public function wasSuccessful(): bool
+    public function error(): Exception|null
     {
-        return $this->exitCode === 0;
-    }
-
-    public function failed(): bool
-    {
-        return $this->exitCode !== 0;
+        return $this->exception;
     }
 
     public function exitCode(): int
@@ -26,8 +21,13 @@ class Result
         return $this->exitCode;
     }
 
-    public function error(): Exception|null
+    public function failed(): bool
     {
-        return $this->exception;
+        return $this->exitCode !== 0;
+    }
+
+    public function wasSuccessful(): bool
+    {
+        return $this->exitCode === 0;
     }
 }

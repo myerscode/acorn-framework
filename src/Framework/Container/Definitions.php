@@ -6,7 +6,6 @@ use League\Container\Definition\DefinitionAggregate;
 
 class Definitions extends DefinitionAggregate
 {
-
     public function remove(string $id): void
     {
         foreach ($this->definitions as $index => $definition) {

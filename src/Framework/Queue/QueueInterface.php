@@ -12,9 +12,9 @@ interface QueueInterface
 
     public function clear(): void;
 
-    public function push(JobInterface $job): void;
-
     public function pop(): null|JobInterface;
+
+    public function push(JobInterface $job): void;
 
     public function remove(JobInterface $job): void;
 }

@@ -8,7 +8,6 @@ use Myerscode\Acorn\Framework\Terminal\Terminal;
 
 trait InteractsWithTerminal
 {
-
     public function mockedTerminal(?callable $mockTerminalCallback = null): Terminal
     {
         $legacyMock = Mockery::mock(Terminal::class);

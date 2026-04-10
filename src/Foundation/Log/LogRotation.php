@@ -6,9 +6,9 @@ namespace Myerscode\Acorn\Foundation\Log;
 
 enum LogRotation: string
 {
-    case Single = 'single';
     case Daily = 'daily';
-    case Weekly = 'weekly';
     case Monthly = 'monthly';
+    case Single = 'single';
+    case Weekly = 'weekly';
     case Yearly = 'yearly';
 }

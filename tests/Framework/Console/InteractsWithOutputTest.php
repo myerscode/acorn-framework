@@ -168,7 +168,7 @@ final class InteractsWithOutputTest extends BaseTestCase
 
     private function createTrait(): array
     {
-        $trait = new class {
+        $trait = new class () {
             use InteractsWithOutput;
         };
 

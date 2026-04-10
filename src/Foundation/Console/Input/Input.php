@@ -11,7 +11,7 @@ class Input extends ArgvInput implements ConsoleInputInterface
     public function __construct(protected array|null $argInput = null, ?InputDefinition $definition = null)
     {
         $this->argInput ??= $_SERVER['argv'] ?? [];
-        
+
         parent::__construct($argInput, $definition);
     }
 

@@ -7,7 +7,6 @@ use Myerscode\Acorn\Framework\Events\Exception\InvalidCallableConstructException
 
 class CallableListener implements ListenerInterface
 {
-
     public function __construct(protected $callable)
     {
         if ($callable instanceof Closure) {
@@ -21,7 +20,7 @@ class CallableListener implements ListenerInterface
         throw new InvalidCallableConstructException();
     }
 
-    public function getCallable(): Callable
+    public function getCallable(): callable
     {
         return $this->callable;
     }

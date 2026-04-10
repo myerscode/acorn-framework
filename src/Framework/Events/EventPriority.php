@@ -11,19 +11,19 @@ class EventPriority
      *
      * @const int
      */
-    public final const int HIGH = 100;
-
-    /**
-     * Normal priority.
-     *
-     * @const int
-     */
-    public final const int NORMAL = 0;
+    final public const int HIGH = 100;
 
     /**
      * Low priority.
      *
      * @const int
      */
-    public final const int LOW = -100;
+    final public const int LOW = -100;
+
+    /**
+     * Normal priority.
+     *
+     * @const int
+     */
+    final public const int NORMAL = 0;
 }

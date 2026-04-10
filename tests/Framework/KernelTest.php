@@ -15,7 +15,6 @@ use Tests\BaseTestCase;
 
 final class KernelTest extends BaseTestCase
 {
-
     public function testCanGetConfig(): void
     {
         $legacyMock = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
@@ -52,7 +51,7 @@ final class KernelTest extends BaseTestCase
         $kernel = $this->mock(Kernel::class.'[output,processCommand]', [$this->resourceFilePath('Resources/App')])
             ->shouldAllowMockingProtectedMethods()
             ->allows([
-                'processCommand' => new Result(1, new Exception("Testing errors are handled")),
+                'processCommand' => new Result(1, new Exception('Testing errors are handled')),
                 'output' => $this->createVoidOutput(),
             ])
             ->makePartial();

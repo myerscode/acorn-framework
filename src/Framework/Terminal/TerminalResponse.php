@@ -14,17 +14,17 @@ abstract class TerminalResponse implements TerminalResponseInterface
     {
     }
 
-//
-//    /**
-//     * Get the process output.
-//     *
-//     * @return string
-//     */
-//    public function __toString()
-//    {
-//        return $this->output();
-//    }
-//
+    //
+    //    /**
+    //     * Get the process output.
+    //     *
+    //     * @return string
+    //     */
+    //    public function __toString()
+    //    {
+    //        return $this->output();
+    //    }
+    //
 
     /**
      * @inheritDoc
@@ -67,6 +67,14 @@ abstract class TerminalResponse implements TerminalResponseInterface
     }
 
     /**
+     * Get the underlying process instance.
+     */
+    public function process(): Process
+    {
+        return $this->process;
+    }
+
+    /**
      * @inheritDoc
      */
     public function sleptFor(): int
@@ -90,13 +98,5 @@ abstract class TerminalResponse implements TerminalResponseInterface
         if (!$this->successful()) {
             throw new ProcessFailedException($this->process());
         }
-    }
-
-    /**
-     * Get the underlying process instance.
-     */
-    public function process(): Process
-    {
-        return $this->process;
     }
 }

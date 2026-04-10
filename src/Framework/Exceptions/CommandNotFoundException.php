@@ -8,5 +8,4 @@ use Symfony\Component\Console\Exception\CommandNotFoundException as SymfonyComma
 
 class CommandNotFoundException extends SymfonyCommandNotFoundException
 {
-
 }

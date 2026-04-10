@@ -9,7 +9,6 @@ use Myerscode\Acorn\Framework\Events\Exception\EventConfigException;
 
 class NamedEvent extends Event
 {
-
     /**
      * Custom name of the event
      */

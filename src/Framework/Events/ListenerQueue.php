@@ -7,9 +7,8 @@ use SplPriorityQueue;
 
 class ListenerQueue
 {
-    protected SplObjectStorage $storage;
-
     protected SplPriorityQueue $queue;
+    protected SplObjectStorage $storage;
 
     public function __construct()
     {
@@ -67,6 +66,17 @@ class ListenerQueue
     }
 
     /**
+     * Removes an listener from the queue.
+     */
+    public function remove(ListenerInterface $listener): void
+    {
+        if ($this->storage->offsetExists($listener)) {
+            $this->storage->offsetUnset($listener);
+            $this->refresh();
+        }
+    }
+
+    /**
      * Refreshes the status of the queue.
      */
     protected function refresh(): void
@@ -77,17 +87,6 @@ class ListenerQueue
         foreach ($this->storage as $singleStorage) {
             $priority = $this->storage->getInfo();
             $this->queue->insert($singleStorage, $priority);
-        }
-    }
-
-    /**
-     * Removes an listener from the queue.
-     */
-    public function remove(ListenerInterface $listener): void
-    {
-        if ($this->storage->offsetExists($listener)) {
-            $this->storage->offsetUnset($listener);
-            $this->refresh();
         }
     }
 }

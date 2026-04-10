@@ -64,6 +64,19 @@ class Cache implements CacheInterface
         return $this->delete($key);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return $this->driver->get($this->namespacedKey($key), $default);
+    }
+
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    {
+        return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
+    }
+
     public function has(string $key): bool
     {
         return !is_null($this->get($key));
@@ -104,19 +117,6 @@ class Cache implements CacheInterface
         return $this->driver->set($this->namespacedKey($key), $value, $ttl);
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $this->driver->get($this->namespacedKey($key), $default);
-    }
-
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
-    }
-
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         return $this->driver->setMultiple($values, $ttl);
@@ -129,6 +129,6 @@ class Cache implements CacheInterface
 
     protected function namespacedKeys(iterable $keys): array
     {
-        return new Bag($keys)->map(fn(string $key): string => $this->namespacedKey($key))->value();
+        return new Bag($keys)->map(fn (string $key): string => $this->namespacedKey($key))->value();
     }
 }

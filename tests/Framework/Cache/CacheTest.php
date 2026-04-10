@@ -174,8 +174,8 @@ final class CacheTest extends BaseTestCase
     {
         $cache = $this->cacheProvider($driver);
 
-        $this->assertSame('value', $cache->remember('key', 1000, static fn(): string => 'value'));
-        $this->assertSame('value', $cache->remember('key', 1000, static fn(): string => 'value2'));
+        $this->assertSame('value', $cache->remember('key', 1000, static fn (): string => 'value'));
+        $this->assertSame('value', $cache->remember('key', 1000, static fn (): string => 'value2'));
     }
 
     #[DataProvider('dataProvider')]

@@ -53,8 +53,10 @@
         "sort-packages": true
     },
     "scripts": {
+        "lint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse",
         "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
-        "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
-        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12"
+        "test-coverage": "vendor/bin/phpunit --testdox --colors=always",
+        "security-audit": "@composer audit"
     }
 }

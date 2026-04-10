@@ -6,13 +6,14 @@ use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Override;
 
 class CommandError extends Listener
 {
     /**
      * @var string[]|string
      */
-    #[\Override]
+    #[Override]
     protected string|array $listensFor = CommandErrorEvent::class;
 
     public function __construct(private readonly DisplayOutput $displayOutput)

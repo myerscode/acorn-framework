@@ -44,18 +44,18 @@ class Application extends SymfonyApplication
 
     public const string APP_VERSION = '1.0.0';
 
+    protected string $defaultCommand = 'list';
+
+    protected array $discoveredCommandDirectories = [];
+
+    protected array $discoveredPackages = [];
+
+    protected array $discoveredProviders = [];
+
     /**
      * The logger instance.
      */
     protected LoggerInterface $logger;
-
-    protected array $discoveredPackages = [];
-
-    protected array $discoveredCommandDirectories = [];
-
-    protected array $discoveredProviders = [];
-
-    protected string $defaultCommand = 'list';
 
     public function __construct(private readonly Container $container)
     {
@@ -209,7 +209,7 @@ class Application extends SymfonyApplication
 
     protected function bindCommandEvents(): void
     {
-        $eventDispatcher = new EventDispatcher;
+        $eventDispatcher = new EventDispatcher();
 
         $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $consoleCommandEvent): void {
             $this->dispatcher()->emit(CommandBeforeEvent::class, $consoleCommandEvent);
@@ -253,11 +253,11 @@ class Application extends SymfonyApplication
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
         $this->output()->debug(
-            sprintf('Looking for commands in directories: %s', implode(", ", $commandsDiscoveryDirectories))
+            sprintf('Looking for commands in directories: %s', implode(', ', $commandsDiscoveryDirectories)),
         );
         foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
             $this->output()->debug(
-                sprintf('Looking for commands in %s', $commandDiscoveryDirectory)
+                sprintf('Looking for commands in %s', $commandDiscoveryDirectory),
             );
             try {
                 foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
@@ -266,16 +266,16 @@ class Application extends SymfonyApplication
                         if (is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
                             $this->addCommand($this->container->get($commandClass));
                             $this->output()->debug(
-                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory)
+                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory),
                             );
                         } else {
                             $this->output()->debug(
-                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory)
+                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory),
                             );
                         }
                     } catch (FileFormatExpection|ReflectionException) {
                         $this->output()->debug(
-                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory)
+                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory),
                         );
                     }
                 }

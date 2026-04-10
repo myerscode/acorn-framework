@@ -8,5 +8,4 @@ use InvalidArgumentException;
 
 class InvalidListenerException extends InvalidArgumentException
 {
-
 }

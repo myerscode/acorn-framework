@@ -11,19 +11,9 @@ use Tests\BaseTestCase;
 
 final class CallableListenerTest extends BaseTestCase
 {
-
-    public function testCallableListenerAcceptsClosures(): void
-    {
-        $closure = static function () : void {
-        };
-        $callableListener = new CallableListener($closure);
-
-        $this->assertEquals($callableListener->getCallable(), $closure);
-    }
-
     public function testCallableListenerAcceptsCallables(): void
     {
-        $callable = new class {
+        $callable = new class () {
             public function __invoke(): void
             {
 
@@ -33,6 +23,15 @@ final class CallableListenerTest extends BaseTestCase
         $callableListener = new CallableListener($callable);
 
         $this->assertEquals($callableListener->getCallable(), $callable);
+    }
+
+    public function testCallableListenerAcceptsClosures(): void
+    {
+        $closure = static function (): void {
+        };
+        $callableListener = new CallableListener($closure);
+
+        $this->assertEquals($callableListener->getCallable(), $closure);
     }
 
     public function testCallableListenerThrowsErrorIfNotClosureOrCallable(): void

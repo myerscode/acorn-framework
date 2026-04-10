@@ -15,6 +15,15 @@ final class CommandInterpreterTest extends BaseTestCase
         return new CommandInterpreter();
     }
 
+    public function testArgumentDefaultValue(): void
+    {
+        $results = $this->parser()->parse('command:name {argument= : The argument description.}');
+        $this->assertNull($results[1][0]->getDefault());
+
+        $results = $this->parser()->parse('command:name {argument=default : The argument description.}');
+        $this->assertSame('default', $results[1][0]->getDefault());
+    }
+
     public function testBasicParameterParsing(): void
     {
         $results = $this->parser()->parse('command:name');
@@ -74,6 +83,49 @@ final class CommandInterpreterTest extends BaseTestCase
         $this->assertTrue($results[2][0]->isArray());
     }
 
+    public function testDefaultValueParsing(): void
+    {
+        $results = $this->parser()->parse('command:name {argument=defaultArgumentValue} {--option=defaultOptionValue}');
+        $this->assertFalse($results[1][0]->isRequired());
+        $this->assertSame('defaultArgumentValue', $results[1][0]->getDefault());
+        $this->assertTrue($results[2][0]->acceptValue());
+        $this->assertSame('defaultOptionValue', $results[2][0]->getDefault());
+
+        $results = $this->parser()->parse('command:name {argument=*defaultArgumentValue1,defaultArgumentValue2} {--option=*defaultOptionValue1,defaultOptionValue2}');
+
+        $this->assertTrue($results[1][0]->isArray());
+        $this->assertFalse($results[1][0]->isRequired());
+        $this->assertSame(['defaultArgumentValue1', 'defaultArgumentValue2'], $results[1][0]->getDefault());
+        $this->assertTrue($results[2][0]->acceptValue());
+        $this->assertTrue($results[2][0]->isArray());
+        $this->assertSame(['defaultOptionValue1', 'defaultOptionValue2'], $results[2][0]->getDefault());
+    }
+
+    public function testNameInEmptyException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unable to determine command name from signature.');
+
+        $this->parser()->parse('');
+    }
+
+    public function testNameIsSpacesException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unable to determine command name from signature.');
+
+        $this->parser()->parse(" \t\n\r\x0B\f");
+    }
+
+    public function testOptionDefaultValue(): void
+    {
+        $results = $this->parser()->parse('command:name {--option= : The option description.}');
+        $this->assertNull($results[2][0]->getDefault());
+
+        $results = $this->parser()->parse('command:name {--option=default : The option description.}');
+        $this->assertSame('default', $results[2][0]->getDefault());
+    }
+
     public function testShortcutNameParsing(): void
     {
         $results = $this->parser()->parse('command:name {--o|option}');
@@ -114,57 +166,5 @@ final class CommandInterpreterTest extends BaseTestCase
         $this->assertSame('The option description.', $results[2][0]->getDescription());
         $this->assertTrue($results[2][0]->acceptValue());
         $this->assertTrue($results[2][0]->isArray());
-    }
-
-    public function testDefaultValueParsing(): void
-    {
-        $results = $this->parser()->parse('command:name {argument=defaultArgumentValue} {--option=defaultOptionValue}');
-        $this->assertFalse($results[1][0]->isRequired());
-        $this->assertSame('defaultArgumentValue', $results[1][0]->getDefault());
-        $this->assertTrue($results[2][0]->acceptValue());
-        $this->assertSame('defaultOptionValue', $results[2][0]->getDefault());
-
-        $results = $this->parser()->parse('command:name {argument=*defaultArgumentValue1,defaultArgumentValue2} {--option=*defaultOptionValue1,defaultOptionValue2}');
-
-        $this->assertTrue($results[1][0]->isArray());
-        $this->assertFalse($results[1][0]->isRequired());
-        $this->assertSame(['defaultArgumentValue1', 'defaultArgumentValue2'], $results[1][0]->getDefault());
-        $this->assertTrue($results[2][0]->acceptValue());
-        $this->assertTrue($results[2][0]->isArray());
-        $this->assertSame(['defaultOptionValue1', 'defaultOptionValue2'], $results[2][0]->getDefault());
-    }
-
-    public function testArgumentDefaultValue(): void
-    {
-        $results = $this->parser()->parse('command:name {argument= : The argument description.}');
-        $this->assertNull($results[1][0]->getDefault());
-
-        $results = $this->parser()->parse('command:name {argument=default : The argument description.}');
-        $this->assertSame('default', $results[1][0]->getDefault());
-    }
-
-    public function testOptionDefaultValue(): void
-    {
-        $results = $this->parser()->parse('command:name {--option= : The option description.}');
-        $this->assertNull($results[2][0]->getDefault());
-
-        $results = $this->parser()->parse('command:name {--option=default : The option description.}');
-        $this->assertSame('default', $results[2][0]->getDefault());
-    }
-
-    public function testNameIsSpacesException(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to determine command name from signature.');
-
-        $this->parser()->parse(" \t\n\r\x0B\f");
-    }
-
-    public function testNameInEmptyException(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to determine command name from signature.');
-
-        $this->parser()->parse('');
     }
 }

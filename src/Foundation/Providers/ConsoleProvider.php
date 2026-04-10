@@ -8,10 +8,11 @@ use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Console\Input\Input;
 use Myerscode\Acorn\Framework\Providers\ServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Override;
 
 class ConsoleProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     protected $provides
         = [
             DisplayOutput::class,
@@ -23,8 +24,8 @@ class ConsoleProvider extends ServiceProvider
     public function register(): void
     {
         $this->getContainer()->add(Input::class);
-        $this->getContainer()->add('input', fn() => $this->getContainer()->get(Input::class));
+        $this->getContainer()->add('input', fn () => $this->getContainer()->get(Input::class));
         $this->getContainer()->add(DisplayOutput::class)->addArguments([Input::class, ConsoleOutput::class]);
-        $this->getContainer()->add('output', fn() => $this->getContainer()->get(DisplayOutput::class));
+        $this->getContainer()->add('output', fn () => $this->getContainer()->get(DisplayOutput::class));
     }
 }

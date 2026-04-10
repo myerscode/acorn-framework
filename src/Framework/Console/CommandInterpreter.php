@@ -5,6 +5,7 @@ namespace Myerscode\Acorn\Framework\Console;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+
 use function Myerscode\Acorn\Foundation\text;
 
 /**
@@ -29,6 +30,16 @@ class CommandInterpreter
         }
 
         return [$name, [], []];
+    }
+
+    /**
+     * Parse the token into its token and description segments.
+     */
+    protected function extractDescription(string $token): array|bool
+    {
+        $parts = preg_split('#\s+:\s+#', trim($token), 2);
+
+        return (is_countable($parts) ? count($parts) : 0) === 2 ? $parts : [$token, ''];
     }
 
     /**
@@ -81,8 +92,12 @@ class CommandInterpreter
             text($token)->endsWith('*') => new InputArgument(trim((string) $token, '*'), InputArgument::IS_ARRAY | InputArgument::REQUIRED, $description),
             text($token)->endsWith('?') => new InputArgument(trim((string) $token, '?'), InputArgument::OPTIONAL, $description),
             text($token)->endsWith(['=', '=']) => new InputArgument(trim((string) $token, '='), InputArgument::OPTIONAL, $description),
-            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument($matches[1], InputArgument::IS_ARRAY, $description,
-                preg_split('#,\s?#', (string) $matches[2])),
+            text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputArgument(
+                $matches[1],
+                InputArgument::IS_ARRAY,
+                $description,
+                preg_split('#,\s?#', (string) $matches[2]),
+            ),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputArgument($matches[1], InputArgument::OPTIONAL, $description, $matches[2]),
             default => new InputArgument($token, InputArgument::REQUIRED, $description),
         };
@@ -106,21 +121,15 @@ class CommandInterpreter
 
         return match (true) {
             text($token)->endsWith('=') => new InputOption(trim((string) $token, '='), $shortcut, InputOption::VALUE_OPTIONAL, $description),
-            text($token)->endsWith('=*') => new InputOption(trim((string) $token, '=*'), $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
-                $description),
+            text($token)->endsWith('=*') => new InputOption(
+                trim((string) $token, '=*'),
+                $shortcut,
+                InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+                $description,
+            ),
             text($token)->matches('/(.+)=\*(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, $description, preg_split('#,\s?#', (string) $matches[2])),
             text($token)->matches('/(.+)=(.+)/', $matches) => new InputOption($matches[1], $shortcut, InputOption::VALUE_OPTIONAL, $description, $matches[2]),
             default => new InputOption($token, $shortcut, InputOption::VALUE_NONE, $description),
         };
-    }
-
-    /**
-     * Parse the token into its token and description segments.
-     */
-    protected function extractDescription(string $token): array|bool
-    {
-        $parts = preg_split('#\s+:\s+#', trim($token), 2);
-
-        return (is_countable($parts) ? count($parts) : 0) === 2 ? $parts : [$token, ''];
     }
 }

@@ -8,5 +8,4 @@ use InvalidArgumentException;
 
 class InvalidCallableConstructException extends InvalidArgumentException
 {
-
 }

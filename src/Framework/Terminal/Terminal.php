@@ -12,51 +12,10 @@ use function Myerscode\Acorn\Foundation\output;
 
 class Terminal
 {
-
-    /**
-     * Environment variables.
-     */
-    protected array $environmentVariables = [];
-
-    /**
-     * Timeout.
-     */
-    protected int $timeout = 60;
-
-    /**
-     * Number times to try the command
-     */
-    protected int $retries = 0;
-
-    /**
-     * Seconds to sleep between retries
-     */
-    protected int $sleep = 0;
-
-    /**
-     * Current working directory.
-     */
-    protected string $cwd;
-
-    /**
-     * TTY mode.
-     */
-    protected bool $tty = false;
-
-    /**
-     * Should throw an exception if the command fails
-     */
-    protected bool $shouldThrow = true;
-
     /**
      * Number of attempts the terminal has made to run a process
      */
     protected int $attempts = 0;
-
-    /**
-     * What to do with the output of the process
-     */
-    protected Closure|DisplayOutput $output;
 
     /**
      * The command that will be executed
@@ -64,14 +23,54 @@ class Terminal
     protected Command|string $command = '';
 
     /**
-     * Determine if a process should execute in the background.
+     * Current working directory.
      */
-    protected bool $inBackground = false;
+    protected string $cwd;
+
+    /**
+     * Environment variables.
+     */
+    protected array $environmentVariables = [];
 
     /**
      * Max time since last output.
      */
     protected ?int $idleTimeout = null;
+
+    /**
+     * Determine if a process should execute in the background.
+     */
+    protected bool $inBackground = false;
+
+    /**
+     * What to do with the output of the process
+     */
+    protected Closure|DisplayOutput $output;
+
+    /**
+     * Number times to try the command
+     */
+    protected int $retries = 0;
+
+    /**
+     * Should throw an exception if the command fails
+     */
+    protected bool $shouldThrow = true;
+
+    /**
+     * Seconds to sleep between retries
+     */
+    protected int $sleep = 0;
+
+    /**
+     * Timeout.
+     */
+    protected int $timeout = 60;
+
+    /**
+     * TTY mode.
+     */
+    protected bool $tty = false;
 
     /**
      * Execute a process in the background.
@@ -233,7 +232,7 @@ class Terminal
         if ($this->tty && $this->isTtySupported()) {
             $process->setTty($this->tty);
         } elseif ($this->tty && !$this->isTtySupported()) {
-            output()->warning("Tried setting tty on Terminal command - but it is not supported!");
+            output()->warning('Tried setting tty on Terminal command - but it is not supported!');
         }
 
         if (!is_null($this->idleTimeout())) {

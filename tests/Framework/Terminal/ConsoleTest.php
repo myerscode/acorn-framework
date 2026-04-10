@@ -80,7 +80,7 @@ final class ConsoleTest extends BaseTestCase
         $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
-            })
+            }),
         );
 
         $terminal->dontThrow();
@@ -152,10 +152,10 @@ final class ConsoleTest extends BaseTestCase
                 $mock->shouldReceive('isSuccessful')
                     ->times(4)
                     ->andReturn(false, false, true, true);
-            })
+            }),
         );
 
-        $response = $this->catch(ProcessFailedException::class)->from(static fn(): TerminalResponse => $terminal->retries(3)->run('ls -la'));
+        $response = $this->catch(ProcessFailedException::class)->from(static fn (): TerminalResponse => $terminal->retries(3)->run('ls -la'));
 
         $this->assertSame(3, $terminal->attempts());
         $this->assertTrue($response->successful());
@@ -194,7 +194,7 @@ final class ConsoleTest extends BaseTestCase
                 $mock->shouldReceive('isSuccessful')
                     ->times(3)
                     ->andReturn(false, false, true);
-            })
+            }),
         );
 
         $terminalResponse = $terminal->retries(3)->sleep(5)->run('ls -la');
@@ -207,7 +207,7 @@ final class ConsoleTest extends BaseTestCase
         $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
-            })
+            }),
         );
 
         $terminal->throw();
@@ -240,6 +240,6 @@ final class ConsoleTest extends BaseTestCase
         $terminal->enableTty();
         $terminal->run('echo ');
 
-        $this->assertSame("[WARNING] Tried setting tty on Terminal command - but it is not supported!", $output->output());
+        $this->assertSame('[WARNING] Tried setting tty on Terminal command - but it is not supported!', $output->output());
     }
 }

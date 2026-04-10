@@ -6,18 +6,18 @@ namespace Tests\Resources;
 
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Override;
 
 class TestQueueableListener extends Listener
 {
-
-    #[\Override]
-    protected bool $shouldQueue = true;
-
     /**
      * @var string[]|string
      */
-    #[\Override]
+    #[Override]
     protected string|array $listensFor = TestQueueableEvent::class;
+
+    #[Override]
+    protected bool $shouldQueue = true;
 
     public function handle(Event $event): void
     {

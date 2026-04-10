@@ -7,12 +7,13 @@ namespace Myerscode\Acorn\Foundation\Providers;
 use Myerscode\Acorn\Framework\Cache\Cache;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
 use Myerscode\Acorn\Framework\Providers\ServiceProvider;
+use Override;
 
 use function Myerscode\Acorn\Foundation\config;
 
 class CacheProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     protected $provides = [
             'cache',
             Cache::class,
@@ -29,6 +30,6 @@ class CacheProvider extends ServiceProvider
             ->add(Cache::class)
             ->addArguments([DriverInterface::class, config('app.cache.namespace', 'acorn')]);
 
-        $this->getContainer()->add('cache', fn() => $this->getContainer()->get(Cache::class));
+        $this->getContainer()->add('cache', fn () => $this->getContainer()->get(Cache::class));
     }
 }

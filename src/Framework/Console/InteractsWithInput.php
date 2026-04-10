@@ -2,8 +2,6 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
-use Symfony\Component\Console\Input\InputInterface;
-
 trait InteractsWithInput
 {
     /**

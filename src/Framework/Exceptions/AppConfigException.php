@@ -8,5 +8,4 @@ use LogicException;
 
 class AppConfigException extends LogicException
 {
-
 }

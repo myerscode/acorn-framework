@@ -5,7 +5,6 @@ namespace Myerscode\Acorn\Foundation\Console\Display;
 use Override;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -43,7 +42,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
      */
     public function debug(string|array $message): void
     {
-        $this->writeln($this->decorateLines($message, ":orange_circle: "), OutputInterface::VERBOSITY_DEBUG);
+        $this->writeln($this->decorateLines($message, ':orange_circle: '), OutputInterface::VERBOSITY_DEBUG);
     }
 
     /**
@@ -58,7 +57,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     #[Override]
     public function info(string|array $message): void
     {
-        $this->block($this->decorateLines($message, ":blue_circle: "), null, 'fg=blue', ' ', true);
+        $this->block($this->decorateLines($message, ':blue_circle: '), null, 'fg=blue', ' ', true);
     }
 
     /**
@@ -116,7 +115,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     #[Override]
     public function success(string|array $message): void
     {
-        $this->block($this->decorateLines($message, ":green_circle: "), null, 'fg=green', ' ', false);
+        $this->block($this->decorateLines($message, ':green_circle: '), null, 'fg=green', ' ', false);
     }
 
     #[Override]
@@ -173,7 +172,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     {
         $messages = is_array($messages) ? array_values($messages) : [$messages];
 
-        return array_map(fn($message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
+        return array_map(fn ($message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
     }
 
     protected function encodeLine(string $messages): string

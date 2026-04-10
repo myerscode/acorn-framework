@@ -8,5 +8,4 @@ use RuntimeException;
 
 class AppPanicException extends RuntimeException
 {
-
 }

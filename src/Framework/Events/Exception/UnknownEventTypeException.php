@@ -8,5 +8,4 @@ use LogicException;
 
 class UnknownEventTypeException extends LogicException
 {
-
 }

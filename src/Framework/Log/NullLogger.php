@@ -8,5 +8,4 @@ use Psr\Log\NullLogger as BaseLogger;
 
 class NullLogger extends BaseLogger implements LogInterface
 {
-
 }

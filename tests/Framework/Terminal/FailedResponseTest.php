@@ -15,7 +15,7 @@ final class FailedResponseTest extends BaseTestCase
 
     public function testSetError(): void
     {
-        $process = $this->mockedFailedProcess(static function ($mock) : void {
+        $process = $this->mockedFailedProcess(static function ($mock): void {
             $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
         });
 

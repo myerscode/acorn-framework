@@ -10,9 +10,8 @@ use Myerscode\Acorn\Framework\Queue\QueueInterface;
 
 class Dispatcher
 {
-    protected array $catchAllEventNames = ['*', 'any', 'all'];
-
     protected string $allEventsNamespace = '*';
+    protected array $catchAllEventNames = ['*', 'any', 'all'];
 
     /**
      * Collection of listeners.

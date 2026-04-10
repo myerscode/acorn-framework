@@ -18,26 +18,26 @@ abstract class Command extends SymfonyCommand
     use InteractsWithLogs;
     use InteractsWithOutput;
 
-    protected ConsoleInputInterface $input;
-
-    protected DisplayOutputInterface $output;
-
     protected Container $container;
+
+    /**
+     * The console command description
+     */
+    protected string $description = '';
 
     /**
      * Should the command be hidden
      */
     protected bool $hide = false;
 
+    protected ConsoleInputInterface $input;
+
     /**
      * The console command name/handle used to call it
      */
     protected ?string $name = null;
 
-    /**
-     * The console command description
-     */
-    protected string $description = '';
+    protected DisplayOutputInterface $output;
 
     /**
      * The name and signature of the console command.
@@ -60,6 +60,15 @@ abstract class Command extends SymfonyCommand
      * What to run when the command is executed
      */
     abstract public function handle(): void;
+
+    /**
+     * {@inheritDoc}
+     */
+    #[Override]
+    public function getAliases(): array
+    {
+        return array_unique(array_merge([static::class], parent::getAliases()));
+    }
 
     /**
      * Call other command.
@@ -87,7 +96,7 @@ abstract class Command extends SymfonyCommand
 
     protected function configureWithSignature(): void
     {
-        [$name, $arguments, $options] = (new CommandInterpreter)->parse($this->signature);
+        [$name, $arguments, $options] = (new CommandInterpreter())->parse($this->signature);
         parent::__construct($this->name = $name);
         $this->getDefinition()->addArguments($arguments);
         $this->getDefinition()->addOptions($options);
@@ -101,15 +110,6 @@ abstract class Command extends SymfonyCommand
         $this->handle();
 
         return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    #[Override]
-    public function getAliases(): array
-    {
-        return array_unique(array_merge([static::class], parent::getAliases()));
     }
 
     /**

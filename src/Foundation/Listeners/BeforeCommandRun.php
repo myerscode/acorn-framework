@@ -5,13 +5,14 @@ namespace Myerscode\Acorn\Foundation\Listeners;
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Override;
 
 class BeforeCommandRun extends Listener
 {
     /**
      * @var string[]|string
      */
-    #[\Override]
+    #[Override]
     protected string|array $listensFor = CommandBeforeEvent::class;
 
     public function __construct(private readonly DisplayOutput $displayOutput)

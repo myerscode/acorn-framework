@@ -22,16 +22,6 @@ final class LoggerTest extends TestCase
         array_map(unlink(...), glob($this->logDir . '/*'));
     }
 
-    public function testWritesToSingleFile(): void
-    {
-        $logger = new Logger($this->logDir, LogRotation::Single);
-        $logger->info('Test single file');
-
-        $file = $this->logDir . '/acorn.log';
-        $this->assertFileExists($file);
-        $this->assertStringContainsString('Test single file', (string) file_get_contents($file));
-    }
-
     public function testCustomLogPrefix(): void
     {
         $logger = new Logger($this->logDir, LogRotation::Single, 'customprefix');
@@ -52,16 +42,6 @@ final class LoggerTest extends TestCase
         $this->assertStringContainsString('Test daily file', (string) file_get_contents($file));
     }
 
-    public function testWritesToWeeklyFile(): void
-    {
-        $logger = new Logger($this->logDir, LogRotation::Weekly);
-        $logger->info('Test weekly file');
-
-        $file = $this->logDir . '/acorn-week-' . date('o-W') . '.log';
-        $this->assertFileExists($file);
-        $this->assertStringContainsString('Test weekly file', (string) file_get_contents($file));
-    }
-
     public function testWritesToMonthlyFile(): void
     {
         $logger = new Logger($this->logDir, LogRotation::Monthly);
@@ -70,6 +50,26 @@ final class LoggerTest extends TestCase
         $file = $this->logDir . '/acorn-' . date('Y-m') . '.log';
         $this->assertFileExists($file);
         $this->assertStringContainsString('Test monthly file', (string) file_get_contents($file));
+    }
+
+    public function testWritesToSingleFile(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+        $logger->info('Test single file');
+
+        $file = $this->logDir . '/acorn.log';
+        $this->assertFileExists($file);
+        $this->assertStringContainsString('Test single file', (string) file_get_contents($file));
+    }
+
+    public function testWritesToWeeklyFile(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Weekly);
+        $logger->info('Test weekly file');
+
+        $file = $this->logDir . '/acorn-week-' . date('o-W') . '.log';
+        $this->assertFileExists($file);
+        $this->assertStringContainsString('Test weekly file', (string) file_get_contents($file));
     }
 
     public function testWritesToYearlyFile(): void

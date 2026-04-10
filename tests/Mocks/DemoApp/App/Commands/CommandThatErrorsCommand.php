@@ -9,13 +9,12 @@ use Myerscode\Acorn\Framework\Console\Command;
 
 class CommandThatErrorsCommand extends Command
 {
-    protected function configure(): void
-    {
-        $this->setName('error-command');
-    }
-
     public function handle(): void
     {
         throw new Exception();
+    }
+    protected function configure(): void
+    {
+        $this->setName('error-command');
     }
 }

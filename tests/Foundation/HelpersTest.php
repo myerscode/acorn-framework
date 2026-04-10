@@ -75,7 +75,7 @@ final class HelpersTest extends BaseTestCase
 
         $counter = 0;
 
-        $dispatcher->addListener('test.event', static function () use (&$counter) : void {
+        $dispatcher->addListener('test.event', static function () use (&$counter): void {
             $counter = 7749;
         });
 

@@ -4,7 +4,6 @@ namespace Myerscode\Acorn\Framework\Events;
 
 class CallableEventManager
 {
-
     /**
      * Array of callable-listeners.
      *

@@ -12,34 +12,6 @@ use Tests\Resources\PipedObject;
 
 final class LineManagerTest extends TestCase
 {
-    public function testRegisteringPipelineWithClasses(): void
-    {
-        $lineManager = new LineManager();
-
-        $lineManager->setPipeline('test', [
-            BeforePipe::class,
-            AfterPipe::class,
-        ]);
-
-        $response = $lineManager->send(new PipedObject)->through('test');
-
-        $this->assertSame(['before', 'after'], $response->passedThrough);
-    }
-
-    public function testRegisteringPipelineWithObjects(): void
-    {
-        $lineManager = new LineManager();
-
-        $lineManager->setPipeline('test', [
-            new BeforePipe('123'),
-            new AfterPipe('456'),
-        ]);
-
-        $response = $lineManager->send(new PipedObject)->through('test');
-
-        $this->assertSame(['123', '456'], $response->passedThrough);
-    }
-
     public function testCanBePassedThroughMultiplePipelines(): void
     {
         $lineManager = new LineManager();
@@ -54,8 +26,35 @@ final class LineManagerTest extends TestCase
             new AfterPipe('xyz'),
         ]);
 
-        $response = $lineManager->send(new PipedObject)->through(['first', 'second']);
+        $response = $lineManager->send(new PipedObject())->through(['first', 'second']);
 
         $this->assertSame(['123', '456', 'abc', 'xyz'], $response->passedThrough);
+    }
+    public function testRegisteringPipelineWithClasses(): void
+    {
+        $lineManager = new LineManager();
+
+        $lineManager->setPipeline('test', [
+            BeforePipe::class,
+            AfterPipe::class,
+        ]);
+
+        $response = $lineManager->send(new PipedObject())->through('test');
+
+        $this->assertSame(['before', 'after'], $response->passedThrough);
+    }
+
+    public function testRegisteringPipelineWithObjects(): void
+    {
+        $lineManager = new LineManager();
+
+        $lineManager->setPipeline('test', [
+            new BeforePipe('123'),
+            new AfterPipe('456'),
+        ]);
+
+        $response = $lineManager->send(new PipedObject())->through('test');
+
+        $this->assertSame(['123', '456'], $response->passedThrough);
     }
 }
