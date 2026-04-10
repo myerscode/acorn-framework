@@ -39,6 +39,9 @@ class Cache implements CacheInterface
         return $this->driver->delete($this->namespacedKey($key));
     }
 
+    /**
+     * @param iterable<string> $keys
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         return $this->driver->deleteMultiple($this->namespacedKeys($keys));
@@ -72,6 +75,10 @@ class Cache implements CacheInterface
         return $this->driver->get($this->namespacedKey($key), $default);
     }
 
+    /**
+     * @param iterable<string> $keys
+     * @return iterable<string, mixed>
+     */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
@@ -114,9 +121,14 @@ class Cache implements CacheInterface
      */
     public function set(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool
     {
-        return $this->driver->set($this->namespacedKey($key), $value, $ttl);
+        $normalizedTtl = $ttl instanceof DateTimeInterface ? null : $ttl;
+
+        return $this->driver->set($this->namespacedKey($key), $value, $normalizedTtl);
     }
 
+    /**
+     * @param iterable<string, mixed> $values
+     */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         return $this->driver->setMultiple($values, $ttl);
@@ -127,6 +139,10 @@ class Cache implements CacheInterface
         return $this->namespace.$key;
     }
 
+    /**
+     * @param iterable<string> $keys
+     * @return array<string, string>
+     */
     protected function namespacedKeys(iterable $keys): array
     {
         return new Bag($keys)->map(fn (string $key): string => $this->namespacedKey($key))->value();

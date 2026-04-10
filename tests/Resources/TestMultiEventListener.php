@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Resources;
 
-use Myerscode\Acorn\Framework\Events\Event;
+use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Acorn\Framework\Events\Listener;
 use Override;
 
@@ -19,7 +19,8 @@ class TestMultiEventListener extends Listener
         'another.test.event',
     ];
 
-    public function handle(Event $event): void
+    #[Override]
+    public function handle(EventInterface $event): void
     {
         //
     }

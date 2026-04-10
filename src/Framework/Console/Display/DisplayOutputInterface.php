@@ -8,18 +8,24 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 interface DisplayOutputInterface extends OutputInterface
 {
-    public function caution(string|array $message);
+    /** @param string|string[] $message */
+    public function caution(string|array $message): void;
 
-    public function comment(string|array $message);
+    /** @param string|string[] $message */
+    public function comment(string|array $message): void;
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
+     *
+     * @param string|string[] $message
      */
-    public function debug(string|array $message);
+    public function debug(string|array $message): void;
 
-    public function error(string|array $message);
+    /** @param string|string[] $message */
+    public function error(string|array $message): void;
 
-    public function info(string|array $message);
+    /** @param string|string[] $message */
+    public function info(string|array $message): void;
 
     /**
      * Returns whether verbosity is debug (-vvv).
@@ -43,21 +49,32 @@ interface DisplayOutputInterface extends OutputInterface
 
     /**
      * Writes a message to the output and adds a newline at the end.
+     *
+     * @param string|string[] $message
      */
-    public function line(string|array $message);
+    public function line(string|array $message): void;
 
-    public function note(string|array $message);
+    /** @param string|string[] $message */
+    public function note(string|array $message): void;
 
-    public function success(string|array $message);
+    /** @param string|string[] $message */
+    public function success(string|array $message): void;
 
-    public function table(array $headers, array $rows);
+    /**
+     * @param array<mixed> $headers
+     * @param array<mixed> $rows
+     */
+    public function table(array $headers, array $rows): void;
 
-    public function text(string|array $message);
+    /** @param string|string[] $message */
+    public function text(string|array $message): void;
 
     /**
      * Write a verbose message that is only output when the -v is present
+     *
+     * @param string|string[] $message
      */
-    public function verbose(string|array $message);
+    public function verbose(string|array $message): void;
 
     /**
      * Gets the current verbosity of the output.
@@ -66,8 +83,11 @@ interface DisplayOutputInterface extends OutputInterface
 
     /**
      * Write a very verbose message that is only output when the -vv is present
+     *
+     * @param string|string[] $message
      */
-    public function veryVerbose(string|array $message);
+    public function veryVerbose(string|array $message): void;
 
-    public function warning(string|array $message);
+    /** @param string|string[] $message */
+    public function warning(string|array $message): void;
 }

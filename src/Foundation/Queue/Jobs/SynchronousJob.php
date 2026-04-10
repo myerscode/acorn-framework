@@ -9,8 +9,6 @@ class SynchronousJob extends Job implements JobInterface
 {
     public function work(): void
     {
-        if (method_exists($this->handler, 'handle')) {
-            $this->handler->handle($this->event);
-        }
+        $this->handler->handle($this->event);
     }
 }

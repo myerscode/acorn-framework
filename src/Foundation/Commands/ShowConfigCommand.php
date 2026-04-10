@@ -26,12 +26,12 @@ class ShowConfigCommand extends Command
         $utility = new Utility(config());
         $config = $utility->flatten()->toArray();
 
-        $mapped = array_map(fn ($key, $value): array => [$value], array_keys($locations), $locations);
+        $mapped = array_map(fn ($key, $value): array => [$value], array_keys((array) $locations), (array) $locations);
 
-        $this->output->table(['Config Loaded From Locations'], $mapped)->render();
+        $this->output->table(['Config Loaded From Locations'], $mapped);
 
         $mapped = array_map(fn ($key, $value): array => ['key' => $key, 'value' => $value], array_keys($config), $config);
         $headers = ['Key', 'Value'];
-        $this->output->table($headers, $mapped)->render();
+        $this->output->table($headers, $mapped);
     }
 }

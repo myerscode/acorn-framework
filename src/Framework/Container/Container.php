@@ -16,6 +16,7 @@ class Container
      */
     protected static ?Container $instance = null;
 
+    /** @var string[] */
     protected array $loadedProviders = [];
 
     private readonly DependencyManager $dependencyManager;
@@ -40,13 +41,16 @@ class Container
     /**
      * Get the globally available instance of the container.
      */
-    public static function getInstance(): Container
+    public static function getInstance(): static
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static();
+            static::$instance = new self();
         }
 
-        return static::$instance;
+        /** @var static $instance */
+        $instance = static::$instance;
+
+        return $instance;
     }
 
     /**
@@ -61,13 +65,12 @@ class Container
 
     /**
      * Load a service provider into the container
-     *
-     * @param $serviceProvider
      */
     public function addServiceProvider(ServiceProviderInterface|string $serviceProvider): void
     {
         if (!is_subclass_of($serviceProvider, ServiceProvider::class)) {
-            throw new InvalidArgumentException($serviceProvider . ' must be a ServiceProvider');
+            $name = is_string($serviceProvider) ? $serviceProvider : $serviceProvider::class;
+            throw new InvalidArgumentException($name . ' must be a ServiceProvider');
         }
 
         if (is_string($serviceProvider)) {
@@ -100,6 +103,8 @@ class Container
 
     /**
      * Returns a list of service providers that have been added to the container
+     *
+     * @return string[]
      */
     public function loadedProviders(): array
     {
@@ -121,10 +126,9 @@ class Container
     /**
      * Swap the defined instance in the container with a new implementation
      *
-     *
      * @see DependencyManager::swap()
      */
-    public function swap(string $id, $concrete = null, ?bool $shared = null): void
+    public function swap(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
         $this->dependencyManager->swap($id, $concrete, $shared);
     }

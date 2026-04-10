@@ -8,11 +8,8 @@ use Myerscode\PackageDiscovery\Finder;
 
 class PackageDiscovery
 {
+    /** @var array<string, array<string, mixed>> */
     public readonly array $found;
-
-    protected readonly array $commands;
-
-    protected readonly array $providers;
 
     private readonly Finder $finder;
 
@@ -25,6 +22,8 @@ class PackageDiscovery
 
     /**
      * Discover all command directories registered by installed packages
+     *
+     * @return array<string, string>
      */
     public function locateCommands(): array
     {
@@ -44,6 +43,8 @@ class PackageDiscovery
 
     /**
      * Discover all provider directories registered by installed packages
+     *
+     * @return array<string, string>
      */
     public function locateProviders(): array
     {

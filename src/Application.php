@@ -46,10 +46,13 @@ class Application extends SymfonyApplication
 
     protected string $defaultCommand = 'list';
 
+    /** @var array<string, string> */
     protected array $discoveredCommandDirectories = [];
 
+    /** @var array<string, array<string, mixed>> */
     protected array $discoveredPackages = [];
 
+    /** @var array<string, string> */
     protected array $discoveredProviders = [];
 
     /**
@@ -94,6 +97,9 @@ class Application extends SymfonyApplication
         return parent::addCommand($symfonyCommand);
     }
 
+    /**
+     * @return string[]
+     */
     public function commandsDiscoveryDirectories(): array
     {
         return array_filter([
@@ -108,6 +114,9 @@ class Application extends SymfonyApplication
         return $this->container;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function discoveredPackages(): array
     {
         return $this->discoveredPackages;
@@ -118,6 +127,9 @@ class Application extends SymfonyApplication
         return $this->container()->get(Dispatcher::class);
     }
 
+    /**
+     * @return string[]
+     */
     public function eventDiscoveryDirectories(): array
     {
         return array_filter([
@@ -132,7 +144,8 @@ class Application extends SymfonyApplication
 
         try {
             // this happens within the run, but we want to capture the SymfonyCommandNotFoundException and handle it ourselves
-            $this->find($this->getCommandName($input) ?? $this->defaultCommand);
+            $commandName = $input !== null ? ($this->getCommandName($input) ?? $this->defaultCommand) : $this->defaultCommand;
+            $this->find($commandName);
             $exitCode = parent::run($input, $output);
         } catch (SymfonyCommandNotFoundException $e) {
             throw new CommandNotFoundException($e->getMessage(), $e->getAlternatives(), $e->getCode(), $e);
@@ -149,6 +162,9 @@ class Application extends SymfonyApplication
         return $this->container->get('input');
     }
 
+    /**
+     * @return string[]
+     */
     public function loadedServiceProviders(): array
     {
         return $this->container->loadedProviders();
@@ -178,7 +194,6 @@ class Application extends SymfonyApplication
             try {
                 foreach (FileService::make($eventDiscoveryDir)->files() as $file) {
                     $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
-                    /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
                         if (is_subclass_of($eventRegisterClass, Listener::class)) {
@@ -189,6 +204,8 @@ class Application extends SymfonyApplication
                                 $events = [$listensFor];
                             } elseif (is_array($listensFor)) {
                                 $events = $listensFor;
+                            } else {
+                                $events = [];
                             }
 
                             foreach ($events as $event) {
@@ -297,6 +314,8 @@ class Application extends SymfonyApplication
 
     /**
      * Look for userland providers
+     *
+     * @return string[]
      */
     protected function providerDiscoveryDirectories(): array
     {
@@ -319,6 +338,8 @@ class Application extends SymfonyApplication
 
     /**
      * Get list of service providers
+     *
+     * @return string[]
      */
     protected function serviceProviders(): array
     {

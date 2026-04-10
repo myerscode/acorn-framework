@@ -7,7 +7,10 @@ use SplPriorityQueue;
 
 class ListenerQueue
 {
+    /** @var SplPriorityQueue<int, ListenerInterface> */
     protected SplPriorityQueue $queue;
+
+    /** @var SplObjectStorage<ListenerInterface, int> */
     protected SplObjectStorage $storage;
 
     public function __construct()
@@ -43,7 +46,6 @@ class ListenerQueue
      */
     public function clear(): void
     {
-        unset($this->storage, $this->queue);
         $this->storage = new SplObjectStorage();
         $this->queue = new SplPriorityQueue();
     }

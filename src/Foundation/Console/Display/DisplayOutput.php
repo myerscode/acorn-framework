@@ -10,17 +10,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 {
-    protected array $verbosityMap
-        = [
-            'v' => OutputInterface::VERBOSITY_VERBOSE,
-            'vv' => OutputInterface::VERBOSITY_VERY_VERBOSE,
-            'vvv' => OutputInterface::VERBOSITY_DEBUG,
-            'quiet' => OutputInterface::VERBOSITY_QUIET,
-            'normal' => OutputInterface::VERBOSITY_NORMAL,
-        ];
+    /** @var array<string, int> */
+    protected array $verbosityMap = [
+        'v' => OutputInterface::VERBOSITY_VERBOSE,
+        'vv' => OutputInterface::VERBOSITY_VERY_VERBOSE,
+        'vvv' => OutputInterface::VERBOSITY_DEBUG,
+        'quiet' => OutputInterface::VERBOSITY_QUIET,
+        'normal' => OutputInterface::VERBOSITY_NORMAL,
+    ];
 
     /**
      * Formats a caution admonition.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function caution(array|string $message): void
@@ -30,6 +32,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Formats a command comment.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function comment(array|string $message): void
@@ -39,6 +43,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
+     *
+     * @param string|string[] $message
      */
     public function debug(string|array $message): void
     {
@@ -47,6 +53,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Formats an error result bar.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function error(array|string $message): void
@@ -54,6 +62,9 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
         parent::error($message);
     }
 
+    /**
+     * @param string|string[] $message
+     */
     #[Override]
     public function info(string|array $message): void
     {
@@ -96,8 +107,19 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
         return parent::isVeryVerbose();
     }
 
+    /**
+     * @param string|string[] $string
+     */
     public function line(string|array $string, ?string $style = null, int|string|null $verbosity = null): void
     {
+        if (is_array($string)) {
+            foreach ($string as $line) {
+                $this->line($line, $style, $verbosity);
+            }
+
+            return;
+        }
+
         $styled = $style ? sprintf('<%s>%s</%s>', $style, $string, $style) : $string;
 
         $this->writeln($styled, $this->parseVerbosity($verbosity));
@@ -105,6 +127,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Formats a note admonition.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function note(string|array $message): void
@@ -112,12 +136,19 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
         parent::note($message);
     }
 
+    /**
+     * @param string|string[] $message
+     */
     #[Override]
     public function success(string|array $message): void
     {
         $this->block($this->decorateLines($message, ':green_circle: '), null, 'fg=green', ' ', false);
     }
 
+    /**
+     * @param array<mixed> $headers
+     * @param array<mixed> $rows
+     */
     #[Override]
     public function table(array $headers = [], array $rows = []): void
     {
@@ -128,6 +159,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Formats informational text.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function text(array|string $message): void
@@ -137,6 +170,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Write a verbose message that is only output when the -v is present
+     *
+     * @param string|string[] $message
      */
     public function verbose(string|array $message): void
     {
@@ -153,6 +188,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Write a very verbose message that is only output when the -vv is present
+     *
+     * @param string|string[] $message
      */
     public function veryVerbose(string|array $message): void
     {
@@ -161,6 +198,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Formats an warning result bar.
+     *
+     * @param string|string[] $message
      */
     #[Override]
     public function warning(array|string $message): void
@@ -168,11 +207,15 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
         parent::warning($message);
     }
 
+    /**
+     * @param string|string[] $messages
+     * @return string[]
+     */
     protected function decorateLines(string|array $messages, string $prefix = '', string $postfix = ''): array
     {
         $messages = is_array($messages) ? array_values($messages) : [$messages];
 
-        return array_map(fn ($message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
+        return array_map(fn (string $message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
     }
 
     protected function encodeLine(string $messages): string
@@ -185,7 +228,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
      */
     protected function parseVerbosity(string|int|null $level = null): int
     {
-        if (isset($this->verbosityMap[$level])) {
+        if (is_string($level) && isset($this->verbosityMap[$level])) {
             $level = $this->verbosityMap[$level];
         } elseif (!is_int($level)) {
             $level = $this->verbosityMap['normal'];

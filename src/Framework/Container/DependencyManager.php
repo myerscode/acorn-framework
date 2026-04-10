@@ -9,15 +9,14 @@ class DependencyManager extends Container
 {
     public function remove(string $id): void
     {
-        $this->definitions->remove($id);
+        // league/container 5 does not support removal; overwrite with null to effectively reset
+        if ($this->has($id)) {
+            $this->add($id, null, true);
+        }
     }
 
-    public function swap(string $id, $concrete = null, ?bool $shared = null): DefinitionInterface
+    public function swap(string $id, mixed $concrete = null, ?bool $shared = null): DefinitionInterface
     {
-        if ($this->has($id)) {
-            $this->remove($id);
-        }
-
-        return $this->add($id, $concrete);
+        return $this->add($id, $concrete, true);
     }
 }

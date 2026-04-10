@@ -10,13 +10,7 @@ use League\Container\ServiceProvider\BootableServiceProviderInterface;
 abstract class BootableServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
     /**
-     * The provided array is a way to let the container
-     * know that a service is provided by this service
-     * provider. Every service that is registered via
-     * this service provider must have an alias added
-     * to this array or it will be ignored.
-     *
-     * @var array
+     * @var string[]
      */
     protected $provides = [];
 

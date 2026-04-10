@@ -16,7 +16,7 @@ class NamedEvent extends Event
 
     public function __construct(string $name)
     {
-        if (is_null($name) || ($name === '' || $name === '0') || strlen($name) <= 0) {
+        if ($name === '' || $name === '0') {
             throw new EventConfigException();
         }
 

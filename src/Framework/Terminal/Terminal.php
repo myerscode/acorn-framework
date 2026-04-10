@@ -29,6 +29,8 @@ class Terminal
 
     /**
      * Environment variables.
+     *
+     * @var array<string, string>
      */
     protected array $environmentVariables = [];
 
@@ -75,7 +77,6 @@ class Terminal
     /**
      * Execute a process in the background.
      *
-     * @return $this
      * @throws ProcessFailedException
      */
     public function async(string|Command $command): TerminalResponse
@@ -158,6 +159,9 @@ class Terminal
         return $this->tty(true);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function environmentVariables(): array
     {
         return $this->environmentVariables;
@@ -265,7 +269,7 @@ class Terminal
         $this->command($command);
 
         if (!is_null($output)) {
-            $this->output($output);
+            $this->output = $this->parseCallback($output);
         }
 
         $this->attempts = 0;
@@ -347,6 +351,7 @@ class Terminal
     /**
      * Set environment variables that the process will use.
      *
+     * @param array<string, string> $envVars
      * @return $this
      */
     public function withEnvironmentVariables(array $envVars): self
@@ -362,40 +367,48 @@ class Terminal
     protected function executeAttempts(int $times, callable $callback, int $sleep = 0, int $sleptFor = 0): TerminalResponse
     {
         $attempts = 0;
+        $lastException = null;
+        $maxAttempts = $times + 1;
 
-        beginning:
-        $attempts++;
-        $times--;
+        while ($attempts < $maxAttempts) {
+            $attempts++;
 
-        try {
-            return $callback($attempts, $sleptFor);
-        } catch (ProcessFailedException  $processFailedException) {
-            if ($times < 1) {
-                if ($this->shouldThrow()) {
-                    throw $processFailedException;
+            try {
+                return $callback($attempts, $sleptFor);
+            } catch (ProcessFailedException $processFailedException) {
+                $lastException = $processFailedException;
+
+                if ($attempts >= $maxAttempts) {
+                    if ($this->shouldThrow()) {
+                        throw $processFailedException;
+                    }
+
+                    return new FailedResponse($processFailedException->process, $attempts, $sleptFor);
                 }
 
-                return new FailedResponse($processFailedException->process, $attempts, $sleptFor);
+                if ($sleep !== 0) {
+                    $sleptFor += $sleep;
+                    usleep($sleep * 1000);
+                }
             }
-
-            if ($sleep !== 0) {
-                $sleptFor += $sleep;
-                usleep($sleep * 1000);
-            }
-
-            goto beginning;
         }
+
+        if ($lastException !== null) {
+            return new FailedResponse($lastException->process, $attempts, $sleptFor);
+        }
+
+        return new FailedResponse(new Process([]), $attempts, $sleptFor);
     }
 
     protected function executeProcess(Process $process, int $attempt, int $sleptFor): TerminalResponse
     {
         try {
-            $callback = $this->output ?? null;
+            $callback = isset($this->output) ? $this->output : null;
 
             if ($this->inBackground()) {
-                $process->start($callback);
+                $process->start(is_callable($callback) ? $callback : null);
             } else {
-                $process->run($callback);
+                $process->run(is_callable($callback) ? $callback : null);
             }
 
             return new CompletedResponse($process, $attempt, $sleptFor);

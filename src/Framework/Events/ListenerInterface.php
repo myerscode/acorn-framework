@@ -6,5 +6,7 @@ namespace Myerscode\Acorn\Framework\Events;
 
 interface ListenerInterface
 {
+    public function handle(EventInterface $event): void;
+
     public function shouldQueue(): bool;
 }

@@ -4,7 +4,7 @@ namespace Myerscode\Acorn\Foundation\Listeners;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
-use Myerscode\Acorn\Framework\Console\Command;
+use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Acorn\Framework\Events\Listener;
 use Override;
 
@@ -21,14 +21,15 @@ class CommandError extends Listener
         //
     }
 
-    public function __invoke(CommandErrorEvent $commandErrorEvent): void
+    #[Override]
+    public function handle(EventInterface $event): void
     {
-        if ($command = $commandErrorEvent->consoleErrorEvent->getCommand() instanceof Command) {
-            $commaName = $commandErrorEvent->consoleErrorEvent->getCommand()->getName();
+        if (!$event instanceof CommandErrorEvent) {
+            return;
         }
 
-        $message = sprintf('Error running command <info>%s</info>', $commaName ?? 'UNKNOWN');
-
+        $command = $event->consoleErrorEvent->getCommand();
+        $message = sprintf('Error running command <info>%s</info>', $command?->getName() ?? 'UNKNOWN');
         $this->displayOutput->verbose($message);
     }
 }

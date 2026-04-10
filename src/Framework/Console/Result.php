@@ -6,7 +6,7 @@ use Exception;
 
 class Result
 {
-    public function __construct(protected $exitCode, protected ?Exception $exception = null)
+    public function __construct(protected int $exitCode, protected ?Exception $exception = null)
     {
         //
     }

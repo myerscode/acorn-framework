@@ -10,6 +10,8 @@ interface ConsoleInputInterface extends InputInterface
 {
     /**
      * Get all parsed parameters given at input
+     *
+     * @return array<string, mixed>
      */
     public function parameters(): array;
 }

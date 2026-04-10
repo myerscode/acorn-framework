@@ -6,5 +6,8 @@ namespace Myerscode\Acorn\Framework\Contracts;
 
 interface Arrayable
 {
+    /**
+     * @return array<mixed>
+     */
     public function toArray(): array;
 }

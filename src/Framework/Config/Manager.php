@@ -63,6 +63,10 @@ class Manager implements ManagerInterface
         return $this->usingCachedConfig;
     }
 
+    /**
+     * @param string[] $configLocations
+     * @param array<string, mixed> $data
+     */
     public function loadConfig(array $configLocations, array $data = []): Config
     {
         $config = false;
@@ -125,6 +129,10 @@ class Manager implements ManagerInterface
         return $this->setIgnoreCachedConfig(true);
     }
 
+    /**
+     * @param string[] $configLocations
+     * @param array<string, mixed> $data
+     */
     protected function buildConfig(array $configLocations, array $data): Config
     {
         $config = new Config();
@@ -146,6 +154,9 @@ class Manager implements ManagerInterface
         return $config;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     protected function cacheConfig(array $config): void
     {
         $cachedConfigLocation = $this->cacheLocation();

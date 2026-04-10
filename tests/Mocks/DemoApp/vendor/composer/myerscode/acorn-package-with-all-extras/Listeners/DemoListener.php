@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Events\DemoEvent;
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
+use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Acorn\Framework\Events\Listener;
 
 class DemoListener extends Listener
@@ -18,8 +19,13 @@ class DemoListener extends Listener
         //
     }
 
-    public function __invoke(DemoEvent $demoEvent): void
+    #[\Override]
+    public function handle(EventInterface $event): void
     {
-        $this->displayOutput->info(DemoEvent::class.' event emitted at '.$demoEvent->timestamp);
+        if (!$event instanceof DemoEvent) {
+            return;
+        }
+
+        $this->displayOutput->info(DemoEvent::class.' event emitted at '.$event->timestamp);
     }
 }

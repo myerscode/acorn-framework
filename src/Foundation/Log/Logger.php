@@ -19,37 +19,37 @@ class Logger implements LoggerInterface
         $this->logFileName = $this->getLogFileName();
     }
 
-    public function alert($message, array $context = []): void
+    public function alert(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    public function critical($message, array $context = []): void
+    public function critical(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    public function debug($message, array $context = []): void
+    public function debug(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    public function emergency($message, array $context = []): void
+    public function emergency(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    public function error($message, array $context = []): void
+    public function error(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    public function info($message, array $context = []): void
+    public function info(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    public function log($level, $message, array $context = []): void
+    public function log(mixed $level, mixed $message, array $context = []): void
     {
         $date = date('Y-m-d H:i:s');
         $contextStr = $context !== [] ? json_encode($context) : '';
@@ -57,12 +57,12 @@ class Logger implements LoggerInterface
         file_put_contents($this->getLogFileName(), $entry, FILE_APPEND);
     }
 
-    public function notice($message, array $context = []): void
+    public function notice(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    public function warning($message, array $context = []): void
+    public function warning(mixed $message, array $context = []): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }

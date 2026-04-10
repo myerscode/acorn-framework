@@ -19,7 +19,7 @@ class CallableEventManager
         static::$listeners = [];
     }
 
-    public static function create($callable): CallableListener
+    public static function create(mixed $callable): CallableListener
     {
         $callableListener = new CallableListener($callable);
 

@@ -8,6 +8,9 @@ use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 
 interface QueueInterface
 {
+    /**
+     * @return JobInterface[]
+     */
     public function all(): array;
 
     public function clear(): void;

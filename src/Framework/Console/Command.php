@@ -4,6 +4,7 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Override;
 use League\Container\Container;
+use RuntimeException;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
@@ -63,6 +64,8 @@ abstract class Command extends SymfonyCommand
 
     /**
      * {@inheritDoc}
+     *
+     * @return string[]
      */
     #[Override]
     public function getAliases(): array
@@ -74,7 +77,7 @@ abstract class Command extends SymfonyCommand
      * Call other command.
      *
      * @param  string  $commandName  Command name
-     * @param  array  $parameters  Command parameters
+     * @param  array<string, mixed>  $parameters  Command parameters
      *
      * @return int Exit code
      *
@@ -83,7 +86,12 @@ abstract class Command extends SymfonyCommand
     protected function call(string $commandName, array $parameters = []): int
     {
         try {
-            $symfonyCommand = $this->getApplication()->find($commandName);
+            $application = $this->getApplication();
+            if ($application === null) {
+                throw new SubCommandFailedException(new \RuntimeException('No application available'), 0);
+            }
+
+            $symfonyCommand = $application->find($commandName);
 
             $parameters = array_merge($parameters, ['command' => $commandName]);
             $configInput = new ConfigInput($parameters);

@@ -10,17 +10,21 @@ trait InteractsWithOutput
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
+     *
+     * @param string|string[] $message
      */
     public function debug(string|array $message): void
     {
         $this->output->debug($message);
     }
 
+    /** @param string|string[] $message */
     public function error(string|array $message): void
     {
         $this->output->error($message);
     }
 
+    /** @param string|string[] $message */
     public function info(string|array $message): void
     {
         $this->output->info($message);
@@ -58,16 +62,19 @@ trait InteractsWithOutput
         return $this->output->isVeryVerbose();
     }
 
+    /** @param string|string[] $message */
     public function line(string|array $message): void
     {
         $this->output->line($message);
     }
 
+    /** @param string|string[] $message */
     public function success(string|array $message): void
     {
         $this->output->success($message);
     }
 
+    /** @param string|string[] $message */
     public function verbose(string|array $message): void
     {
         $this->output->verbose($message);
@@ -81,6 +88,7 @@ trait InteractsWithOutput
         return $this->output->getVerbosity();
     }
 
+    /** @param string|string[] $message */
     public function veryVerbose(string|array $message): void
     {
         $this->output->veryVerbose($message);

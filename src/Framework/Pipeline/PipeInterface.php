@@ -8,5 +8,5 @@ use Closure;
 
 interface PipeInterface
 {
-    public function handle($object, Closure $next);
+    public function handle(mixed $object, Closure $next): mixed;
 }

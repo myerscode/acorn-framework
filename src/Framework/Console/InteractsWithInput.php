@@ -12,10 +12,9 @@ trait InteractsWithInput
     /**
      * Get the value of a command argument.
      *
-     *
-     * @return string|array|null
+     * @return string|array<mixed>|null
      */
-    public function argument(string $key, ?string $default = null)
+    public function argument(string $key, ?string $default = null): string|array|null
     {
         if ($this->hasArgument($key)) {
             return $this->input->getArgument($key);
@@ -27,7 +26,7 @@ trait InteractsWithInput
     /**
      * Get all of the arguments passed to the command.
      *
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     public function arguments(): array
     {
@@ -37,7 +36,7 @@ trait InteractsWithInput
     /**
      * Determine if the given argument is present.
      */
-    public function hasArgument(string|int $name): bool
+    public function hasArgument(string $name): bool
     {
         if (!$this->input->hasArgument($name)) {
             return false;
@@ -60,8 +59,6 @@ trait InteractsWithInput
 
     /**
      * Get the value of a command option.
-     *
-     * @param  string|null  $key
      */
     public function option(string $key, ?string $default = null): ?string
     {

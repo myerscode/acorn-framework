@@ -7,6 +7,7 @@ use Myerscode\Acorn\Framework\Cache\DriverInterface;
 
 class RuntimeCache implements DriverInterface
 {
+    /** @var array<string, array{value: mixed, expiry: int}> */
     protected array $cache = [];
 
     protected int $defaultCacheExpiration = 3600;
@@ -94,9 +95,11 @@ class RuntimeCache implements DriverInterface
      */
     public function set(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
+        $ttlSeconds = $ttl instanceof DateInterval ? (int) $ttl->format('%s') : ($ttl ?? $this->defaultCacheExpiration);
+
         $this->cache[$key] = [
             'value' => $value,
-            'expiry' => time() + ($ttl ?? $this->defaultCacheExpiration),
+            'expiry' => time() + $ttlSeconds,
         ];
 
         return true;
@@ -104,6 +107,8 @@ class RuntimeCache implements DriverInterface
 
     /**
      * @inheritDoc
+     *
+     * @param iterable<string, mixed> $values
      */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {

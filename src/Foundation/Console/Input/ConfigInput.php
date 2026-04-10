@@ -10,6 +10,9 @@ use Symfony\Component\Console\Input\InputDefinition;
 
 class ConfigInput extends ArrayInput implements ConsoleInputInterface
 {
+    /**
+     * @param array<string, mixed> $parameterArray
+     */
     public function __construct(protected array $parameterArray = [], ?InputDefinition $inputDefinition = null)
     {
         parent::__construct($parameterArray, $inputDefinition);
@@ -17,6 +20,8 @@ class ConfigInput extends ArrayInput implements ConsoleInputInterface
 
     /**
      * Get all parsed parameters given at input
+     *
+     * @return array<string, mixed>
      */
     public function parameters(): array
     {

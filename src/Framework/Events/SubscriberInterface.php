@@ -8,6 +8,8 @@ interface SubscriberInterface
 {
     /**
      * Returns an array of event names this subscriber wants to listen to.
+     *
+     * @return array<string, string>
      */
     public function getSubscribedEvents(): array;
 }

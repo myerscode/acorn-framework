@@ -3,6 +3,7 @@
 namespace Myerscode\Acorn;
 
 use Exception;
+use RuntimeException;
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
@@ -19,7 +20,7 @@ class Kernel
 
     protected string $rootPath;
 
-    private readonly Application $application;
+    private ?Application $application = null;
 
     private bool $booted = false;
 
@@ -34,7 +35,7 @@ class Kernel
 
     public function application(): Application
     {
-        return $this->boot()->application;
+        return $this->boot()->application ?? throw new \RuntimeException('Application not booted');
     }
 
     public function config(): Manager
@@ -67,7 +68,10 @@ class Kernel
 
             // TODO if result failed but has no error do something
             if ($result->failed()) {
-                throw $result->error();
+                $error = $result->error();
+                if ($error !== null) {
+                    throw $error;
+                }
             }
 
             return $result->exitCode();
@@ -101,6 +105,9 @@ class Kernel
         return $this;
     }
 
+    /**
+     * @return string[]
+     */
     protected function configLocations(): array
     {
         return [
@@ -125,7 +132,12 @@ class Kernel
 
     protected function processCommand(): Result
     {
-        return $this->boot()->application->handle($this->input(), $this->output());
+        $app = $this->boot()->application;
+        if ($app === null) {
+            throw new \RuntimeException('Application not booted');
+        }
+
+        return $app->handle($this->input(), $this->output());
     }
 
     protected function setBasePath(string $basePath): void

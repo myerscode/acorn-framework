@@ -22,11 +22,9 @@ use Psr\Container\NotFoundExceptionInterface;
  * @throws ContainerExceptionInterface
  * @throws NotFoundExceptionInterface
  */
-function config(?string $key = null, $default = null): mixed
+function config(?string $key = null, mixed $default = null): mixed
 {
-    /**
-     * @var $config Config
-     */
+    /** @var Config $config */
     $config = Container::getInstance()->get('config');
 
     if ($key) {
@@ -58,12 +56,12 @@ function dispatch(EventInterface $event): void
     Container::getInstance()->get(Dispatcher::class)->dispatch($event);
 }
 
-function emit($eventName, $params = null): void
+function emit(string $eventName, mixed $params = null): void
 {
     Container::getInstance()->get(Dispatcher::class)->emit($eventName, $params);
 }
 
-function file(string|FileUtility $path = ''): FileUtility
+function file(string $path = ''): FileUtility
 {
     return new FileUtility($path);
 }
@@ -73,6 +71,9 @@ function text(string|TextUtility $text = ''): TextUtility
     return new TextUtility($text);
 }
 
+/**
+ * @param array<mixed>|BagUtility $bag
+ */
 function bag(array|BagUtility $bag = []): BagUtility
 {
     return new BagUtility($bag);

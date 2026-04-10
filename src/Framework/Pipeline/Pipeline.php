@@ -10,11 +10,14 @@ class Pipeline
     /**
      * The collection of pipes that a value will be passed through
      *
-     * @var PipeInterface[]
+     * @var array<PipeInterface|PipeCollectionInterface|string>
      */
     private array $pipes;
 
 
+    /**
+     * @param array<PipeInterface|PipeCollectionInterface|string>|string|PipeCollectionInterface $pipes
+     */
     public function __construct(array|string|PipeCollectionInterface $pipes = [])
     {
         if (is_string($pipes)) {
@@ -48,7 +51,7 @@ class Pipeline
         // We create the onion by starting initially with the core and then
         // gradually wrap it in pipes. Each layer will have the next layer "curried"
         // into it and will have the current state (the object) passed to it.
-        $completeOnion = array_reduce($pipes, fn (Closure $nextLayer, \Myerscode\Acorn\Framework\Pipeline\PipeCollectionInterface|\Myerscode\Acorn\Framework\Pipeline\PipeInterface|string $layer): Closure => $this->createLayer($nextLayer, $layer), $coreFunction);
+        $completeOnion = array_reduce($pipes, fn (Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $layer): Closure => $this->createLayer($nextLayer, $layer), $coreFunction);
 
         // We now have the complete onion and can start passing the object
         // down through the pipes.
@@ -58,9 +61,9 @@ class Pipeline
     /**
      * Set the pipes that will be passed through
      *
-     * @param  mixed  $pipes
+     * @param mixed $pipes
      */
-    public function pipes($pipes): static
+    public function pipes(mixed $pipes): static
     {
         if ($pipes instanceof Pipeline) {
             $pipes = $pipes->toArray();
@@ -72,18 +75,31 @@ class Pipeline
             throw new InvalidPipeException($pipes . ' is not a valid pipe.');
         }
 
-        return new static(array_merge($this->pipes, $pipes));
+        return new self(array_merge($this->pipes, $pipes)); // @phpstan-ignore return.type
     }
 
-    public function setPipes($pipes): void
+    /**
+     * @param array<PipeInterface|PipeCollectionInterface|string>|PipeCollectionInterface $pipes
+     */
+    public function setPipes(array|PipeCollectionInterface $pipes): void
     {
-        $this->pipes = array_filter($pipes, fn ($pipe): bool => $pipe instanceof PipeCollectionInterface || is_subclass_of($pipe, PipeInterface::class));
+        if ($pipes instanceof PipeCollectionInterface) {
+            $pipes = $pipes->toArray();
+        }
+
+        /** @var array<PipeInterface|PipeCollectionInterface|string> $filtered */
+        $filtered = array_values(array_filter($pipes, fn ($pipe): bool =>
+            $pipe instanceof PipeInterface
+            || $pipe instanceof PipeCollectionInterface
+            || (is_string($pipe) && is_subclass_of($pipe, PipeInterface::class))
+        ));
+        $this->pipes = $filtered;
     }
 
     /**
      * Get the pipes of this onion, can be used to merge with another onion
      *
-     * @return PipeInterface[]
+     * @return array<PipeInterface|PipeCollectionInterface|string>
      */
     public function toArray(): array
     {
@@ -96,7 +112,7 @@ class Pipeline
      *
      *
      */
-    private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): callable
+    private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): Closure
     {
         if ($pipe instanceof PipeCollectionInterface) {
             return fn ($object) => $nextLayer(new Pipeline($pipe->toArray())->flush($object));
@@ -106,7 +122,11 @@ class Pipeline
             $pipe = new $pipe();
         }
 
-        return fn ($object) => $pipe->handle($object, $nextLayer);
+        if ($pipe instanceof PipeInterface) {
+            return fn ($object) => $pipe->handle($object, $nextLayer);
+        }
+
+        return fn ($object) => $nextLayer($object);
     }
 
 }
