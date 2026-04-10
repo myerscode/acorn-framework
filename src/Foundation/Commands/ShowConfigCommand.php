@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Commands;
 
 use Myerscode\Acorn\Framework\Console\Command;
@@ -12,6 +14,7 @@ class ShowConfigCommand extends Command
 {
     #[Override]
     protected string $description = 'Show all loaded configuration';
+
     #[Override]
     protected string $signature = 'config:show';
 

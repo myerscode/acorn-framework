@@ -13,6 +13,7 @@ class CommandThatErrorsCommand extends Command
     {
         throw new Exception();
     }
+
     protected function configure(): void
     {
         $this->setName('error-command');

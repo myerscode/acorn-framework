@@ -25,7 +25,7 @@ class CommandInterpreter
     {
         $name = $this->name($expression);
 
-        if (preg_match_all('#\{\s*(.*?)\s*\}#', $expression, $matches) && count($matches[1]) > 0) {
+        if (preg_match_all('#\{\s*(.*?)\s*\}#', $expression, $matches) && $matches[1] !== []) {
             return array_merge([$name], $this->parameters($matches[1]));
         }
 

@@ -393,7 +393,7 @@ class Terminal
             }
         }
 
-        if ($lastException !== null) {
+        if ($lastException instanceof \Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException) {
             return new FailedResponse($lastException->process, $attempts, $sleptFor);
         }
 
@@ -403,7 +403,7 @@ class Terminal
     protected function executeProcess(Process $process, int $attempt, int $sleptFor): TerminalResponse
     {
         try {
-            $callback = isset($this->output) ? $this->output : null;
+            $callback = $this->output ?? null;
 
             if ($this->inBackground()) {
                 $process->start(is_callable($callback) ? $callback : null);

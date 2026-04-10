@@ -69,7 +69,7 @@ class Kernel
             // TODO if result failed but has no error do something
             if ($result->failed()) {
                 $error = $result->error();
-                if ($error !== null) {
+                if ($error instanceof \Exception) {
                     throw $error;
                 }
             }
@@ -133,7 +133,7 @@ class Kernel
     protected function processCommand(): Result
     {
         $app = $this->boot()->application;
-        if ($app === null) {
+        if (!$app instanceof \Myerscode\Acorn\Application) {
             throw new \RuntimeException('Application not booted');
         }
 

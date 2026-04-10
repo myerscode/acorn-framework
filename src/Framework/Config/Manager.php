@@ -9,6 +9,7 @@ use Myerscode\Utilities\Files\Utility as FileService;
 class Manager implements ManagerInterface
 {
     protected bool $ignoreCached = false;
+
     protected bool $shouldCacheConfig = true;
 
     protected bool $usingCachedConfig = false;

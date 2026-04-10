@@ -14,6 +14,7 @@ class ClearConfigCacheCommand extends Command
 {
     #[Override]
     protected string $description = 'Clear any config cache';
+
     #[Override]
     protected string $signature = 'config:clear';
 

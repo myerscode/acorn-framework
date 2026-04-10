@@ -13,6 +13,7 @@ class ShowListenersCommand extends Command
 {
     #[Override]
     protected string $description = 'Show all registered event listeners';
+
     #[Override]
     protected string $signature = 'listener:show';
 

@@ -87,7 +87,7 @@ abstract class Command extends SymfonyCommand
     {
         try {
             $application = $this->getApplication();
-            if ($application === null) {
+            if (!$application instanceof \Symfony\Component\Console\Application) {
                 throw new SubCommandFailedException(new \RuntimeException('No application available'), 0);
             }
 
@@ -104,7 +104,7 @@ abstract class Command extends SymfonyCommand
 
     protected function configureWithSignature(): void
     {
-        [$name, $arguments, $options] = (new CommandInterpreter())->parse($this->signature);
+        [$name, $arguments, $options] = new CommandInterpreter()->parse($this->signature);
         parent::__construct($this->name = $name);
         $this->getDefinition()->addArguments($arguments);
         $this->getDefinition()->addOptions($options);

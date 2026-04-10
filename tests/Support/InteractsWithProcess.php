@@ -38,6 +38,7 @@ trait InteractsWithProcess
 
         return $process;
     }
+
     public function mockProcess(?callable $mockProcessCallback = null): Process
     {
         $legacyMock = Mockery::mock(Process::class);

@@ -16,6 +16,7 @@ final class ResultTest extends BaseTestCase
         $this->assertTrue($result->failed());
         $this->assertFalse($result->wasSuccessful());
     }
+
     public function testResultKnowsCommandWasSuccessful(): void
     {
         $result = new Result(0);

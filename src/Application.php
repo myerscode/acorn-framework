@@ -144,7 +144,7 @@ class Application extends SymfonyApplication
 
         try {
             // this happens within the run, but we want to capture the SymfonyCommandNotFoundException and handle it ourselves
-            $commandName = $input !== null ? ($this->getCommandName($input) ?? $this->defaultCommand) : $this->defaultCommand;
+            $commandName = $input instanceof \Symfony\Component\Console\Input\InputInterface ? ($this->getCommandName($input) ?? $this->defaultCommand) : $this->defaultCommand;
             $this->find($commandName);
             $exitCode = parent::run($input, $output);
         } catch (SymfonyCommandNotFoundException $e) {

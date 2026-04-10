@@ -16,7 +16,7 @@ final class PipelineTest extends TestCase
 {
     public function testAddingAnPipelineAndArrayWorks(): void
     {
-        $pipeline1 = (new Pipeline())->pipes([
+        $pipeline1 = new Pipeline()->pipes([
             new BeforePipe('1'),
             new AfterPipe('4'),
         ]);
@@ -46,7 +46,7 @@ final class PipelineTest extends TestCase
     public function testCanAddASinglePipe(): void
     {
         $stdClass = new StdClass();
-        $pipeline = (new Pipeline())->pipes(new BeforePipe())->flush($stdClass);
+        $pipeline = new Pipeline()->pipes(new BeforePipe())->flush($stdClass);
 
         $this->assertSame(['before'], $pipeline->passedThrough);
 
@@ -134,7 +134,7 @@ final class PipelineTest extends TestCase
     {
         $stdClass = new StdClass();
 
-        $pipeline = (new Pipeline())->pipes([
+        $pipeline = new Pipeline()->pipes([
             BeforePipe::class,
             AfterPipe::class,
         ])->flush($stdClass);

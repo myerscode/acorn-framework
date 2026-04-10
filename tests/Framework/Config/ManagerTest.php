@@ -33,6 +33,7 @@ final class ManagerTest extends BaseTestCase
         // cleanup cached file
         system('rm -rf -- ' . escapeshellarg($cacheLocation . '.acorn'));
     }
+
     public function testReturnsConfigObject(): void
     {
         $manager = new Manager($this->appBase());

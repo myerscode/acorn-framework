@@ -10,5 +10,6 @@ use Myerscode\Acorn\Framework\Events\EventInterface;
 class TestEvent extends Event implements EventInterface
 {
     public int $counter = 0;
+
     protected string $eventName = 'test.event';
 }

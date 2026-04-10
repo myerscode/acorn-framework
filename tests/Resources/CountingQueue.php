@@ -11,6 +11,7 @@ use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 class CountingQueue extends SynchronousQueue
 {
     protected int $counter = 0;
+
     protected int $pushCounter = 0;
 
     #[Override]

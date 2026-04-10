@@ -123,7 +123,7 @@ class Pipeline
         }
 
         if ($pipe instanceof PipeInterface) {
-            return fn ($object) => $pipe->handle($object, $nextLayer);
+            return fn ($object): mixed => $pipe->handle($object, $nextLayer);
         }
 
         return fn ($object) => $nextLayer($object);

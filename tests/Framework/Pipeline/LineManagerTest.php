@@ -30,6 +30,7 @@ final class LineManagerTest extends TestCase
 
         $this->assertSame(['123', '456', 'abc', 'xyz'], $response->passedThrough);
     }
+
     public function testRegisteringPipelineWithClasses(): void
     {
         $lineManager = new LineManager();

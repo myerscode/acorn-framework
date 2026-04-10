@@ -54,6 +54,7 @@ final class QueueTest extends BaseTestCase
         $this->assertEquals(true, $listenerQueue->contains($testEmptyListener));
         $this->assertEquals(false, $listenerQueue->contains(new TestListener()));
     }
+
     public function testQueueCanGetAllItemsItContains(): void
     {
         $listenerQueue = null;
