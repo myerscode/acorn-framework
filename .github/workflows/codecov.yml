@@ -1,11 +1,14 @@
 name: codecov
+
 on:
   schedule:
     - cron: "0 0 * * *"
   push:
     branches: [ main ]
+
 permissions:
   contents: read
+
 jobs:
   run:
     runs-on: ${{ matrix.os }}
@@ -13,6 +16,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         php-versions: [ '8.5' ]
+
     name: PHP ${{ matrix.php-versions }} - ${{ matrix.os }}
     steps:
       - name: Checkout

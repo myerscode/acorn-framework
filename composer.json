@@ -54,7 +54,7 @@
     },
     "scripts": {
         "lint": "vendor/bin/pint",
-        "analyse": "vendor/bin/phpstan analyse",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
         "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
         "test-coverage": "vendor/bin/phpunit --testdox --colors=always",
         "security-audit": "@composer audit"

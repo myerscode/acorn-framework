@@ -6,6 +6,7 @@ namespace Tests\Resources;
 
 use Myerscode\Acorn\Framework\Events\EventInterface;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Override;
 
 class CountingListener extends Listener
 {
@@ -16,7 +17,7 @@ class CountingListener extends Listener
         return $this->counter;
     }
 
-    #[\Override]
+    #[Override]
     public function handle(EventInterface $event): void
     {
         ++$this->counter;

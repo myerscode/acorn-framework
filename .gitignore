@@ -4,3 +4,5 @@ composer.lock
 .phpunit.*
 coverage.xml
 coverage/
+coverage.xml
+coverage/

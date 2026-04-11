@@ -88,10 +88,12 @@ class Pipeline
         }
 
         /** @var array<PipeInterface|PipeCollectionInterface|string> $filtered */
-        $filtered = array_values(array_filter($pipes, fn ($pipe): bool =>
+        $filtered = array_values(array_filter(
+            $pipes,
+            fn ($pipe): bool =>
             $pipe instanceof PipeInterface
             || $pipe instanceof PipeCollectionInterface
-            || (is_string($pipe) && is_subclass_of($pipe, PipeInterface::class))
+            || (is_string($pipe) && is_subclass_of($pipe, PipeInterface::class)),
         ));
         $this->pipes = $filtered;
     }

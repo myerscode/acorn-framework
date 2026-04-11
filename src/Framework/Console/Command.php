@@ -88,7 +88,7 @@ abstract class Command extends SymfonyCommand
         try {
             $application = $this->getApplication();
             if (!$application instanceof \Symfony\Component\Console\Application) {
-                throw new SubCommandFailedException(new \RuntimeException('No application available'), 0);
+                throw new SubCommandFailedException(new RuntimeException('No application available'), 0);
             }
 
             $symfonyCommand = $application->find($commandName);

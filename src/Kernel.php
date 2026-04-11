@@ -35,7 +35,7 @@ class Kernel
 
     public function application(): Application
     {
-        return $this->boot()->application ?? throw new \RuntimeException('Application not booted');
+        return $this->boot()->application ?? throw new RuntimeException('Application not booted');
     }
 
     public function config(): Manager
@@ -69,7 +69,7 @@ class Kernel
             // TODO if result failed but has no error do something
             if ($result->failed()) {
                 $error = $result->error();
-                if ($error instanceof \Exception) {
+                if ($error instanceof Exception) {
                     throw $error;
                 }
             }
@@ -134,7 +134,7 @@ class Kernel
     {
         $app = $this->boot()->application;
         if (!$app instanceof \Myerscode\Acorn\Application) {
-            throw new \RuntimeException('Application not booted');
+            throw new RuntimeException('Application not booted');
         }
 
         return $app->handle($this->input(), $this->output());
