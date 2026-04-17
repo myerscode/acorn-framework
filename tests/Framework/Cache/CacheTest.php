@@ -146,6 +146,23 @@ final class CacheTest extends BaseTestCase
     }
 
     #[DataProvider('dataProvider')]
+    public function testHasReturnsTrueForFalsyValues(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $cache->set('false-key', false);
+        $cache->set('zero-key', 0);
+        $cache->set('empty-string-key', '');
+        $cache->set('null-key', null);
+
+        $this->assertTrue($cache->has('false-key'), 'has() should return true for cached false');
+        $this->assertTrue($cache->has('zero-key'), 'has() should return true for cached 0');
+        $this->assertTrue($cache->has('empty-string-key'), 'has() should return true for cached ""');
+        $this->assertTrue($cache->has('null-key'), 'has() should return true for cached null');
+        $this->assertFalse($cache->has('missing-key'), 'has() should return false for missing key');
+    }
+
+    #[DataProvider('dataProvider')]
     public function testIsMissing(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
@@ -155,6 +172,20 @@ final class CacheTest extends BaseTestCase
         $cache->set('key', 'value');
 
         $this->assertFalse($cache->isMissing('key'));
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testIsMissingReturnsFalseForFalsyValues(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $cache->set('false-key', false);
+        $cache->set('zero-key', 0);
+        $cache->set('empty-string-key', '');
+
+        $this->assertFalse($cache->isMissing('false-key'), 'isMissing() should return false for cached false');
+        $this->assertFalse($cache->isMissing('zero-key'), 'isMissing() should return false for cached 0');
+        $this->assertFalse($cache->isMissing('empty-string-key'), 'isMissing() should return false for cached ""');
     }
 
     #[DataProvider('dataProvider')]
@@ -176,6 +207,30 @@ final class CacheTest extends BaseTestCase
 
         $this->assertSame('value', $cache->remember('key', 1000, static fn (): string => 'value'));
         $this->assertSame('value', $cache->remember('key', 1000, static fn (): string => 'value2'));
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testRememberReturnsFalsyValueWithoutCallingCallbackAgain(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $calls = 0;
+        $result = $cache->remember('key', 1000, static function () use (&$calls): bool {
+            $calls++;
+            return false;
+        });
+
+        $this->assertFalse($result);
+        $this->assertSame(1, $calls, 'Callback should only be called once');
+
+        // Second call should use cached value, not invoke callback again
+        $result2 = $cache->remember('key', 1000, static function () use (&$calls): string {
+            $calls++;
+            return 'should not be called';
+        });
+
+        $this->assertFalse($result2);
+        $this->assertSame(1, $calls, 'Callback should not be called again for cached false');
     }
 
     #[DataProvider('dataProvider')]

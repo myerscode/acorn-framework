@@ -86,7 +86,7 @@ class Cache implements CacheInterface
 
     public function has(string $key): bool
     {
-        return !is_null($this->get($key));
+        return $this->driver->has($this->namespacedKey($key));
     }
 
     public function isMissing(string $key): bool
@@ -105,13 +105,12 @@ class Cache implements CacheInterface
 
     public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $callback): mixed
     {
-        $value = $this->get($key);
-
-        if (!is_null($value)) {
-            return $value;
+        if ($this->has($key)) {
+            return $this->get($key);
         }
 
-        $this->set($key, $value = $callback(), $ttl);
+        $value = $callback();
+        $this->set($key, $value, $ttl);
 
         return $value;
     }
