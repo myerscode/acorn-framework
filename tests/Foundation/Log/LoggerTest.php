@@ -62,6 +62,24 @@ final class LoggerTest extends TestCase
         $this->assertStringContainsString('Test single file', (string) file_get_contents($file));
     }
 
+    public function testCreatesDirectoryIfMissing(): void
+    {
+        $nestedDir = sys_get_temp_dir() . '/acorn-logger-test-nested-' . uniqid();
+        $this->assertDirectoryDoesNotExist($nestedDir);
+
+        $logger = new Logger($nestedDir . '/deep/path', LogRotation::Single);
+        $logger->info('Test nested directory creation');
+
+        $this->assertDirectoryExists($nestedDir . '/deep/path');
+        $this->assertStringContainsString('Test nested directory creation', (string) file_get_contents($nestedDir . '/deep/path/acorn.log'));
+
+        // cleanup
+        array_map(unlink(...), glob($nestedDir . '/deep/path/*') ?: []);
+        rmdir($nestedDir . '/deep/path');
+        rmdir($nestedDir . '/deep');
+        rmdir($nestedDir);
+    }
+
     public function testWritesToWeeklyFile(): void
     {
         $logger = new Logger($this->logDir, LogRotation::Weekly);

@@ -51,6 +51,10 @@ class Logger implements LoggerInterface
 
     public function log(mixed $level, mixed $message, array $context = []): void
     {
+        if (!is_dir($this->logDirectory)) {
+            mkdir($this->logDirectory, 0755, true);
+        }
+
         $date = date('Y-m-d H:i:s');
         $contextStr = $context !== [] ? json_encode($context) : '';
         $entry = sprintf('[%s] [%s] %s', $date, $level, $message) . ($contextStr ? ' ' . $contextStr : '') . "\n";
