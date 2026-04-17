@@ -120,9 +120,17 @@ class Cache implements CacheInterface
      */
     public function set(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool
     {
-        $normalizedTtl = $ttl instanceof DateTimeInterface ? null : $ttl;
+        if ($ttl instanceof DateTimeInterface) {
+            $seconds = $ttl->getTimestamp() - time();
+            if ($seconds <= 0) {
+                throw new InvalidArgumentException(
+                    sprintf('DateTimeInterface TTL must be in the future, got %s', $ttl->format('Y-m-d H:i:s'))
+                );
+            }
+            $ttl = $seconds;
+        }
 
-        return $this->driver->set($this->namespacedKey($key), $value, $normalizedTtl);
+        return $this->driver->set($this->namespacedKey($key), $value, $ttl);
     }
 
     /**

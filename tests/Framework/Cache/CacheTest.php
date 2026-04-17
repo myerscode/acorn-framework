@@ -246,6 +246,29 @@ final class CacheTest extends BaseTestCase
     }
 
     #[DataProvider('dataProvider')]
+    public function testSetWithDateTimeInterfaceTtl(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $future = new \DateTimeImmutable('+1 hour');
+        $cache->set('key', 'value', $future);
+
+        $this->assertTrue($cache->has('key'));
+        $this->assertSame('value', $cache->get('key'));
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testSetThrowsForPastDateTimeInterfaceTtl(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $this->expectException(\Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException::class);
+
+        $past = new \DateTimeImmutable('-1 hour');
+        $cache->set('key', 'value', $past);
+    }
+
+    #[DataProvider('dataProvider')]
     public function testSetMultiple(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
