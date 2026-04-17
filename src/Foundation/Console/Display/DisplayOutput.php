@@ -154,7 +154,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     {
         $table = new Table($this);
 
-        $table->setHeaders($headers)->setRows($rows);
+        $table->setHeaders($headers)->setRows($rows)->render();
     }
 
     /**
