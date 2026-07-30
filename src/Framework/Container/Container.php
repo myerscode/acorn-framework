@@ -26,6 +26,9 @@ class Container
         $this->dependencyManager = new DependencyManager(new Definitions());
         $this->dependencyManager
             ->delegate(
+                // Note: ReflectionContainer does not detect circular dependencies.
+                // If service A requires B and B requires A, this will cause a stack overflow.
+                // Avoid circular constructor dependencies in service design.
                 new ReflectionContainer(true),
             )
             ->defaultToShared();
