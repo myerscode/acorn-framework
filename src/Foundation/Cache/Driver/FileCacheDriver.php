@@ -9,7 +9,9 @@ class FileCacheDriver implements DriverInterface
 {
     public function __construct(protected readonly string $cacheDir)
     {
-        //
+        if (!is_dir($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
+        }
     }
 
     public function cacheDir(): string

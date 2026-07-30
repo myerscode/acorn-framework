@@ -17,4 +17,21 @@ final class FileCacheDriverTest extends BaseTestCase
 
         $this->assertSame($cacheDir, $fileCacheDriver->cacheDir());
     }
+
+    public function testConstructorCreatesDirectoryIfMissing(): void
+    {
+        $baseDir = sys_get_temp_dir() . '/file_cache_mkdir_test_' . time();
+        $cacheDir = $baseDir . '/nested/cache';
+
+        $this->assertDirectoryDoesNotExist($cacheDir);
+
+        new FileCacheDriver($cacheDir);
+
+        $this->assertDirectoryExists($cacheDir);
+
+        // cleanup
+        @rmdir($cacheDir);
+        @rmdir($baseDir . '/nested');
+        @rmdir($baseDir);
+    }
 }
