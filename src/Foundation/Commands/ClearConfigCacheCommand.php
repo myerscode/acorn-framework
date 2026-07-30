@@ -8,7 +8,6 @@ use Myerscode\Acorn\Framework\Console\Command;
 use Override;
 
 use function Myerscode\Acorn\Foundation\config;
-use function Myerscode\Acorn\Foundation\terminal;
 
 class ClearConfigCacheCommand extends Command
 {
@@ -22,8 +21,15 @@ class ClearConfigCacheCommand extends Command
     {
         $cachedLocation = config('cachedConfigLocation');
 
+        if (empty($cachedLocation) || !is_string($cachedLocation)) {
+            $this->info('No config cache location configured.');
+            return;
+        }
+
         $this->info('Clearing ' . $cachedLocation);
 
-        terminal()->run('rm -f ' . $cachedLocation);
+        if (file_exists($cachedLocation)) {
+            unlink($cachedLocation);
+        }
     }
 }
