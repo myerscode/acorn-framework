@@ -24,6 +24,6 @@ class QueueProvider extends ServiceProvider
 
         $this->getContainer()->add('queue', fn () => $this->getContainer()->get(QueueInterface::class));
 
-        $this->getContainer()->add(Dispatcher::class, fn (): Dispatcher => new Dispatcher($this->getContainer()->get(QueueInterface::class)));
+        $this->getContainer()->addShared(Dispatcher::class, fn (): Dispatcher => new Dispatcher($this->getContainer()->get(QueueInterface::class)));
     }
 }
