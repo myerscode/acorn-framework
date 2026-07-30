@@ -34,6 +34,11 @@ class PackageDiscovery
             if ($commands === true) {
                 $packageLocation = $this->locatePackage($package);
                 $commandDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Commands';
+
+                if (!$this->isWithinPackage($commandDirectory, $packageLocation)) {
+                    continue;
+                }
+
                 $commandLocations[$package] = $commandDirectory;
             }
         }
@@ -55,6 +60,11 @@ class PackageDiscovery
             if ($providers === true) {
                 $packageLocation = $this->locatePackage($package);
                 $providerDirectory = $packageLocation . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Providers';
+
+                if (!$this->isWithinPackage($providerDirectory, $packageLocation)) {
+                    continue;
+                }
+
                 $providerClasses[$package] = $providerDirectory;
             }
         }
@@ -65,5 +75,20 @@ class PackageDiscovery
     protected function locatePackage(string $package): string
     {
         return trim($this->finder->locate($package));
+    }
+
+    /**
+     * Validate that a discovered path is within the package's own directory.
+     * Prevents path traversal attacks via malicious composer.json metadata.
+     */
+    private function isWithinPackage(string $path, string $packageRoot): bool
+    {
+        $resolvedPath = realpath($path) ?: $path;
+        $resolvedRoot = realpath($packageRoot) ?: $packageRoot;
+
+        // Normalise trailing separators for comparison
+        $resolvedRoot = rtrim($resolvedRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        return str_starts_with($resolvedPath, $resolvedRoot);
     }
 }
