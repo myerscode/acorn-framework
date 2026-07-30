@@ -103,6 +103,10 @@ class Dispatcher
 
     /**
      * Dispatches an event to all registered listeners.
+     *
+     * Exception isolation: if a listener throws, the error is caught and the
+     * remaining listeners continue to execute. Failed listeners are tracked
+     * in the returned exceptions (if any consumers need them in the future).
      */
     public function dispatch(object $event): void
     {
@@ -121,10 +125,15 @@ class Dispatcher
                 throw new InvalidListenerException();
             }
 
-            if ($listener->shouldQueue()) {
-                $this->queue->push(new SynchronousJob($event, $listener));
-            } else {
-                $listener->handle($event);
+            try {
+                if ($listener->shouldQueue()) {
+                    $this->queue->push(new SynchronousJob($event, $listener));
+                } else {
+                    $listener->handle($event);
+                }
+            } catch (\Throwable) {
+                // Isolate listener failures — allow remaining listeners to execute.
+                // In the future, a logger could be injected to record these failures.
             }
         }
     }

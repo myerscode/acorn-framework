@@ -419,4 +419,26 @@ final class DispatcherTest extends BaseTestCase
 
         $this->assertSame(1, $queue->counter);
     }
+
+    public function testFailingListenerDoesNotBlockSubsequentListeners(): void
+    {
+        $dispatcher = $this->newDispatcher();
+        $callOrder = [];
+
+        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
+            $callOrder[] = 'first';
+        });
+
+        $dispatcher->addListener(TestEvent::class, static function (): void {
+            throw new \RuntimeException('Listener failure');
+        });
+
+        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
+            $callOrder[] = 'third';
+        });
+
+        $dispatcher->dispatch(new TestEvent());
+
+        $this->assertSame(['first', 'third'], $callOrder);
+    }
 }
