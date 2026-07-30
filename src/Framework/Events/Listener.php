@@ -7,11 +7,6 @@ namespace Myerscode\Acorn\Framework\Events;
 abstract class Listener implements ListenerInterface
 {
     /**
-     * @var string[]|string
-     */
-    protected string|array $listensFor = [];
-
-    /**
      * Should the listener action be queued or handled synchronously
      */
     protected bool $shouldQueue = false;
@@ -25,12 +20,12 @@ abstract class Listener implements ListenerInterface
     }
 
     /**
+     * Events this listener should be registered for.
+     * Subclasses MUST implement this method to declare which events they handle.
+     *
      * @return string[]|string
      */
-    public function listensFor(): array|string
-    {
-        return $this->listensFor;
-    }
+    abstract public function listensFor(): array|string;
 
     /**
      * Should this listener queue its response

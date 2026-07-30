@@ -10,12 +10,6 @@ use Override;
 
 class BeforeCommandRun extends Listener
 {
-    /**
-     * @var string[]|string
-     */
-    #[Override]
-    protected string|array $listensFor = CommandBeforeEvent::class;
-
     public function __construct(private readonly DisplayOutput $displayOutput)
     {
         //
@@ -31,5 +25,10 @@ class BeforeCommandRun extends Listener
         $command = $event->consoleCommandEvent->getCommand();
         $message = sprintf('Before running command <info>%s</info>', $command?->getName() ?? 'UNKNOWN');
         $this->displayOutput->verbose($message);
+    }
+
+    public function listensFor(): array|string
+    {
+        return CommandBeforeEvent::class;
     }
 }

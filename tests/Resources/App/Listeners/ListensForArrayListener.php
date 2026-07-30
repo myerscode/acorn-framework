@@ -13,15 +13,17 @@ class ListensForArrayListener extends Listener
     /**
      * @var string[]
      */
-    #[Override]
-    protected string|array $listensFor = [
-        'test.event.one',
-        'test.event.two',
-    ];
-
-    #[Override]
+#[Override]
     public function handle(EventInterface $event): void
     {
         //
+    }
+
+    public function listensFor(): array|string
+    {
+        return [
+        'test.event.one',
+        'test.event.two',
+    ];
     }
 }

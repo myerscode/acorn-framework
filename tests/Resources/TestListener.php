@@ -13,12 +13,14 @@ class TestListener extends Listener
     /**
      * @var string[]|string
      */
-    #[Override]
-    protected string|array $listensFor = TestEvent::class;
-
-    #[Override]
+#[Override]
     public function handle(EventInterface $event): void
     {
         //
+    }
+
+    public function listensFor(): array|string
+    {
+        return TestEvent::class;
     }
 }

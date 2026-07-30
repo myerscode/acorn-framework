@@ -28,4 +28,9 @@ class DemoListener extends Listener
 
         $this->displayOutput->info(DemoEvent::class.' event emitted at '.$event->timestamp);
     }
+
+    public function listensFor(): array|string
+    {
+        return DemoEvent::class;
+    }
 }

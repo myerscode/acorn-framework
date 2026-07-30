@@ -13,15 +13,17 @@ class TestQueueableListener extends Listener
     /**
      * @var string[]|string
      */
-    #[Override]
-    protected string|array $listensFor = TestQueueableEvent::class;
-
-    #[Override]
+#[Override]
     protected bool $shouldQueue = true;
 
     #[Override]
     public function handle(EventInterface $event): void
     {
         //
+    }
+
+    public function listensFor(): array|string
+    {
+        return TestQueueableEvent::class;
     }
 }

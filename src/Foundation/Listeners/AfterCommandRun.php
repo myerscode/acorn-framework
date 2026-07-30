@@ -10,12 +10,6 @@ use Override;
 
 class AfterCommandRun extends Listener
 {
-    /**
-     * @var string[]|string
-     */
-    #[Override]
-    protected string|array $listensFor = CommandAfterEvent::class;
-
     public function __construct(private readonly DisplayOutput $displayOutput)
     {
         //
@@ -31,5 +25,10 @@ class AfterCommandRun extends Listener
         $command = $event->consoleTerminateEvent->getCommand();
         $message = sprintf('After running command <info>%s</info>', $command?->getName() ?? 'UNKNOWN');
         $this->displayOutput->verbose($message);
+    }
+
+    public function listensFor(): array|string
+    {
+        return CommandAfterEvent::class;
     }
 }

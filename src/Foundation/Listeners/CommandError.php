@@ -10,12 +10,6 @@ use Override;
 
 class CommandError extends Listener
 {
-    /**
-     * @var string[]|string
-     */
-    #[Override]
-    protected string|array $listensFor = CommandErrorEvent::class;
-
     public function __construct(private readonly DisplayOutput $displayOutput)
     {
         //
@@ -31,5 +25,10 @@ class CommandError extends Listener
         $command = $event->consoleErrorEvent->getCommand();
         $message = sprintf('Error running command <info>%s</info>', $command?->getName() ?? 'UNKNOWN');
         $this->displayOutput->verbose($message);
+    }
+
+    public function listensFor(): array|string
+    {
+        return CommandErrorEvent::class;
     }
 }

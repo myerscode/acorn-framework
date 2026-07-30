@@ -22,4 +22,9 @@ class CountingListener extends Listener
     {
         ++$this->counter;
     }
+
+    public function listensFor(): array|string
+    {
+        return [];
+    }
 }

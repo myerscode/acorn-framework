@@ -13,15 +13,17 @@ class TestMultiEventListener extends Listener
     /**
      * @var string[]|string
      */
-    #[Override]
-    protected string|array $listensFor = [
-        TestEvent::class,
-        'another.test.event',
-    ];
-
-    #[Override]
+#[Override]
     public function handle(EventInterface $event): void
     {
         //
+    }
+
+    public function listensFor(): array|string
+    {
+        return [
+        TestEvent::class,
+        'another.test.event',
+    ];
     }
 }

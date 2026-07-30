@@ -15,4 +15,9 @@ class TestEmptyListener extends Listener
     {
         //
     }
+
+    public function listensFor(): array|string
+    {
+        return [];
+    }
 }
