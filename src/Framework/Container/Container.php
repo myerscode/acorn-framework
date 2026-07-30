@@ -60,7 +60,13 @@ class Container
      */
     public function add(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
-        $this->dependencyManager->add($id, $concrete);
+        $definition = $this->dependencyManager->add($id, $concrete);
+
+        if ($shared === true) {
+            $definition->setShared(true);
+        } elseif ($shared === false) {
+            $definition->setShared(false);
+        }
     }
 
     /**
