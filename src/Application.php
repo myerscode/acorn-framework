@@ -376,6 +376,12 @@ class Application extends SymfonyApplication
                 $this->output()->debug(sprintf('Loading providers from %s', $providerDiscoveryDirectory));
                 foreach (FileService::make($providerDiscoveryDirectory)->files() as $file) {
                     $providerClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+
+                    if (!class_exists($providerClass) || !is_subclass_of($providerClass, \Myerscode\Acorn\Framework\Providers\ServiceProvider::class)) {
+                        $this->output()->debug(sprintf('Skipping invalid provider class: %s', $providerClass));
+                        continue;
+                    }
+
                     $serviceProviders[] = $providerClass;
                     $this->output()->debug(sprintf('Found Service Provider [%s]', $providerClass));
                 }
