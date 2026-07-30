@@ -17,16 +17,24 @@ class ShowListenersCommand extends Command
     #[Override]
     protected string $signature = 'listener:show';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $this->output->writeln('App Event Listeners');
+        $this->info('Event Listener Directories');
 
         $listenerLocations = [
-            'app' => config('app.listeners'),
-            'framework' => config('framework.listeners'),
-            'executing' => config('executing.listeners'),
+            'app' => config('app.dir.listeners'),
+            'framework' => config('framework.dir.listeners'),
+            'executing' => config('executing.dir.listeners'),
         ];
 
-        print_r($listenerLocations);
+        $rows = array_map(
+            fn ($source, $path): array => [$source, $path ?? 'not configured'],
+            array_keys($listenerLocations),
+            $listenerLocations,
+        );
+
+        $this->output->table(['Source', 'Directory'], $rows);
+
+        return 0;
     }
 }
