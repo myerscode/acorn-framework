@@ -1,5 +1,20 @@
 <?php
 
+/**
+ * Convenience helper functions for Acorn applications.
+ *
+ * WARNING: These functions rely on the global Container singleton (Container::getInstance()).
+ * They are intended as convenience wrappers for userland command code only.
+ *
+ * DO NOT use these functions in framework or library code. For framework internals,
+ * inject dependencies via the constructor. Using these helpers in library code creates:
+ * - Hidden coupling to global state
+ * - Inability to test consumers in isolation
+ * - No support for multiple application instances in the same process
+ *
+ * For testing, use constructor injection and mock the dependencies directly.
+ */
+
 namespace Myerscode\Acorn\Foundation;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
