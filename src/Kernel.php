@@ -26,6 +26,8 @@ class Kernel
 
     private readonly Container $container;
 
+    private ?Manager $configManager = null;
+
     public function __construct(string $basePath = '')
     {
         $this->container = new Container();
@@ -40,7 +42,7 @@ class Kernel
 
     public function config(): Manager
     {
-        return new Manager($this->rootPath);
+        return $this->configManager ??= new Manager($this->rootPath);
     }
 
     public function container(): Container
