@@ -54,7 +54,7 @@ trait InteractsWithInput
             return false;
         }
 
-        return !empty($this->input->getOption($name));
+        return $this->input->getOption($name) !== null;
     }
 
     /**
