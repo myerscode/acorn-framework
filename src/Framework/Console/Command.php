@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Console;
 
 use Override;
 use League\Container\Container;
-use RuntimeException;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
@@ -90,7 +91,7 @@ abstract class Command extends SymfonyCommand
         try {
             $application = $this->getApplication();
             if (!$application instanceof \Symfony\Component\Console\Application) {
-                throw new SubCommandFailedException(new RuntimeException('No application available'), 0);
+                throw new SubCommandFailedException('No application available', 0);
             }
 
             $symfonyCommand = $application->find($commandName);
@@ -100,7 +101,7 @@ abstract class Command extends SymfonyCommand
 
             return $symfonyCommand->run($configInput, $this->output);
         } catch (ExceptionInterface $exception) {
-            throw new SubCommandFailedException($exception, $exception->getCode(), $exception);
+            throw new SubCommandFailedException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
