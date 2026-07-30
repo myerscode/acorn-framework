@@ -233,6 +233,21 @@ class Application extends SymfonyApplication
         }
     }
 
+    /**
+     * Bridge Symfony Console events into the Acorn event dispatcher.
+     *
+     * Architecture note: This application uses two event dispatchers:
+     * 1. Symfony's EventDispatcher — required by Symfony Console for ConsoleEvents
+     * 2. Acorn's custom Dispatcher — used for application-level events with queue support
+     *
+     * The Symfony dispatcher bridges COMMAND, TERMINATE, and ERROR events into the
+     * custom dispatcher via closures. Any additional Symfony Console events added in
+     * future Symfony versions will NOT automatically flow through — they must be
+     * bridged explicitly here.
+     *
+     * Future consolidation: Consider implementing Symfony's EventDispatcherInterface
+     * on the custom Dispatcher to eliminate this bridging layer entirely.
+     */
     protected function bindCommandEvents(): void
     {
         $eventDispatcher = new EventDispatcher();
