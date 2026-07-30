@@ -18,8 +18,10 @@ class ShowConfigCommand extends Command
     #[Override]
     protected string $signature = 'config:show';
 
-    public function handle(): void
+    public function handle(): int
     {
+        $this->output->warning('This command displays all configuration values including filesystem paths. Do not use in untrusted environments.');
+
         if (config('cachedConfig')) {
             $locations = [config('cachedConfigLocation')];
         } else {
@@ -36,5 +38,7 @@ class ShowConfigCommand extends Command
         $mapped = array_map(fn ($key, $value): array => ['key' => $key, 'value' => $value], array_keys($config), $config);
         $headers = ['Key', 'Value'];
         $this->output->table($headers, $mapped);
+
+        return 0;
     }
 }
