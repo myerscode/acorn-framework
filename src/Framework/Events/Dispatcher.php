@@ -12,6 +12,14 @@ class Dispatcher
 {
     protected string $allEventsNamespace = '*';
 
+    /**
+     * Instance-scoped callable listener registry.
+     * Replaces the static CallableEventManager for this dispatcher.
+     *
+     * @var CallableListener[]
+     */
+    protected array $callableListeners = [];
+
     /** @var string[] */
     protected array $catchAllEventNames = ['*', 'any', 'all'];
 
@@ -40,8 +48,8 @@ class Dispatcher
             $this->listeners[$eventName] = new ListenerQueue();
         }
 
-        if ($listener instanceof Closure || is_callable($listener)) {
-            $newListener = CallableEventManager::create($listener);
+        if (is_callable($listener) && !($listener instanceof ListenerInterface)) {
+            $newListener = $this->createCallableListener($listener);
         } else {
             $newListener = $listener;
         }
@@ -59,6 +67,38 @@ class Dispatcher
             $callable = [$subscriber, $action];
             $this->addListener($eventName, $callable);
         }
+    }
+
+    /**
+     * Get all callable listeners registered with this dispatcher.
+     *
+     * @return CallableListener[]
+     */
+    public function callableListeners(): array
+    {
+        return $this->callableListeners;
+    }
+
+    /**
+     * Clear all callable listeners from this dispatcher instance.
+     */
+    public function clearCallableListeners(): void
+    {
+        $this->callableListeners = [];
+    }
+
+    /**
+     * Create and register a callable listener on this dispatcher instance.
+     */
+    public function createCallableListener(mixed $callable): CallableListener
+    {
+        $callableListener = new CallableListener($callable);
+        $this->callableListeners[] = $callableListener;
+
+        // Also register with static manager for backward compatibility
+        CallableEventManager::register($callableListener);
+
+        return $callableListener;
     }
 
     /**
@@ -108,6 +148,20 @@ class Dispatcher
         $this->dispatch($event);
 
         return $this;
+    }
+
+    /**
+     * Find a callable listener registered with this dispatcher.
+     */
+    public function findCallableListener(callable $callable): CallableListener|false
+    {
+        foreach ($this->callableListeners as $listener) {
+            if ($listener->getCallable() === $callable) {
+                return $listener;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -162,8 +216,8 @@ class Dispatcher
             return false;
         }
 
-        if (is_callable($listener)) {
-            $listener = CallableEventManager::findByCallable($listener);
+        if (is_callable($listener) && !($listener instanceof ListenerInterface)) {
+            $listener = $this->findCallableListener($listener);
         }
 
         if ($listener === false) {
@@ -190,8 +244,8 @@ class Dispatcher
             return;
         }
 
-        if (is_callable($listener)) {
-            $found = CallableEventManager::findByCallable($listener);
+        if (is_callable($listener) && !($listener instanceof ListenerInterface)) {
+            $found = $this->findCallableListener($listener);
             if ($found === false) {
                 return;
             }

@@ -44,4 +44,27 @@ final class CallableEventManagerTest extends BaseTestCase
         $dispatcher->addListener('my-special-event', $callable);
         $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());
     }
+
+    public function testDispatcherInstanceTracksCallableListeners(): void
+    {
+        $dispatcher = $this->dispatcher();
+        $dispatcher->clearCallableListeners();
+        CallableEventManager::clear();
+
+        $callable = static function (): void {
+        };
+        $dispatcher->addListener('test-event', $callable);
+
+        $this->assertCount(1, $dispatcher->callableListeners());
+        $this->assertNotFalse($dispatcher->findCallableListener($callable));
+    }
+
+    public function testDispatcherFindCallableListenerReturnsFalseForUnknown(): void
+    {
+        $dispatcher = $this->dispatcher();
+        $dispatcher->clearCallableListeners();
+
+        $result = $dispatcher->findCallableListener(static function (): void {});
+        $this->assertFalse($result);
+    }
 }
