@@ -56,8 +56,9 @@ class Logger implements LoggerInterface
         }
 
         $date = date('Y-m-d H:i:s');
-        $contextStr = $context !== [] ? json_encode($context) : '';
-        $entry = sprintf('[%s] [%s] %s', $date, $level, $message) . ($contextStr ? ' ' . $contextStr : '') . "\n";
+        $sanitisedMessage = str_replace(["\r\n", "\r", "\n"], ' ', (string) $message);
+        $contextStr = $context !== [] ? str_replace(["\r\n", "\r", "\n"], ' ', (string) json_encode($context)) : '';
+        $entry = sprintf('[%s] [%s] %s', $date, $level, $sanitisedMessage) . ($contextStr ? ' ' . $contextStr : '') . "\n";
         file_put_contents($this->getLogFileName(), $entry, FILE_APPEND);
     }
 

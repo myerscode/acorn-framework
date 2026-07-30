@@ -99,4 +99,31 @@ final class LoggerTest extends TestCase
         $this->assertFileExists($file);
         $this->assertStringContainsString('Test yearly file', (string) file_get_contents($file));
     }
+
+    public function testSanitisesNewlinesInMessage(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+        $logger->info("Line one\nLine two\r\nLine three");
+
+        $file = $this->logDir . '/acorn.log';
+        $contents = (string) file_get_contents($file);
+        $lines = array_filter(explode("\n", trim($contents)));
+
+        // Should be a single log entry, not multiple lines from injected newlines
+        $this->assertCount(1, $lines);
+        $this->assertStringContainsString('Line one Line two Line three', $contents);
+    }
+
+    public function testSanitisesNewlinesInContext(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+        $logger->info('Test', ['key' => "value\ninjected"]);
+
+        $file = $this->logDir . '/acorn.log';
+        $contents = (string) file_get_contents($file);
+        $lines = array_filter(explode("\n", trim($contents)));
+
+        $this->assertCount(1, $lines);
+        $this->assertStringNotContainsString("\n" . 'injected', $contents);
+    }
 }
