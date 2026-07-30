@@ -61,4 +61,19 @@ final class ContainerTest extends BaseTestCase
 
         $this->assertSame($first, $second);
     }
+
+    public function testRemoveActuallyRemovesBinding(): void
+    {
+        $container = new Container();
+
+        $container->add('test-service', 'hello');
+        $this->assertSame('hello', $container->get('test-service'));
+
+        $container->remove('test-service');
+
+        // After removal, the binding should no longer resolve to the old value.
+        // It will either throw or resolve differently via auto-wiring.
+        $this->expectException(\Psr\Container\NotFoundExceptionInterface::class);
+        $container->get('test-service');
+    }
 }

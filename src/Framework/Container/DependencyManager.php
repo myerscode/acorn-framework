@@ -9,11 +9,16 @@ use League\Container\Definition\DefinitionInterface;
 
 class DependencyManager extends Container
 {
+    /**
+     * Remove a binding from the container entirely.
+     *
+     * After removal, calling get($id) will attempt auto-wiring via the
+     * delegate (ReflectionContainer) or throw a NotFoundException.
+     */
     public function remove(string $id): void
     {
-        // league/container 5 does not support removal; overwrite with null to effectively reset
-        if ($this->has($id)) {
-            $this->add($id, null, true);
+        if ($this->definitions instanceof Definitions) {
+            $this->definitions->remove($id);
         }
     }
 
