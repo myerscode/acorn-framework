@@ -156,31 +156,47 @@ class Manager implements ManagerInterface
     }
 
     /**
+     * Cache the configuration as a JSON file (data-only, no code execution).
+     *
      * @param array<string, mixed> $config
      */
     protected function cacheConfig(array $config): void
     {
         $cachedConfigLocation = $this->cacheLocation();
 
-        $template = '<?php return ' . var_export($config, true) . ';';
+        $directory = dirname($cachedConfigLocation);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
 
-        FileService::make($cachedConfigLocation)->touch()->setContent($template);
+        $json = json_encode($config, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        file_put_contents($cachedConfigLocation, $json, LOCK_EX);
     }
 
+    /**
+     * Load the cached configuration from a JSON file.
+     */
     protected function cachedConfig(): Config|false
     {
-        $config = new Config();
-
         $cachedConfigLocation = $this->cacheLocation();
 
-        $utility = FileService::make($cachedConfigLocation);
-
-        if (!$utility->exists()) {
+        if (!file_exists($cachedConfigLocation)) {
             return false;
         }
 
-        $config->loadFile($utility->path());
+        $contents = file_get_contents($cachedConfigLocation);
+        if ($contents === false) {
+            return false;
+        }
 
+        $data = json_decode($contents, true);
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $config = new Config();
+        $config->loadData($data);
         $config->loadData(['cachedConfig' => 'true', 'cachedConfigLocation' => $cachedConfigLocation]);
 
         $this->usingCachedConfig = true;
@@ -193,6 +209,6 @@ class Manager implements ManagerInterface
      */
     protected function cacheLocation(): string
     {
-        return $this->rootPath . '/.acorn/config.php';
+        return $this->rootPath . '/.acorn/config.json';
     }
 }
