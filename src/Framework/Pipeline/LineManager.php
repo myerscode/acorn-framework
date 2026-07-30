@@ -30,7 +30,13 @@ class LineManager
     }
 
     /**
-     * @param string|string[] $pipeNames
+     * Run the object through one or more named pipelines.
+     *
+     * When a single string is passed, the pipes from that pipeline are flattened
+     * and run directly. When an array of names is passed, each named pipeline
+     * runs as a nested pipeline in sequence (first pipeline completes before second starts).
+     *
+     * @param string|string[] $pipeNames A single pipeline name or an array of names to run in sequence
      */
     public function through(string|array $pipeNames): mixed
     {
@@ -38,7 +44,11 @@ class LineManager
             $pipes = $this->pipes[$pipeNames]->toArray();
         } else {
             $pipeNamesArray = is_array($pipeNames) ? $pipeNames : [$pipeNames];
-            $pipes = array_values(array_filter($this->pipes, fn ($name): bool => in_array($name, $pipeNamesArray), ARRAY_FILTER_USE_KEY));
+            $pipes = array_values(array_filter(
+                $this->pipes,
+                fn (PipeCollection $collection, string $name): bool => in_array($name, $pipeNamesArray),
+                ARRAY_FILTER_USE_BOTH,
+            ));
         }
 
         return new Pipeline($pipes)->flush($this->object);
