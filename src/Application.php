@@ -62,14 +62,26 @@ class Application extends SymfonyApplication
 
     public function __construct(private readonly Container $container)
     {
+        parent::__construct(self::APP_NAME, self::APP_VERSION);
+
+        $this->setCatchExceptions(false);
+        $this->setAutoExit(false);
+
+        $this->bootstrap();
+    }
+
+    /**
+     * Bootstrap the application: register providers, discover packages,
+     * bind events, and load commands.
+     *
+     * Extracted from the constructor to make the boot sequence explicit
+     * and testable. Called automatically during construction.
+     */
+    public function bootstrap(): void
+    {
         $this->registerFrameworkProviders();
 
         $this->configureConsole();
-
-        // allow command exceptions to bubble up and be handled by the kernel
-        $this->setCatchExceptions(false);
-
-        $this->setAutoExit(false);
 
         $this->discoverPackages();
 
@@ -81,9 +93,6 @@ class Application extends SymfonyApplication
 
         $this->loadCommands();
 
-        parent::__construct(self::APP_NAME, self::APP_VERSION);
-
-        // reset the internal default command, so we can control it from here due to it being private and no accessor
         $this->setDefaultCommand($this->defaultCommand);
     }
 
