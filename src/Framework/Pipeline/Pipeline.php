@@ -77,7 +77,7 @@ class Pipeline
             throw new InvalidPipeException($pipes . ' is not a valid pipe.');
         }
 
-        return new self(array_merge($this->pipes, $pipes)); // @phpstan-ignore return.type
+        return new static(array_merge($this->pipes, $pipes));
     }
 
     /**
