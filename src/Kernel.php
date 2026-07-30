@@ -66,12 +66,8 @@ class Kernel
         try {
             $result = $this->processCommand();
 
-            // TODO if result failed but has no error do something
-            if ($result->failed()) {
-                $error = $result->error();
-                if ($error instanceof Exception) {
-                    throw $error;
-                }
+            if ($result->failed() && $result->error() instanceof Exception) {
+                throw $result->error();
             }
 
             return $result->exitCode();
