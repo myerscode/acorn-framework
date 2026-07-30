@@ -126,4 +126,12 @@ final class LoggerTest extends TestCase
         $this->assertCount(1, $lines);
         $this->assertStringNotContainsString("\n" . 'injected', $contents);
     }
+
+    public function testThrowsOnInvalidLogLevel(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+
+        $this->expectException(\Psr\Log\InvalidArgumentException::class);
+        $logger->log('invalid_level', 'Test');
+    }
 }

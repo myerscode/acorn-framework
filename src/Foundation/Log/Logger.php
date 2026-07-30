@@ -48,6 +48,23 @@ class Logger implements LoggerInterface
 
     public function log(mixed $level, mixed $message, array $context = []): void
     {
+        $validLevels = [
+            LogLevel::EMERGENCY,
+            LogLevel::ALERT,
+            LogLevel::CRITICAL,
+            LogLevel::ERROR,
+            LogLevel::WARNING,
+            LogLevel::NOTICE,
+            LogLevel::INFO,
+            LogLevel::DEBUG,
+        ];
+
+        if (!in_array($level, $validLevels, true)) {
+            throw new \Psr\Log\InvalidArgumentException(
+                sprintf('Invalid log level: %s', (string) $level)
+            );
+        }
+
         if (!is_dir($this->logDirectory)) {
             mkdir($this->logDirectory, 0755, true);
         }
