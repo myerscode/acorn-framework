@@ -21,11 +21,11 @@ class Container
     /** @var string[] */
     protected array $loadedProviders = [];
 
-    private readonly DependencyManager $dependencyManager;
+    private DependencyManager $dependencyManager;
 
-    public function __construct()
+    public function __construct(?DependencyManager $dependencyManager = null)
     {
-        $this->dependencyManager = new DependencyManager(new Definitions());
+        $this->dependencyManager = $dependencyManager ?? new DependencyManager(new Definitions());
         $this->dependencyManager
             ->delegate(
                 // Note: ReflectionContainer does not detect circular dependencies.
