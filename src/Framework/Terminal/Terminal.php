@@ -429,7 +429,7 @@ class Terminal
 
                 if ($sleep !== 0) {
                     $sleptFor += $sleep;
-                    usleep($sleep * 1000);
+                    usleep($sleep * 1_000_000);
                 }
             }
         }
