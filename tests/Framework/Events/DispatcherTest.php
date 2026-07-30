@@ -10,8 +10,6 @@ use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\EventPriority;
-use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
-use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
@@ -39,7 +37,7 @@ final class DispatcherTest extends BaseTestCase
     public function testAddSubscriber(): void
     {
         $dispatcher = $this->newDispatcher();
-        $dispatcher->addSubscriber(new TestSubscriber());
+        $dispatcher->addAcornSubscriber(new TestSubscriber());
         $this->assertCount(1, $dispatcher->getListeners('foo'));
         $this->assertCount(1, $dispatcher->getListeners('bar'));
     }
@@ -213,20 +211,25 @@ final class DispatcherTest extends BaseTestCase
         $this->assertSame(2, $counter);
     }
 
-    public function testDispatchThrowsErrorIfEventInterfaceIsNotPassed(): void
+    public function testDispatchAcceptsNonAcornEvents(): void
     {
-        $this->expectException(UnknownEventTypeException::class);
         $dispatcher = $this->dispatcher();
-        $dispatcher->dispatch(static function (): void {
-        });
+        // Symfony's contract requires dispatch() to accept any object and return it
+        $event = new \stdClass();
+        $result = $dispatcher->dispatch($event);
+        $this->assertSame($event, $result);
     }
 
-    public function testDispatchThrowsErrorIfUnknownListenerFound(): void
+    public function testDispatchHandlesUnknownListenerGracefully(): void
     {
-        $this->expectException(InvalidListenerException::class);
-        $legacyMock = $this->stub(Dispatcher::class)->shouldAllowMockingProtectedMethods()->makePartial();
-        $legacyMock->expects('getListenersForEvent')->andReturn([new stdClass()]);
-        $legacyMock->dispatch(new TestEvent());
+        // With exception isolation, unknown/failing listeners don't throw
+        $dispatcher = $this->newDispatcher();
+        $dispatcher->addListener(TestEvent::class, static function (): void {
+            throw new \RuntimeException('should be caught');
+        });
+        // Should not throw — exception isolation handles it
+        $result = $dispatcher->dispatch(new TestEvent());
+        $this->assertInstanceOf(TestEvent::class, $result);
     }
 
     public function testEventDispatchingStopsWhenEventPropagationIsStopped(): void
@@ -252,7 +255,10 @@ final class DispatcherTest extends BaseTestCase
         $callback = static function (): void {
         };
         $dispatcher->addListener('bar', $callback);
-        $this->assertEquals([$testListener, CallableEventManager::findByCallable($callback),], $dispatcher->getListeners());
+        $allListeners = $dispatcher->getListeners();
+        $this->assertArrayHasKey('foo', $allListeners);
+        $this->assertArrayHasKey('bar', $allListeners);
+        $this->assertSame([$testListener], $allListeners['foo']);
     }
 
     public function testGetListenersForEventUsingEventClass(): void
@@ -318,7 +324,7 @@ final class DispatcherTest extends BaseTestCase
     public function testRemoveAllListeners(): void
     {
         $dispatcher = $this->dispatcher();
-        $dispatcher->addSubscriber(new TestSubscriber());
+        $dispatcher->addAcornSubscriber(new TestSubscriber());
         $dispatcher->removeAllListeners();
         $this->assertCount(0, $dispatcher->getListeners('foo'));
         $this->assertCount(0, $dispatcher->getListeners('foo'));
@@ -338,7 +344,7 @@ final class DispatcherTest extends BaseTestCase
     public function testRemoveEventAllListeners(): void
     {
         $dispatcher = $this->dispatcher();
-        $dispatcher->addSubscriber(new TestSubscriber());
+        $dispatcher->addAcornSubscriber(new TestSubscriber());
         $dispatcher->removeAllListeners('foo');
         $this->assertCount(0, $dispatcher->getListeners('foo'));
         $this->assertNotEmpty($dispatcher->getListeners('bar'));
@@ -367,10 +373,10 @@ final class DispatcherTest extends BaseTestCase
         $testSubscriber = null;
         $dispatcher = $this->dispatcher();
         $testSubscriber = new TestSubscriber();
-        $dispatcher->addSubscriber($testSubscriber);
+        $dispatcher->addAcornSubscriber($testSubscriber);
         $this->assertCount(1, $dispatcher->getListeners('foo'));
         $this->assertCount(1, $dispatcher->getListeners('bar'));
-        $dispatcher->removeSubscriber($testSubscriber);
+        $dispatcher->removeAcornSubscriber($testSubscriber);
         $this->assertCount(0, $dispatcher->getListeners('foo'));
         $this->assertCount(0, $dispatcher->getListeners('bar'));
     }

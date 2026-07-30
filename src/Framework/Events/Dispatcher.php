@@ -9,14 +9,22 @@ use Myerscode\Acorn\Foundation\Queue\Jobs\SynchronousJob;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\QueueInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface as SymfonyEventSubscriberInterface;
 
-class Dispatcher
+/**
+ * Unified event dispatcher for Acorn.
+ *
+ * Implements Symfony's EventDispatcherInterface so it can be used directly
+ * with Symfony Console (eliminating the need for a separate bridging dispatcher).
+ * Also supports Acorn's own ListenerInterface, queue integration, and named events.
+ */
+class Dispatcher implements SymfonyEventDispatcherInterface
 {
     protected string $allEventsNamespace = '*';
 
     /**
      * Instance-scoped callable listener registry.
-     * Replaces the static CallableEventManager for this dispatcher.
      *
      * @var CallableListener[]
      */
@@ -38,9 +46,14 @@ class Dispatcher
     }
 
     /**
-     * Registries a listener for the event.
+     * Registers a listener for the event.
+     *
+     * Accepts both Acorn ListenerInterface instances and plain callables.
+     * When a callable is provided, it is wrapped in a CallableListener.
+     *
+     * @param callable|ListenerInterface $listener
      */
-    public function addListener(string $eventName, ListenerInterface|callable $listener, int $priority = EventPriority::NORMAL): void
+    public function addListener(string $eventName, callable|ListenerInterface $listener, int $priority = 0): void
     {
         if (in_array($eventName, $this->catchAllEventNames)) {
             $eventName = $this->allEventsNamespace;
@@ -50,24 +63,42 @@ class Dispatcher
             $this->listeners[$eventName] = new ListenerQueue();
         }
 
-        if (is_callable($listener) && !($listener instanceof ListenerInterface)) {
-            $newListener = $this->createCallableListener($listener);
-        } else {
+        if ($listener instanceof ListenerInterface) {
             $newListener = $listener;
+        } else {
+            $newListener = $this->createCallableListener($listener);
         }
 
         $this->listeners[$eventName]->push($newListener, $priority);
     }
 
     /**
-     * Registries a subscriber to then event dispatcher
+     * Registers an Acorn subscriber.
      */
-    public function addSubscriber(SubscriberInterface $subscriber): void
+    public function addAcornSubscriber(SubscriberInterface $subscriber): void
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
             /** @var callable $callable */
             $callable = [$subscriber, $action];
             $this->addListener($eventName, $callable);
+        }
+    }
+
+    /**
+     * Registers a Symfony event subscriber.
+     */
+    public function addSubscriber(SymfonyEventSubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber::getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->addListener($eventName, [$subscriber, $params]);
+            } elseif (is_string($params[0])) {
+                $this->addListener($eventName, [$subscriber, $params[0]], $params[1] ?? 0);
+            } else {
+                foreach ($params as $listener) {
+                    $this->addListener($eventName, [$subscriber, $listener[0]], $listener[1] ?? 0);
+                }
+            }
         }
     }
 
@@ -106,38 +137,54 @@ class Dispatcher
     /**
      * Dispatches an event to all registered listeners.
      *
-     * Exception isolation: if a listener throws, the error is caught and the
-     * remaining listeners continue to execute. Failed listeners are tracked
-     * in the returned exceptions (if any consumers need them in the future).
+     * Implements Symfony's EventDispatcherInterface::dispatch() contract:
+     * - Accepts any object as an event
+     * - Returns the event object
+     * - Supports optional $eventName parameter
+     *
+     * Also supports Acorn's EventInterface for propagation stopping and queue integration.
      */
-    public function dispatch(object $event): void
+    public function dispatch(object $event, ?string $eventName = null): object
     {
-        if (!($event instanceof EventInterface)) {
-            throw new UnknownEventTypeException();
+        if ($eventName === null) {
+            $eventName = $event instanceof NamedEventInterface ? $event->eventName() : $event::class;
         }
 
-        $listeners = $this->getListenersForEvent($event);
+        $listeners = $this->getListenersForEvent($eventName);
 
         foreach ($listeners as $listener) {
-            if ($event->isPropagationStopped()) {
+            // Support Symfony's StoppableEventInterface and Acorn's EventInterface
+            if ($event instanceof EventInterface && $event->isPropagationStopped()) {
+                break;
+            }
+            if ($event instanceof \Psr\EventDispatcher\StoppableEventInterface && $event->isPropagationStopped()) {
                 break;
             }
 
-            if (!($listener instanceof ListenerInterface)) {
-                throw new InvalidListenerException();
-            }
-
             try {
-                if ($listener->shouldQueue()) {
-                    $this->queue->push(new SynchronousJob($event, $listener));
-                } else {
-                    $listener->handle($event);
+                if ($listener instanceof ListenerInterface) {
+                    if ($listener->shouldQueue()) {
+                        if ($event instanceof EventInterface) {
+                            $this->queue->push(new SynchronousJob($event, $listener));
+                        }
+                    } else {
+                        if ($event instanceof EventInterface) {
+                            $listener->handle($event);
+                        } else {
+                            // For non-Acorn events (e.g. Symfony Console events), invoke the
+                            // underlying callable directly if it's a CallableListener
+                            if ($listener instanceof CallableListener) {
+                                call_user_func($listener->getCallable(), $event);
+                            }
+                        }
+                    }
                 }
             } catch (\Throwable) {
                 // Isolate listener failures — allow remaining listeners to execute.
-                // In the future, a logger could be injected to record these failures.
             }
         }
+
+        return $event;
     }
 
     /**
@@ -183,9 +230,9 @@ class Dispatcher
     }
 
     /**
-     * Gets all listeners of the event or all registered listeners.
+     * Gets all listeners of a specific event or all listeners sorted by descending priority.
      *
-     * @return mixed[]
+     * @return ($eventName is null ? array<string, list<callable>> : list<callable>)
      */
     public function getListeners(?string $eventName = null): array
     {
@@ -200,8 +247,8 @@ class Dispatcher
         }
 
         $listeners = [];
-        foreach ($this->listeners as $listener) {
-            $listeners = array_merge($listeners, $listener->all());
+        foreach ($this->listeners as $name => $queue) {
+            $listeners[$name] = $queue->all();
         }
 
         return $listeners;
@@ -216,16 +263,46 @@ class Dispatcher
     }
 
     /**
-     * Get the collection of all registered listeners for an event
+     * Get the collection of all registered listeners for an event.
      *
      * @param EventInterface|string $event
      * @return ListenerInterface[]
      */
     public function getListenersForEvent(EventInterface|string $event): array
     {
-        $eventName = $event instanceof Event ? $event->eventName() : (is_string($event) ? $event : $event::class);
+        $eventName = $event instanceof NamedEventInterface ? $event->eventName() : (is_string($event) ? $event : $event::class);
 
-        return $this->getListeners($eventName);
+        if (!is_null($eventName)) {
+            $listensForAnything = $this->getListenersForAnyEvent();
+
+            if (in_array($eventName, $this->catchAllEventNames)) {
+                return $listensForAnything;
+            }
+
+            return isset($this->listeners[$eventName]) ? array_merge($this->listeners[$eventName]->all(), $listensForAnything) : $listensForAnything;
+        }
+
+        return [];
+    }
+
+    /**
+     * Gets the listener priority for a specific event.
+     */
+    public function getListenerPriority(string $eventName, callable $listener): ?int
+    {
+        if (!isset($this->listeners[$eventName])) {
+            return null;
+        }
+
+        if (!($listener instanceof ListenerInterface)) {
+            $found = $this->findCallableListener($listener);
+            if ($found === false) {
+                return null;
+            }
+            $listener = $found;
+        }
+
+        return $this->listeners[$eventName]->getPriority($listener);
     }
 
     public function hasListener(string $eventName, ListenerInterface|callable $listener): bool
@@ -245,6 +322,24 @@ class Dispatcher
         return $this->listeners[$eventName]->contains($listener);
     }
 
+    /**
+     * Checks whether an event has any registered listeners.
+     */
+    public function hasListeners(?string $eventName = null): bool
+    {
+        if ($eventName !== null) {
+            return !empty($this->getListeners($eventName));
+        }
+
+        foreach ($this->listeners as $queue) {
+            if ($queue->all() !== []) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function removeAllListeners(?string $eventName = null): void
     {
         if (!is_null($eventName) && isset($this->listeners[$eventName])) {
@@ -256,27 +351,50 @@ class Dispatcher
         }
     }
 
-    public function removeListener(string $eventName, ListenerInterface|callable $listener): void
+    /**
+     * @param callable|ListenerInterface $listener
+     */
+    public function removeListener(string $eventName, callable|ListenerInterface $listener): void
     {
         if (empty($this->listeners[$eventName])) {
             return;
         }
 
-        if (is_callable($listener) && !($listener instanceof ListenerInterface)) {
-            $found = $this->findCallableListener($listener);
-            if ($found === false) {
-                return;
-            }
-
-            $listener = $found;
+        if ($listener instanceof ListenerInterface) {
+            $this->listeners[$eventName]->remove($listener);
+            return;
         }
 
-        if ($listener instanceof ListenerInterface) { // @phpstan-ignore-line
-            $this->listeners[$eventName]->remove($listener);
+        $found = $this->findCallableListener($listener);
+        if ($found === false) {
+            return;
+        }
+
+        $this->listeners[$eventName]->remove($found);
+    }
+
+    /**
+     * Removes a Symfony event subscriber.
+     */
+    public function removeSubscriber(SymfonyEventSubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber::getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->removeListener($eventName, [$subscriber, $params]);
+            } elseif (is_string($params[0])) {
+                $this->removeListener($eventName, [$subscriber, $params[0]]);
+            } else {
+                foreach ($params as $listener) {
+                    $this->removeListener($eventName, [$subscriber, $listener[0]]);
+                }
+            }
         }
     }
 
-    public function removeSubscriber(SubscriberInterface $subscriber): void
+    /**
+     * Removes an Acorn subscriber.
+     */
+    public function removeAcornSubscriber(SubscriberInterface $subscriber): void
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
             /** @var callable $callable */

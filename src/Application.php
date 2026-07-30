@@ -36,7 +36,6 @@ use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Exception\CommandNotFoundException as SymfonyCommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 use function Myerscode\Acorn\Foundation\config;
 
@@ -236,37 +235,29 @@ class Application extends SymfonyApplication
     }
 
     /**
-     * Bridge Symfony Console events into the Acorn event dispatcher.
+     * Bind Symfony Console events to the Acorn dispatcher.
      *
-     * Architecture note: This application uses two event dispatchers:
-     * 1. Symfony's EventDispatcher — required by Symfony Console for ConsoleEvents
-     * 2. Acorn's custom Dispatcher — used for application-level events with queue support
-     *
-     * The Symfony dispatcher bridges COMMAND, TERMINATE, and ERROR events into the
-     * custom dispatcher via closures. Any additional Symfony Console events added in
-     * future Symfony versions will NOT automatically flow through — they must be
-     * bridged explicitly here.
-     *
-     * Future consolidation: Consider implementing Symfony's EventDispatcherInterface
-     * on the custom Dispatcher to eliminate this bridging layer entirely.
+     * The Acorn Dispatcher implements Symfony's EventDispatcherInterface, so it
+     * can be used directly with Symfony Console. Console events (COMMAND, TERMINATE,
+     * ERROR) are listened for and re-emitted as Acorn events for application listeners.
      */
     protected function bindCommandEvents(): void
     {
-        $eventDispatcher = new EventDispatcher();
+        $dispatcher = $this->dispatcher();
 
-        $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $consoleCommandEvent): void {
+        $dispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $consoleCommandEvent): void {
             $this->dispatcher()->emit(CommandBeforeEvent::class, $consoleCommandEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $consoleTerminateEvent): void {
+        $dispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $consoleTerminateEvent): void {
             $this->dispatcher()->emit(CommandAfterEvent::class, $consoleTerminateEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $consoleErrorEvent): void {
+        $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $consoleErrorEvent): void {
             $this->dispatcher()->emit(CommandErrorEvent::class, $consoleErrorEvent);
         });
 
-        $this->setDispatcher($eventDispatcher);
+        $this->setDispatcher($dispatcher);
     }
 
     protected function configureConsole(): void

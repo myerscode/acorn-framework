@@ -70,6 +70,18 @@ class ListenerQueue
     }
 
     /**
+     * Get the priority of a listener, or null if not found.
+     */
+    public function getPriority(ListenerInterface $listener): ?int
+    {
+        if (!$this->storage->offsetExists($listener)) {
+            return null;
+        }
+
+        return $this->storage->offsetGet($listener);
+    }
+
+    /**
      * Removes a listener from the queue.
      *
      * Note: This operation is O(n) as it requires rebuilding the SplPriorityQueue
