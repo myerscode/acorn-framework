@@ -292,6 +292,13 @@ class Application extends SymfonyApplication
         }
     }
 
+    /**
+     * Load commands from discovery directories.
+     *
+     * Performance note: This scans the filesystem and uses ReflectionClass on every boot.
+     * For large applications, consider implementing a manifest cache (acorn:optimize)
+     * that pre-scans and caches discovered class names.
+     */
     protected function loadCommands(): void
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();

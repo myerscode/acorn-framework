@@ -70,7 +70,11 @@ class ListenerQueue
     }
 
     /**
-     * Removes an listener from the queue.
+     * Removes a listener from the queue.
+     *
+     * Note: This operation is O(n) as it requires rebuilding the SplPriorityQueue
+     * from the SplObjectStorage. For hot paths with frequent listener removal,
+     * consider alternative data structures.
      */
     public function remove(ListenerInterface $listener): void
     {
