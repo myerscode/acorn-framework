@@ -139,6 +139,13 @@ class Dispatcher
     }
 
     /**
+     * Emit an event by class name or custom event name.
+     *
+     * SECURITY: The $eventName parameter must only contain trusted values.
+     * If $eventName is a class that exists, it will be instantiated with the given params.
+     * Never pass user-controlled input as $eventName — this could trigger arbitrary
+     * class constructors for any class extending Event.
+     *
      * @param string|class-string $eventName
      * @param mixed $params
      */
