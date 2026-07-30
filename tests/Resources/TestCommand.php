@@ -8,8 +8,9 @@ use Myerscode\Acorn\Framework\Console\Command;
 
 class TestCommand extends Command
 {
-    public function handle(): void
+    public function handle(): int
     {
         // TODO: Implement handle() method.
+        return 0;
     }
 }

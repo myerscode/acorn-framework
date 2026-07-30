@@ -9,7 +9,7 @@ use Myerscode\Acorn\Framework\Console\Command;
 
 class CommandThatErrorsCommand extends Command
 {
-    public function handle(): void
+    public function handle(): int
     {
         throw new Exception();
     }

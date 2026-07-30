@@ -33,9 +33,10 @@ final class CommandTest extends BaseTestCase
                     ->addOption('option-c', 'c', InputOption::VALUE_REQUIRED, 'third option');
             }
 
-            public function handle(): void
+            public function handle(): int
             {
                 //
+                return 0;
             }
         };
     }
@@ -45,9 +46,10 @@ final class CommandTest extends BaseTestCase
         $command = new class () extends Command {
             protected string $signature = 'anon';
 
-            public function handle(): void
+            public function handle(): int
             {
                 $this->call('foo-bar');
+                return 0;
             }
         };
 
@@ -135,9 +137,10 @@ final class CommandTest extends BaseTestCase
         $command = new class () extends Command {
             protected string $signature = 'anon {name : The name to pass through}';
 
-            public function handle(): void
+            public function handle(): int
             {
                 $this->call(SimpleOutputCommand::class, ['name' => $this->argument('name')]);
+                return 0;
             }
         };
 

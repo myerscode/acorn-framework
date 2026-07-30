@@ -15,8 +15,9 @@ class SimpleOutputCommand extends Command
     #[Override]
     protected string $signature = 'simple {name : Say hello}';
 
-    public function handle(): void
+    public function handle(): int
     {
         $this->line('Hello ' . $this->argument('name'));
+        return 0;
     }
 }

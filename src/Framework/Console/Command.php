@@ -58,9 +58,11 @@ abstract class Command extends SymfonyCommand
     }
 
     /**
-     * What to run when the command is executed
+     * What to run when the command is executed.
+     *
+     * Return an integer exit code to signal success (0) or failure (non-zero).
      */
-    abstract public function handle(): void;
+    abstract public function handle(): int;
 
     /**
      * {@inheritDoc}
@@ -115,9 +117,7 @@ abstract class Command extends SymfonyCommand
      */
     protected function execute(ConsoleInputInterface|InputInterface $input, DisplayOutputInterface|OutputInterface $output): int
     {
-        $this->handle();
-
-        return 0;
+        return $this->handle();
     }
 
     /**

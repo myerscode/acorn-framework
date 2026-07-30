@@ -17,13 +17,13 @@ class ClearConfigCacheCommand extends Command
     #[Override]
     protected string $signature = 'config:clear';
 
-    public function handle(): void
+    public function handle(): int
     {
         $cachedLocation = config('cachedConfigLocation');
 
         if (empty($cachedLocation) || !is_string($cachedLocation)) {
             $this->info('No config cache location configured.');
-            return;
+            return 0;
         }
 
         $this->info('Clearing ' . $cachedLocation);
@@ -31,5 +31,7 @@ class ClearConfigCacheCommand extends Command
         if (file_exists($cachedLocation)) {
             unlink($cachedLocation);
         }
+
+        return 0;
     }
 }
