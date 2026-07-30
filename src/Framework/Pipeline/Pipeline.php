@@ -112,7 +112,10 @@ class Pipeline
      * Get an onion layer function.
      * This function will get the object from a previous layer and pass it inwards
      *
-     *
+     * Note: String pipe class names are instantiated directly. The setPipes() method
+     * validates all strings implement PipeInterface before they reach this point.
+     * Only trusted class names should be provided — never pass user-controlled input
+     * as pipe names.
      */
     private function createLayer(Closure $nextLayer, PipeCollectionInterface|PipeInterface|string $pipe): Closure
     {
@@ -121,6 +124,9 @@ class Pipeline
         }
 
         if (is_string($pipe)) {
+            if (!is_subclass_of($pipe, PipeInterface::class)) {
+                return fn ($object) => $nextLayer($object);
+            }
             $pipe = new $pipe();
         }
 
