@@ -87,7 +87,7 @@ class RuntimeCache implements DriverInterface
      */
     public function has(string $key): bool
     {
-        return isset($this->cache[$key]);
+        return isset($this->cache[$key]) && $this->cache[$key]['expiry'] > time();
     }
 
     /**
@@ -95,7 +95,7 @@ class RuntimeCache implements DriverInterface
      */
     public function set(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
-        $ttlSeconds = $ttl instanceof DateInterval ? (int) $ttl->format('%s') : ($ttl ?? $this->defaultCacheExpiration);
+        $ttlSeconds = $ttl instanceof DateInterval ? $this->intervalToSeconds($ttl) : ($ttl ?? $this->defaultCacheExpiration);
 
         $this->cache[$key] = [
             'value' => $value,
@@ -117,5 +117,16 @@ class RuntimeCache implements DriverInterface
         }
 
         return true;
+    }
+
+    /**
+     * Convert a DateInterval to total seconds.
+     */
+    private function intervalToSeconds(DateInterval $interval): int
+    {
+        $reference = new \DateTimeImmutable();
+        $endTime = $reference->add($interval);
+
+        return $endTime->getTimestamp() - $reference->getTimestamp();
     }
 }
