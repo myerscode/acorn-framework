@@ -132,12 +132,7 @@ class Kernel
 
     protected function processCommand(): Result
     {
-        $app = $this->boot()->application;
-        if (!$app instanceof \Myerscode\Acorn\Application) {
-            throw new RuntimeException('Application not booted');
-        }
-
-        return $app->handle($this->input(), $this->output());
+        return $this->boot()->application()->handle($this->input(), $this->output());
     }
 
     protected function setBasePath(string $basePath): void
