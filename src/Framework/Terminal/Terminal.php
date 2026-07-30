@@ -289,6 +289,47 @@ class Terminal
         }, $this->sleepsFor());
     }
 
+    /**
+     * Execute a command using an array of arguments (no shell interpretation).
+     *
+     * This is the safe alternative to run() when command arguments may contain
+     * user-controlled values. Arguments are passed directly to the process without
+     * shell interpretation, preventing injection attacks.
+     *
+     * @param string[] $command Array of command and arguments, e.g. ['rm', '-f', $path]
+     * @param callable|DisplayOutputInterface|null $output
+     * @throws ProcessFailedException
+     */
+    public function runSafe(array $command, callable|DisplayOutputInterface|null $output = null): TerminalResponse
+    {
+        $callback = null;
+        if (!is_null($output)) {
+            $callback = $this->parseCallback($output);
+        } elseif (isset($this->output)) {
+            $callback = $this->output;
+        }
+
+        $process = new Process(
+            $command,
+            $this->cwd ?? null,
+            $this->environmentVariables() ?: null,
+            null,
+            $this->timeout,
+        );
+
+        if ($this->tty && $this->isTtySupported()) {
+            $process->setTty($this->tty);
+        }
+
+        if (!is_null($this->idleTimeout())) {
+            $process->setIdleTimeout($this->idleTimeout());
+        }
+
+        $this->attempts = 1;
+
+        return $this->executeProcess($process, 1, 0);
+    }
+
     public function shouldThrow(): bool
     {
         return $this->shouldThrow;
