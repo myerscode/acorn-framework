@@ -2,12 +2,14 @@
 
 namespace Myerscode\Acorn\Framework\Console;
 
+use Symfony\Component\Console\Input\InputInterface;
+
 trait InteractsWithInput
 {
     /**
      * The input interface implementation.
      */
-    protected ConsoleInputInterface $input;
+    protected ConsoleInputInterface|InputInterface $input;
 
     /**
      * Get the value of a command argument.

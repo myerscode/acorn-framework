@@ -6,15 +6,17 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 
 trait InteractsWithPrompts
 {
-    protected ConsoleInputInterface $input;
+    protected ConsoleInputInterface|InputInterface $input;
 
-    protected DisplayOutputInterface $output;
+    protected DisplayOutputInterface|OutputInterface $output;
 
     /**
      * Prompt the user for text input with autocomplete suggestions.
@@ -110,9 +112,6 @@ trait InteractsWithPrompts
 
     private function getQuestionHelper(): QuestionHelper
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-
-        return $helper;
+        return new QuestionHelper();
     }
 }

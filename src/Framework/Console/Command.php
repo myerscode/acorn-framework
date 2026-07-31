@@ -34,14 +34,14 @@ abstract class Command extends SymfonyCommand
      */
     protected bool $hide = false;
 
-    protected ConsoleInputInterface $input;
+    protected ConsoleInputInterface|InputInterface $input;
 
     /**
      * The console command name/handle used to call it
      */
     protected ?string $name = null;
 
-    protected DisplayOutputInterface $output;
+    protected DisplayOutputInterface|OutputInterface $output;
 
     /**
      * The name and signature of the console command.
