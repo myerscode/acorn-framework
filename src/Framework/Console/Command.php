@@ -19,6 +19,8 @@ abstract class Command extends SymfonyCommand
     use InteractsWithInput;
     use InteractsWithLogs;
     use InteractsWithOutput;
+    use InteractsWithProgress;
+    use InteractsWithPrompts;
 
     protected Container $container;
 
