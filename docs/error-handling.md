@@ -12,6 +12,77 @@ When an exception is thrown during command execution:
 2. **Catch handlers** — registered handlers run; if one returns `true`, rendering is skipped
 3. **Render** — the exception is formatted and output to stderr
 
+## Configuration
+
+The primary way to bind error handlers is through the `Config/Error.php` file in your app:
+
+```php
+<?php
+
+use App\Handlers\NotifyOpsHandler;
+use App\Handlers\RetryHandler;
+use App\Handlers\LogTimeoutHandler;
+use App\Exceptions\PaymentFailedException;
+use App\Exceptions\TimeoutException;
+use App\Exceptions\ValidationException;
+
+return [
+    'handlers' => [
+        PaymentFailedException::class => NotifyOpsHandler::class,
+        TimeoutException::class => [
+            RetryHandler::class,
+            LogTimeoutHandler::class,
+        ],
+    ],
+    'dont_report' => [
+        ValidationException::class,
+    ],
+];
+```
+
+### Handler Classes
+
+Each handler extends `Myerscode\Acorn\Framework\Exceptions\ErrorHandler` and implements `handle()`:
+
+```php
+<?php
+
+namespace App\Handlers;
+
+use Myerscode\Acorn\Framework\Exceptions\ErrorHandler;
+use Throwable;
+
+class NotifyOpsHandler extends ErrorHandler
+{
+    public function __construct(private AlertService $alerts)
+    {
+        //
+    }
+
+    public function handle(Throwable $exception): ?bool
+    {
+        $this->alerts->send($exception->getMessage());
+
+        return true; // Handled — don't render
+    }
+}
+```
+
+Handlers are resolved from the container, so dependencies are injected automatically.
+
+### Multiple Handlers
+
+When you map an array of handlers to an exception, they run in order until one returns `true`:
+
+```php
+'handlers' => [
+    TimeoutException::class => [
+        RetryHandler::class,      // Tries to recover — returns null if it can't
+        LogTimeoutHandler::class,  // Logs and returns true to suppress output
+    ],
+],
+```
+
 ## Binding Logic to Errors
 
 Use `catch()` to register handlers that run when specific exceptions occur. Handlers can perform any logic — retry operations, send notifications, clean up resources, or suppress the error output entirely.
