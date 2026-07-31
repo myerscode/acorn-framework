@@ -6,8 +6,6 @@ namespace Tests\Framework\Events;
 
 use stdClass;
 use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
-use Myerscode\Acorn\Framework\Events\CallableEventManager;
-use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Event;
 use Myerscode\Acorn\Framework\Events\EventPriority;
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
@@ -21,6 +19,7 @@ use Tests\Resources\TestQueueableEvent;
 use Tests\Resources\TestQueueableListener;
 use Tests\Resources\TestSinglePropertyEvent;
 use Tests\Resources\TestSubscriber;
+use RuntimeException;
 
 final class DispatcherTest extends BaseTestCase
 {
@@ -118,6 +117,15 @@ final class DispatcherTest extends BaseTestCase
         $this->assertCount(3, $dispatcher->getListeners('*'));
     }
 
+    public function testDispatchAcceptsNonAcornEvents(): void
+    {
+        $dispatcher = $this->dispatcher();
+        // Symfony's contract requires dispatch() to accept any object and return it
+        $event = new stdClass();
+        $result = $dispatcher->dispatch($event);
+        $this->assertSame($event, $result);
+    }
+
     public function testDispatchCanUseClosureListeners(): void
     {
         $dispatcher = $this->dispatcher();
@@ -211,21 +219,12 @@ final class DispatcherTest extends BaseTestCase
         $this->assertSame(2, $counter);
     }
 
-    public function testDispatchAcceptsNonAcornEvents(): void
-    {
-        $dispatcher = $this->dispatcher();
-        // Symfony's contract requires dispatch() to accept any object and return it
-        $event = new \stdClass();
-        $result = $dispatcher->dispatch($event);
-        $this->assertSame($event, $result);
-    }
-
     public function testDispatchHandlesUnknownListenerGracefully(): void
     {
         // With exception isolation, unknown/failing listeners don't throw
         $dispatcher = $this->newDispatcher();
         $dispatcher->addListener(TestEvent::class, static function (): void {
-            throw new \RuntimeException('should be caught');
+            throw new RuntimeException('should be caught');
         });
         // Should not throw — exception isolation handles it
         $result = $dispatcher->dispatch(new TestEvent());
@@ -245,6 +244,28 @@ final class DispatcherTest extends BaseTestCase
         });
         $dispatcher->dispatch(new TestEvent());
         $this->assertSame(1, $counter);
+    }
+
+    public function testFailingListenerDoesNotBlockSubsequentListeners(): void
+    {
+        $dispatcher = $this->newDispatcher();
+        $callOrder = [];
+
+        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
+            $callOrder[] = 'first';
+        });
+
+        $dispatcher->addListener(TestEvent::class, static function (): void {
+            throw new RuntimeException('Listener failure');
+        });
+
+        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
+            $callOrder[] = 'third';
+        });
+
+        $dispatcher->dispatch(new TestEvent());
+
+        $this->assertSame(['first', 'third'], $callOrder);
     }
 
     public function testGetListeners(): void
@@ -424,27 +445,5 @@ final class DispatcherTest extends BaseTestCase
         $dispatcher->emit(TestQueueableEvent::class);
 
         $this->assertSame(1, $queue->counter);
-    }
-
-    public function testFailingListenerDoesNotBlockSubsequentListeners(): void
-    {
-        $dispatcher = $this->newDispatcher();
-        $callOrder = [];
-
-        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
-            $callOrder[] = 'first';
-        });
-
-        $dispatcher->addListener(TestEvent::class, static function (): void {
-            throw new \RuntimeException('Listener failure');
-        });
-
-        $dispatcher->addListener(TestEvent::class, static function () use (&$callOrder): void {
-            $callOrder[] = 'third';
-        });
-
-        $dispatcher->dispatch(new TestEvent());
-
-        $this->assertSame(['first', 'third'], $callOrder);
     }
 }

@@ -71,6 +71,16 @@ class Application extends SymfonyApplication
         $this->bootstrap();
     }
 
+    #[Override]
+    public function addCommand(SymfonyCommand|callable $symfonyCommand): ?SymfonyCommand
+    {
+        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
+            $symfonyCommand->setLogger($this->logger());
+        }
+
+        return parent::addCommand($symfonyCommand);
+    }
+
     /**
      * Bootstrap the application: register providers, discover packages,
      * bind events, and load commands.
@@ -95,16 +105,6 @@ class Application extends SymfonyApplication
         $this->loadCommands();
 
         $this->setDefaultCommand($this->defaultCommand);
-    }
-
-    #[Override]
-    public function addCommand(SymfonyCommand|callable $symfonyCommand): ?SymfonyCommand
-    {
-        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
-            $symfonyCommand->setLogger($this->logger());
-        }
-
-        return parent::addCommand($symfonyCommand);
     }
 
     /**

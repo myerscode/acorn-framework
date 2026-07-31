@@ -161,6 +161,28 @@ final class ConsoleTest extends BaseTestCase
         $this->assertTrue($response->successful());
     }
 
+    public function testRunSafeDoesNotInterpretShellMetacharacters(): void
+    {
+        $terminal = new Terminal();
+
+        // Shell metacharacters should be treated as literal strings
+        $response = $terminal->runSafe(['echo', '$(whoami) && rm -rf /']);
+
+        $this->assertTrue($response->successful());
+        // The output should contain the literal string, not the result of command substitution
+        $this->assertStringContainsString('$(whoami) && rm -rf /', $response->output());
+    }
+
+    public function testRunSafeExecutesWithoutShellInterpretation(): void
+    {
+        $terminal = new Terminal();
+
+        $response = $terminal->runSafe(['echo', 'Hello Acorn']);
+
+        $this->assertTrue($response->successful());
+        $this->assertStringContainsString('Hello Acorn', $response->output());
+    }
+
     public function testSetTty(): void
     {
         $output = $this->createVoidOutput();
@@ -241,27 +263,5 @@ final class ConsoleTest extends BaseTestCase
         $terminal->run('echo ');
 
         $this->assertSame('[WARNING] Tried setting tty on Terminal command - but it is not supported!', $output->output());
-    }
-
-    public function testRunSafeExecutesWithoutShellInterpretation(): void
-    {
-        $terminal = new Terminal();
-
-        $response = $terminal->runSafe(['echo', 'Hello Acorn']);
-
-        $this->assertTrue($response->successful());
-        $this->assertStringContainsString('Hello Acorn', $response->output());
-    }
-
-    public function testRunSafeDoesNotInterpretShellMetacharacters(): void
-    {
-        $terminal = new Terminal();
-
-        // Shell metacharacters should be treated as literal strings
-        $response = $terminal->runSafe(['echo', '$(whoami) && rm -rf /']);
-
-        $this->assertTrue($response->successful());
-        // The output should contain the literal string, not the result of command substitution
-        $this->assertStringContainsString('$(whoami) && rm -rf /', $response->output());
     }
 }

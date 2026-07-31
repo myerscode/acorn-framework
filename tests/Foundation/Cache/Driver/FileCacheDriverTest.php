@@ -6,6 +6,7 @@ namespace Tests\Foundation\Cache\Driver;
 
 use Myerscode\Acorn\Foundation\Cache\Driver\FileCacheDriver;
 use Tests\BaseTestCase;
+use DateInterval;
 
 final class FileCacheDriverTest extends BaseTestCase
 {
@@ -57,7 +58,7 @@ final class FileCacheDriverTest extends BaseTestCase
         $driver = new FileCacheDriver($cacheDir);
 
         // 1 hour interval should result in ~3600 seconds, not 0
-        $driver->set('key', 'value', new \DateInterval('PT1H'));
+        $driver->set('key', 'value', new DateInterval('PT1H'));
 
         $this->assertTrue($driver->has('key'));
         $this->assertSame('value', $driver->get('key'));

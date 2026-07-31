@@ -36,13 +36,14 @@ final class CallableEventManagerTest extends BaseTestCase
         $this->assertCount(1, CallableEventManager::listeners());
     }
 
-    public function testFindCallable(): void
+    public function testDispatcherFindCallableListenerReturnsFalseForUnknown(): void
     {
         $dispatcher = $this->dispatcher();
-        $callable = static function (): void {
-        };
-        $dispatcher->addListener('my-special-event', $callable);
-        $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());
+        $dispatcher->clearCallableListeners();
+
+        $result = $dispatcher->findCallableListener(static function (): void {
+        });
+        $this->assertFalse($result);
     }
 
     public function testDispatcherInstanceTracksCallableListeners(): void
@@ -59,12 +60,12 @@ final class CallableEventManagerTest extends BaseTestCase
         $this->assertNotFalse($dispatcher->findCallableListener($callable));
     }
 
-    public function testDispatcherFindCallableListenerReturnsFalseForUnknown(): void
+    public function testFindCallable(): void
     {
         $dispatcher = $this->dispatcher();
-        $dispatcher->clearCallableListeners();
-
-        $result = $dispatcher->findCallableListener(static function (): void {});
-        $this->assertFalse($result);
+        $callable = static function (): void {
+        };
+        $dispatcher->addListener('my-special-event', $callable);
+        $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());
     }
 }

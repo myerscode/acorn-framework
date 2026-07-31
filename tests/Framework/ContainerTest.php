@@ -6,9 +6,33 @@ namespace Tests\Framework;
 
 use Myerscode\Acorn\Framework\Container\Container;
 use Tests\BaseTestCase;
+use stdClass;
 
 final class ContainerTest extends BaseTestCase
 {
+    public function testAddWithSharedFalseReturnsNewInstanceEachTime(): void
+    {
+        $container = new Container();
+
+        $container->add(stdClass::class, stdClass::class, false);
+
+        $first = $container->get(stdClass::class);
+        $second = $container->get(stdClass::class);
+
+        $this->assertNotSame($first, $second);
+    }
+
+    public function testAddWithSharedTrueReturnsSameInstance(): void
+    {
+        $container = new Container();
+
+        $container->add(stdClass::class, stdClass::class, true);
+
+        $first = $container->get(stdClass::class);
+        $second = $container->get(stdClass::class);
+
+        $this->assertSame($first, $second);
+    }
     public function testContainerCanCreateItselfStatically(): void
     {
         $this->assertInstanceOf(Container::class, Container::getInstance());
@@ -36,30 +60,6 @@ final class ContainerTest extends BaseTestCase
     public function testContainerCreatesItself(): void
     {
         $this->assertInstanceOf(Container::class, Container::getInstance());
-    }
-
-    public function testAddWithSharedFalseReturnsNewInstanceEachTime(): void
-    {
-        $container = new Container();
-
-        $container->add(\stdClass::class, \stdClass::class, false);
-
-        $first = $container->get(\stdClass::class);
-        $second = $container->get(\stdClass::class);
-
-        $this->assertNotSame($first, $second);
-    }
-
-    public function testAddWithSharedTrueReturnsSameInstance(): void
-    {
-        $container = new Container();
-
-        $container->add(\stdClass::class, \stdClass::class, true);
-
-        $first = $container->get(\stdClass::class);
-        $second = $container->get(\stdClass::class);
-
-        $this->assertSame($first, $second);
     }
 
     public function testRemoveActuallyRemovesBinding(): void

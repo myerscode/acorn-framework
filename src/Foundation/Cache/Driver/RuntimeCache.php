@@ -4,6 +4,7 @@ namespace Myerscode\Acorn\Foundation\Cache\Driver;
 
 use DateInterval;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
+use DateTimeImmutable;
 
 class RuntimeCache implements DriverInterface
 {
@@ -124,7 +125,7 @@ class RuntimeCache implements DriverInterface
      */
     private function intervalToSeconds(DateInterval $interval): int
     {
-        $reference = new \DateTimeImmutable();
+        $reference = new DateTimeImmutable();
         $endTime = $reference->add($interval);
 
         return $endTime->getTimestamp() - $reference->getTimestamp();

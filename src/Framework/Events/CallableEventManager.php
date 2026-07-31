@@ -39,14 +39,6 @@ class CallableEventManager
     }
 
     /**
-     * Register a pre-created CallableListener (used by Dispatcher internally).
-     */
-    public static function register(CallableListener $listener): void
-    {
-        self::$listeners[] = $listener;
-    }
-
-    /**
      * Finds the listener from the collection by its callable.
      */
     public static function findByCallable(callable $callable): CallableListener|false
@@ -68,5 +60,13 @@ class CallableEventManager
     public static function listeners(): array
     {
         return static::$listeners;
+    }
+
+    /**
+     * Register a pre-created CallableListener (used by Dispatcher internally).
+     */
+    public static function register(CallableListener $listener): void
+    {
+        self::$listeners[] = $listener;
     }
 }

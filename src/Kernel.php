@@ -26,9 +26,9 @@ class Kernel
 
     private bool $booted = false;
 
-    private readonly Container $container;
-
     private ?Manager $configManager = null;
+
+    private readonly Container $container;
 
     public function __construct(string $basePath = '')
     {

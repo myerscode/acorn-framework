@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Foundation\Commands;
 
-use Myerscode\Acorn\Foundation\Commands\ClearConfigCacheCommand;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithCommands;
 use Tests\BaseTestCase;
 

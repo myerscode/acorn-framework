@@ -12,20 +12,20 @@ abstract class Listener implements ListenerInterface
     protected bool $shouldQueue = false;
 
     /**
-     * Handle the event - subclasses should override this method.
-     */
-    public function handle(EventInterface $event): void
-    {
-        // Default no-op; subclasses override this
-    }
-
-    /**
      * Events this listener should be registered for.
      * Subclasses MUST implement this method to declare which events they handle.
      *
      * @return string[]|string
      */
     abstract public function listensFor(): array|string;
+
+    /**
+     * Handle the event - subclasses should override this method.
+     */
+    public function handle(EventInterface $event): void
+    {
+        // Default no-op; subclasses override this
+    }
 
     /**
      * Should this listener queue its response

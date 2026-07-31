@@ -13,7 +13,7 @@ class TestQueueableListener extends Listener
     /**
      * @var string[]|string
      */
-#[Override]
+    #[Override]
     protected bool $shouldQueue = true;
 
     #[Override]

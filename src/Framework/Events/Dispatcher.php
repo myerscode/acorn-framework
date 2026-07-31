@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Myerscode\Acorn\Framework\Events;
 
-use Closure;
 use Myerscode\Acorn\Foundation\Queue\Jobs\SynchronousJob;
-use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\QueueInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface as SymfonyEventSubscriberInterface;
+use Throwable;
 
 /**
  * Unified event dispatcher for Acorn.
@@ -46,6 +45,18 @@ class Dispatcher implements SymfonyEventDispatcherInterface
     }
 
     /**
+     * Registers an Acorn subscriber.
+     */
+    public function addAcornSubscriber(SubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
+            /** @var callable $callable */
+            $callable = [$subscriber, $action];
+            $this->addListener($eventName, $callable);
+        }
+    }
+
+    /**
      * Registers a listener for the event.
      *
      * Accepts both Acorn ListenerInterface instances and plain callables.
@@ -70,18 +81,6 @@ class Dispatcher implements SymfonyEventDispatcherInterface
         }
 
         $this->listeners[$eventName]->push($newListener, $priority);
-    }
-
-    /**
-     * Registers an Acorn subscriber.
-     */
-    public function addAcornSubscriber(SubscriberInterface $subscriber): void
-    {
-        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
-            /** @var callable $callable */
-            $callable = [$subscriber, $action];
-            $this->addListener($eventName, $callable);
-        }
     }
 
     /**
@@ -179,7 +178,7 @@ class Dispatcher implements SymfonyEventDispatcherInterface
                         }
                     }
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Isolate listener failures — allow remaining listeners to execute.
             }
         }
@@ -227,6 +226,26 @@ class Dispatcher implements SymfonyEventDispatcherInterface
         }
 
         return false;
+    }
+
+    /**
+     * Gets the listener priority for a specific event.
+     */
+    public function getListenerPriority(string $eventName, callable $listener): ?int
+    {
+        if (!isset($this->listeners[$eventName])) {
+            return null;
+        }
+
+        if (!($listener instanceof ListenerInterface)) {
+            $found = $this->findCallableListener($listener);
+            if ($found === false) {
+                return null;
+            }
+            $listener = $found;
+        }
+
+        return $this->listeners[$eventName]->getPriority($listener);
     }
 
     /**
@@ -285,26 +304,6 @@ class Dispatcher implements SymfonyEventDispatcherInterface
         return [];
     }
 
-    /**
-     * Gets the listener priority for a specific event.
-     */
-    public function getListenerPriority(string $eventName, callable $listener): ?int
-    {
-        if (!isset($this->listeners[$eventName])) {
-            return null;
-        }
-
-        if (!($listener instanceof ListenerInterface)) {
-            $found = $this->findCallableListener($listener);
-            if ($found === false) {
-                return null;
-            }
-            $listener = $found;
-        }
-
-        return $this->listeners[$eventName]->getPriority($listener);
-    }
-
     public function hasListener(string $eventName, ListenerInterface|callable $listener): bool
     {
         if (!isset($this->listeners[$eventName])) {
@@ -338,6 +337,18 @@ class Dispatcher implements SymfonyEventDispatcherInterface
         }
 
         return false;
+    }
+
+    /**
+     * Removes an Acorn subscriber.
+     */
+    public function removeAcornSubscriber(SubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
+            /** @var callable $callable */
+            $callable = [$subscriber, $action];
+            $this->removeListener($eventName, $callable);
+        }
     }
 
     public function removeAllListeners(?string $eventName = null): void
@@ -388,18 +399,6 @@ class Dispatcher implements SymfonyEventDispatcherInterface
                     $this->removeListener($eventName, [$subscriber, $listener[0]]);
                 }
             }
-        }
-    }
-
-    /**
-     * Removes an Acorn subscriber.
-     */
-    public function removeAcornSubscriber(SubscriberInterface $subscriber): void
-    {
-        foreach ($subscriber->getSubscribedEvents() as $eventName => $action) {
-            /** @var callable $callable */
-            $callable = [$subscriber, $action];
-            $this->removeListener($eventName, $callable);
         }
     }
 }

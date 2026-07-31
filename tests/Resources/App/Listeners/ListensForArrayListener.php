@@ -13,7 +13,7 @@ class ListensForArrayListener extends Listener
     /**
      * @var string[]
      */
-#[Override]
+    #[Override]
     public function handle(EventInterface $event): void
     {
         //

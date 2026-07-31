@@ -11,6 +11,7 @@ use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 use Myerscode\Acorn\Framework\Cache\Cache;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
 use Tests\BaseTestCase;
+use DateTimeImmutable;
 
 final class CacheTest extends BaseTestCase
 {
@@ -246,15 +247,13 @@ final class CacheTest extends BaseTestCase
     }
 
     #[DataProvider('dataProvider')]
-    public function testSetWithDateTimeInterfaceTtl(DriverInterface $driver): void
+    public function testSetMultiple(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
-        $future = new \DateTimeImmutable('+1 hour');
-        $cache->set('key', 'value', $future);
-
-        $this->assertTrue($cache->has('key'));
-        $this->assertSame('value', $cache->get('key'));
+        $this->assertTrue($cache->setMultiple(['key1' => 'value1', 'key2' => 'value2']));
+        $this->assertSame('value1', $cache->get('key1'));
+        $this->assertSame('value2', $cache->get('key2'));
     }
 
     #[DataProvider('dataProvider')]
@@ -264,18 +263,20 @@ final class CacheTest extends BaseTestCase
 
         $this->expectException(\Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException::class);
 
-        $past = new \DateTimeImmutable('-1 hour');
+        $past = new DateTimeImmutable('-1 hour');
         $cache->set('key', 'value', $past);
     }
 
     #[DataProvider('dataProvider')]
-    public function testSetMultiple(DriverInterface $driver): void
+    public function testSetWithDateTimeInterfaceTtl(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
 
-        $this->assertTrue($cache->setMultiple(['key1' => 'value1', 'key2' => 'value2']));
-        $this->assertSame('value1', $cache->get('key1'));
-        $this->assertSame('value2', $cache->get('key2'));
+        $future = new DateTimeImmutable('+1 hour');
+        $cache->set('key', 'value', $future);
+
+        $this->assertTrue($cache->has('key'));
+        $this->assertSame('value', $cache->get('key'));
     }
 
     protected function cacheProvider(DriverInterface $driver): Cache

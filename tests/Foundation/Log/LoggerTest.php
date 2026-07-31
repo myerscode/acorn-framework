@@ -22,6 +22,24 @@ final class LoggerTest extends TestCase
         array_map(unlink(...), glob($this->logDir . '/*'));
     }
 
+    public function testCreatesDirectoryIfMissing(): void
+    {
+        $nestedDir = sys_get_temp_dir() . '/acorn-logger-test-nested-' . uniqid();
+        $this->assertDirectoryDoesNotExist($nestedDir);
+
+        $logger = new Logger($nestedDir . '/deep/path', LogRotation::Single);
+        $logger->info('Test nested directory creation');
+
+        $this->assertDirectoryExists($nestedDir . '/deep/path');
+        $this->assertStringContainsString('Test nested directory creation', (string) file_get_contents($nestedDir . '/deep/path/acorn.log'));
+
+        // cleanup
+        array_map(unlink(...), glob($nestedDir . '/deep/path/*') ?: []);
+        rmdir($nestedDir . '/deep/path');
+        rmdir($nestedDir . '/deep');
+        rmdir($nestedDir);
+    }
+
     public function testCustomLogPrefix(): void
     {
         $logger = new Logger($this->logDir, LogRotation::Single, 'customprefix');
@@ -30,6 +48,41 @@ final class LoggerTest extends TestCase
         $file = $this->logDir . '/customprefix.log';
         $this->assertFileExists($file);
         $this->assertStringContainsString('Test custom prefix', (string) file_get_contents($file));
+    }
+
+    public function testSanitisesNewlinesInContext(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+        $logger->info('Test', ['key' => "value\ninjected"]);
+
+        $file = $this->logDir . '/acorn.log';
+        $contents = (string) file_get_contents($file);
+        $lines = array_filter(explode("\n", trim($contents)));
+
+        $this->assertCount(1, $lines);
+        $this->assertStringNotContainsString("\n" . 'injected', $contents);
+    }
+
+    public function testSanitisesNewlinesInMessage(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+        $logger->info("Line one\nLine two\r\nLine three");
+
+        $file = $this->logDir . '/acorn.log';
+        $contents = (string) file_get_contents($file);
+        $lines = array_filter(explode("\n", trim($contents)));
+
+        // Should be a single log entry, not multiple lines from injected newlines
+        $this->assertCount(1, $lines);
+        $this->assertStringContainsString('Line one Line two Line three', $contents);
+    }
+
+    public function testThrowsOnInvalidLogLevel(): void
+    {
+        $logger = new Logger($this->logDir, LogRotation::Single);
+
+        $this->expectException(\Psr\Log\InvalidArgumentException::class);
+        $logger->log('invalid_level', 'Test');
     }
 
     public function testWritesToDailyFile(): void
@@ -62,24 +115,6 @@ final class LoggerTest extends TestCase
         $this->assertStringContainsString('Test single file', (string) file_get_contents($file));
     }
 
-    public function testCreatesDirectoryIfMissing(): void
-    {
-        $nestedDir = sys_get_temp_dir() . '/acorn-logger-test-nested-' . uniqid();
-        $this->assertDirectoryDoesNotExist($nestedDir);
-
-        $logger = new Logger($nestedDir . '/deep/path', LogRotation::Single);
-        $logger->info('Test nested directory creation');
-
-        $this->assertDirectoryExists($nestedDir . '/deep/path');
-        $this->assertStringContainsString('Test nested directory creation', (string) file_get_contents($nestedDir . '/deep/path/acorn.log'));
-
-        // cleanup
-        array_map(unlink(...), glob($nestedDir . '/deep/path/*') ?: []);
-        rmdir($nestedDir . '/deep/path');
-        rmdir($nestedDir . '/deep');
-        rmdir($nestedDir);
-    }
-
     public function testWritesToWeeklyFile(): void
     {
         $logger = new Logger($this->logDir, LogRotation::Weekly);
@@ -98,40 +133,5 @@ final class LoggerTest extends TestCase
         $file = $this->logDir . '/acorn-' . date('Y') . '.log';
         $this->assertFileExists($file);
         $this->assertStringContainsString('Test yearly file', (string) file_get_contents($file));
-    }
-
-    public function testSanitisesNewlinesInMessage(): void
-    {
-        $logger = new Logger($this->logDir, LogRotation::Single);
-        $logger->info("Line one\nLine two\r\nLine three");
-
-        $file = $this->logDir . '/acorn.log';
-        $contents = (string) file_get_contents($file);
-        $lines = array_filter(explode("\n", trim($contents)));
-
-        // Should be a single log entry, not multiple lines from injected newlines
-        $this->assertCount(1, $lines);
-        $this->assertStringContainsString('Line one Line two Line three', $contents);
-    }
-
-    public function testSanitisesNewlinesInContext(): void
-    {
-        $logger = new Logger($this->logDir, LogRotation::Single);
-        $logger->info('Test', ['key' => "value\ninjected"]);
-
-        $file = $this->logDir . '/acorn.log';
-        $contents = (string) file_get_contents($file);
-        $lines = array_filter(explode("\n", trim($contents)));
-
-        $this->assertCount(1, $lines);
-        $this->assertStringNotContainsString("\n" . 'injected', $contents);
-    }
-
-    public function testThrowsOnInvalidLogLevel(): void
-    {
-        $logger = new Logger($this->logDir, LogRotation::Single);
-
-        $this->expectException(\Psr\Log\InvalidArgumentException::class);
-        $logger->log('invalid_level', 'Test');
     }
 }

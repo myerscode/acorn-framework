@@ -7,6 +7,7 @@ namespace Tests\Foundation\Cache\Driver;
 use DateInterval;
 use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 use Tests\BaseTestCase;
+use ReflectionClass;
 
 final class RuntimeCacheTest extends BaseTestCase
 {
@@ -18,7 +19,7 @@ final class RuntimeCacheTest extends BaseTestCase
         $this->assertTrue($driver->has('key'));
 
         // Overwrite with already-expired entry via reflection
-        $reflection = new \ReflectionClass($driver);
+        $reflection = new ReflectionClass($driver);
         $prop = $reflection->getProperty('cache');
         $prop->setValue($driver, [
             'key' => ['value' => 'value', 'expiry' => time() - 10],

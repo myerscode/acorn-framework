@@ -61,15 +61,6 @@ class ListenerQueue
     }
 
     /**
-     * Insert an listener to the queue.
-     */
-    public function push(ListenerInterface $listener, int $priority): void
-    {
-        $this->storage->offsetSet($listener, $priority);
-        $this->queue->insert($listener, $priority);
-    }
-
-    /**
      * Get the priority of a listener, or null if not found.
      */
     public function getPriority(ListenerInterface $listener): ?int
@@ -79,6 +70,15 @@ class ListenerQueue
         }
 
         return $this->storage->offsetGet($listener);
+    }
+
+    /**
+     * Insert an listener to the queue.
+     */
+    public function push(ListenerInterface $listener, int $priority): void
+    {
+        $this->storage->offsetSet($listener, $priority);
+        $this->queue->insert($listener, $priority);
     }
 
     /**

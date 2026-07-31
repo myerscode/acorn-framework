@@ -124,7 +124,7 @@ class Cache implements CacheInterface
             $seconds = $ttl->getTimestamp() - time();
             if ($seconds <= 0) {
                 throw new InvalidArgumentException(
-                    sprintf('DateTimeInterface TTL must be in the future, got %s', $ttl->format('Y-m-d H:i:s'))
+                    sprintf('DateTimeInterface TTL must be in the future, got %s', $ttl->format('Y-m-d H:i:s')),
                 );
             }
             $ttl = $seconds;

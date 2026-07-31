@@ -61,7 +61,7 @@ class Logger implements LoggerInterface
 
         if (!in_array($level, $validLevels, true)) {
             throw new \Psr\Log\InvalidArgumentException(
-                sprintf('Invalid log level: %s', (string) $level)
+                sprintf('Invalid log level: %s', (string) $level),
             );
         }
 
