@@ -6,6 +6,7 @@ namespace Myerscode\Acorn\Config;
 
 use Myerscode\Acorn\Foundation\Providers\CacheProvider;
 use Myerscode\Acorn\Foundation\Providers\ConsoleProvider;
+use Myerscode\Acorn\Foundation\Providers\ExceptionHandlerProvider;
 use Myerscode\Acorn\Foundation\Providers\LogProvider;
 use Myerscode\Acorn\Foundation\Providers\QueueProvider;
 
@@ -18,6 +19,7 @@ return [
     'providers' => [
         ConsoleProvider::class,
         LogProvider::class,
+        ExceptionHandlerProvider::class,
         QueueProvider::class,
         CacheProvider::class,
     ],

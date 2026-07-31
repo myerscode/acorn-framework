@@ -6,12 +6,14 @@ namespace Myerscode\Acorn;
 
 use Exception;
 use RuntimeException;
+use Myerscode\Acorn\Foundation\Exceptions\ExceptionHandler;
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
+use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 
 class Kernel
 {
@@ -76,13 +78,27 @@ class Kernel
 
             return $result->exitCode();
         } catch (CommandNotFoundException $commandNotFoundException) {
-            $this->output()->error($commandNotFoundException->getMessage());
-        } catch (Exception $exception) {
-            $message = in_array($exception->getMessage(), ['', '0'], true) ? $exception::class : $exception->getMessage();
-            $this->output()->error($message);
+            $this->exceptionHandler()->report($commandNotFoundException);
+            $this->exceptionHandler()->render($this->output(), $commandNotFoundException);
+        } catch (\Throwable $exception) {
+            $this->exceptionHandler()->report($exception);
+            $this->exceptionHandler()->render($this->output(), $exception);
         }
 
         return 1;
+    }
+
+    /**
+     * Get the exception handler instance.
+     */
+    public function exceptionHandler(): ExceptionHandlerInterface
+    {
+        try {
+            return $this->container->get(ExceptionHandlerInterface::class);
+        } catch (\Throwable) {
+            // Fallback if container isn't ready yet or handler not registered
+            return new ExceptionHandler(new \Myerscode\Acorn\Framework\Log\NullLogger());
+        }
     }
 
     /**
