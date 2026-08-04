@@ -50,6 +50,7 @@ Each handler extends `Myerscode\Acorn\Framework\Exceptions\ErrorHandler` and imp
 namespace App\Handlers;
 
 use Myerscode\Acorn\Framework\Exceptions\ErrorHandler;
+use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 class NotifyOpsHandler extends ErrorHandler
@@ -59,16 +60,17 @@ class NotifyOpsHandler extends ErrorHandler
         //
     }
 
-    public function handle(Throwable $exception): ?bool
+    public function handle(Throwable $exception, OutputInterface $output): ?bool
     {
         $this->alerts->send($exception->getMessage());
+        $output->writeln('<info>Ops team notified.</info>');
 
         return true; // Handled — don't render
     }
 }
 ```
 
-Handlers are resolved from the container, so dependencies are injected automatically.
+Handlers are resolved from the container, so dependencies are injected automatically. The `$output` parameter is provided by the framework so you can write to the console if needed.
 
 ### Multiple Handlers
 
@@ -132,6 +134,48 @@ $handler->catch(Exception::class, function (Exception $e): ?bool {
 
     return null; // Still render normally
 });
+```
+
+## Default Handler
+
+The `default` key in the Error config specifies the handler that runs for any exception that doesn't match an entry in `handlers`. This is the catch-all:
+
+```php
+'default' => DefaultHandler::class,
+```
+
+The framework ships with `DefaultHandler` which renders exception name, message, file/line (at `-v`), and stack trace (at `-vv`). You can replace it with your own:
+
+```php
+'default' => App\Handlers\MyAppDefaultHandler::class,
+```
+
+Or chain multiple default handlers:
+
+```php
+'default' => [
+    App\Handlers\SendToSentryHandler::class,
+    App\Handlers\RenderPrettyHandler::class,
+],
+```
+
+## Panic Handler
+
+`AppPanicException` is mapped to the built-in `PanicHandler` which renders a clear "PANIC" banner. Throw it for unrecoverable errors:
+
+```php
+use Myerscode\Acorn\Framework\Exceptions\AppPanicException;
+
+throw new AppPanicException('Database connection lost and all retries exhausted');
+```
+
+Output:
+```
+  PANIC
+
+  Database connection lost and all retries exhausted
+
+  Run with -v for more details.
 ```
 
 ## Suppressing Reports
