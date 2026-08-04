@@ -26,7 +26,6 @@ class ExceptionHandlerProvider extends ServiceProvider
         $this->getContainer()->addShared(ExceptionHandlerInterface::class, function () {
             $logger = $this->getContainer()->get('logger');
             $handler = new ExceptionHandler($logger);
-            $handler->register();
 
             $this->bindDefaultHandler($handler);
             $this->bindConfiguredHandlers($handler);
