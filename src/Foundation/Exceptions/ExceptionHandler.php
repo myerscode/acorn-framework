@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Myerscode\Acorn\Foundation\Exceptions;
 
+use Myerscode\Acorn\Framework\Exceptions\ErrorHandler;
 use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\ErrorHandler\ErrorHandler;
+use Symfony\Component\ErrorHandler\ErrorHandler as SymfonyErrorHandler;
 use Throwable;
 
 class ExceptionHandler implements ExceptionHandlerInterface
@@ -21,6 +22,9 @@ class ExceptionHandler implements ExceptionHandlerInterface
 
     /** @var array<class-string<Throwable>, callable> */
     private array $customReporters = [];
+
+    /** @var callable(OutputInterface, Throwable): void|null */
+    private mixed $defaultRenderer = null;
 
     /** @var array<class-string<Throwable>> */
     private array $dontReportExceptions = [];
@@ -64,7 +68,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
      */
     public function register(): void
     {
-        ErrorHandler::register();
+        SymfonyErrorHandler::register();
     }
 
     /**
@@ -89,7 +93,14 @@ class ExceptionHandler implements ExceptionHandlerInterface
             }
         }
 
-        $this->renderDefault($output, $exception);
+        // Use configured default renderer or built-in fallback
+        if ($this->defaultRenderer !== null) {
+            ($this->defaultRenderer)($output, $exception);
+
+            return;
+        }
+
+        $this->renderFallback($output, $exception);
     }
 
     /**
@@ -138,6 +149,16 @@ class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
+     * Set the default renderer used when no specific handler or renderer matches.
+     *
+     * @param callable(OutputInterface, Throwable): void $renderer
+     */
+    public function setDefaultRenderer(callable $renderer): void
+    {
+        $this->defaultRenderer = $renderer;
+    }
+
+    /**
      * Determine if the exception should be reported.
      */
     public function shouldReport(Throwable $exception): bool
@@ -152,31 +173,9 @@ class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * Run registered catch handlers for the exception.
-     *
-     * Returns `true` if the exception was handled (a handler returned true).
+     * Built-in fallback renderer when no default handler is configured.
      */
-    private function runCatchHandlers(Throwable $exception): bool
-    {
-        foreach ($this->catchHandlers as $exceptionClass => $handlers) {
-            if ($exception instanceof $exceptionClass) {
-                foreach ($handlers as $handler) {
-                    $result = $handler($exception);
-
-                    if ($result === true) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Render the exception using the default format.
-     */
-    private function renderDefault(OutputInterface $output, Throwable $exception): void
+    private function renderFallback(OutputInterface $output, Throwable $exception): void
     {
         $stderr = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 
@@ -208,5 +207,27 @@ class ExceptionHandler implements ExceptionHandlerInterface
         }
 
         $stderr->writeln('');
+    }
+
+    /**
+     * Run registered catch handlers for the exception.
+     *
+     * Returns `true` if the exception was handled (a handler returned true).
+     */
+    private function runCatchHandlers(Throwable $exception): bool
+    {
+        foreach ($this->catchHandlers as $exceptionClass => $handlers) {
+            if ($exception instanceof $exceptionClass) {
+                foreach ($handlers as $handler) {
+                    $result = $handler($exception);
+
+                    if ($result === true) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }

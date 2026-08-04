@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Myerscode\Acorn\Framework\Exceptions;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /**
@@ -21,5 +22,5 @@ abstract class ErrorHandler
      * Return `true` to mark as handled (suppresses rendering).
      * Return `false` or `null` to allow normal rendering to continue.
      */
-    abstract public function handle(Throwable $exception): ?bool;
+    abstract public function handle(Throwable $exception, OutputInterface $output): ?bool;
 }
