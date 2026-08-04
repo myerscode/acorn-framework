@@ -9,7 +9,6 @@ use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\ErrorHandler\ErrorHandler as SymfonyErrorHandler;
 use Throwable;
 
 class ExceptionHandler implements ExceptionHandlerInterface
@@ -61,14 +60,6 @@ class ExceptionHandler implements ExceptionHandlerInterface
         foreach ($exceptions as $exception) {
             $this->dontReportExceptions[] = $exception;
         }
-    }
-
-    /**
-     * Register Symfony's ErrorHandler to convert PHP errors/warnings into exceptions.
-     */
-    public function register(): void
-    {
-        SymfonyErrorHandler::register();
     }
 
     /**
