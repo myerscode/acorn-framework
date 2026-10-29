@@ -19,7 +19,7 @@
         "myerscode/utilities-bags": "^2.0",
         "myerscode/utilities-files": "^2.0",
         "myerscode/utilities-strings": "^2.0",
-        "nesbot/carbon": "^2.62",
+        "nesbot/carbon": "^2.62 || ^3.0",
         "psr/log": "^1.1",
         "psr/simple-cache": "^3.0",
         "symfony/console": "^6.0",
