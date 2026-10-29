@@ -20,7 +20,7 @@
         "myerscode/utilities-files": "^2.0",
         "myerscode/utilities-strings": "^2.0",
         "nesbot/carbon": "^2.62",
-        "psr/log": "^1.1",
+        "psr/log": "^1.1 || ^3.0",
         "psr/simple-cache": "^3.0",
         "symfony/console": "^6.0",
         "symfony/event-dispatcher": "^6.0",
