@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
@@ -11,13 +13,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Tests\BaseTestCase;
 use Tests\Resources\App\Commands\SimpleOutputCommand;
 
-class CommandTest extends BaseTestCase
+final class CommandTest extends BaseTestCase
 {
     use InteractsWithCommands;
 
     public function makeTestCommand(): Command
     {
-        return new class extends Command {
+        return new class () extends Command {
             protected function configure(): void
             {
                 $this
@@ -31,21 +33,23 @@ class CommandTest extends BaseTestCase
                     ->addOption('option-c', 'c', InputOption::VALUE_REQUIRED, 'third option');
             }
 
-            public function handle(): void
+            public function handle(): int
             {
                 //
+                return 0;
             }
         };
     }
 
     public function testCallingCommandFromAnotherCommandThatFails(): void
     {
-        $command = new class extends Command {
+        $command = new class () extends Command {
             protected string $signature = 'anon';
 
-            public function handle(): void
+            public function handle(): int
             {
                 $this->call('foo-bar');
+                return 0;
             }
         };
 
@@ -130,12 +134,13 @@ class CommandTest extends BaseTestCase
 
     public function testCommandCanCallAnotherCommand(): void
     {
-        $command = new class extends Command {
+        $command = new class () extends Command {
             protected string $signature = 'anon {name : The name to pass through}';
 
-            public function handle(): void
+            public function handle(): int
             {
                 $this->call(SimpleOutputCommand::class, ['name' => $this->argument('name')]);
+                return 0;
             }
         };
 

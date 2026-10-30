@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\Exception\EventConfigException;
@@ -7,7 +9,7 @@ use Myerscode\Acorn\Framework\Events\NamedEvent;
 use Tests\BaseTestCase;
 use Tests\Resources\TestEvent;
 
-class EventTest extends BaseTestCase
+final class EventTest extends BaseTestCase
 {
     public function testEventCanStopPropagation(): void
     {

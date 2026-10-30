@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Events;
 
 class EventPriority
@@ -8,23 +10,20 @@ class EventPriority
      * High priority.
      *
      * @const int
-     * @var int
      */
-    public final const HIGH = 100;
-
-    /**
-     * Normal priority.
-     *
-     * @const int
-     * @var int
-     */
-    public final const NORMAL = 0;
+    final public const int HIGH = 100;
 
     /**
      * Low priority.
      *
      * @const int
-     * @var int
      */
-    public final const LOW = -100;
+    final public const int LOW = -100;
+
+    /**
+     * Normal priority.
+     *
+     * @const int
+     */
+    final public const int NORMAL = 0;
 }

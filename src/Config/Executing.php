@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Config;
 
 return [
@@ -10,5 +12,5 @@ return [
         'events' => '${cwd}/app/Events',
         'listeners' => '${cwd}/app/Listeners',
         'providers' => '${cwd}/app/Providers',
-    ]
+    ],
 ];

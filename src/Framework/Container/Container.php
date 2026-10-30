@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Container;
 
 use League\Container\ReflectionContainer;
+use League\Container\ServiceProvider\ServiceProviderInterface;
+use Myerscode\Acorn\Framework\Providers\ServiceProvider;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use InvalidArgumentException;
 
 class Container
 {
@@ -12,15 +17,21 @@ class Container
      * The current globally available container (if any).
      */
     protected static ?Container $instance = null;
-    protected array $loadedProviders = [];
-    private readonly DependencyManager $container;
 
-    public function __construct()
+    /** @var string[] */
+    protected array $loadedProviders = [];
+
+    private DependencyManager $dependencyManager;
+
+    public function __construct(?DependencyManager $dependencyManager = null)
     {
-        $this->container = new DependencyManager(new Definitions());
-        $this->container
+        $this->dependencyManager = $dependencyManager ?? new DependencyManager(new Definitions());
+        $this->dependencyManager
             ->delegate(
-                (new ReflectionContainer())->cacheResolutions()
+                // Note: ReflectionContainer does not detect circular dependencies.
+                // If service A requires B and B requires A, this will cause a stack overflow.
+                // Avoid circular constructor dependencies in service design.
+                new ReflectionContainer(true),
             )
             ->defaultToShared();
 
@@ -35,13 +46,16 @@ class Container
     /**
      * Get the globally available instance of the container.
      */
-    public static function getInstance(): Container
+    public static function getInstance(): static
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static();
+            static::$instance = new self();
         }
 
-        return static::$instance;
+        /** @var static $instance */
+        $instance = static::$instance;
+
+        return $instance;
     }
 
     /**
@@ -49,32 +63,44 @@ class Container
      *
      * @see DependencyManager::add()
      */
-    public function add(string $id, mixed $concrete = null, bool $shared = null): void
+    public function add(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
-        $this->container->add($id, $concrete, $shared);
+        $definition = $this->dependencyManager->add($id, $concrete);
+
+        if ($shared === true) {
+            $definition->setShared(true);
+        } elseif ($shared === false) {
+            $definition->setShared(false);
+        }
     }
 
     /**
      * Load a service provider into the container
-     *
-     * @param $serviceProvider
-     *
-     * @return void
      */
-    public function addServiceProvider($serviceProvider): void
+    public function addServiceProvider(ServiceProviderInterface|string $serviceProvider): void
     {
-        if (!in_array($serviceProvider, $this->loadedProviders)) {
-            $this->loadedProviders[] = $serviceProvider;
-            $this->container->addServiceProvider($serviceProvider);
+        if (!is_subclass_of($serviceProvider, ServiceProvider::class)) {
+            $name = is_string($serviceProvider) ? $serviceProvider : $serviceProvider::class;
+            throw new InvalidArgumentException($name . ' must be a ServiceProvider');
+        }
+
+        if (is_string($serviceProvider)) {
+            $serviceProvider =  new $serviceProvider();
+        }
+
+        $serviceProviderName = $serviceProvider::class;
+
+
+        if (!in_array($serviceProviderName, $this->loadedProviders)) {
+            $this->loadedProviders[] = $serviceProviderName;
+            $this->dependencyManager->addServiceProvider($serviceProvider);
         }
     }
 
     /**
      * Retrieve an instance from the container
      *
-     * @param  string  $id
      *
-     * @return mixed
      *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -83,13 +109,13 @@ class Container
      */
     public function get(string $id): mixed
     {
-        return $this->container->get($id);
+        return $this->dependencyManager->get($id);
     }
 
     /**
      * Returns a list of service providers that have been added to the container
      *
-     * @return array
+     * @return string[]
      */
     public function loadedProviders(): array
     {
@@ -99,28 +125,22 @@ class Container
     /**
      * Remove a service from the container
      *
-     * @param  string  $id
      *
-     * @return void
      *
      * @see DependencyManager::swap()
      */
     public function remove(string $id): void
     {
-        $this->container->remove($id);
+        $this->dependencyManager->remove($id);
     }
 
     /**
      * Swap the defined instance in the container with a new implementation
      *
-     * @param  string  $id
-     * @param  null  $concrete
-     * @param  bool|null  $shared
-     *
      * @see DependencyManager::swap()
      */
-    public function swap(string $id, $concrete = null, bool $shared = null): void
+    public function swap(string $id, mixed $concrete = null, ?bool $shared = null): void
     {
-        $this->container->swap($id, $concrete, $shared);
+        $this->dependencyManager->swap($id, $concrete, $shared);
     }
 }

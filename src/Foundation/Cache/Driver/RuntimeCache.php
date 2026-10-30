@@ -4,9 +4,11 @@ namespace Myerscode\Acorn\Foundation\Cache\Driver;
 
 use DateInterval;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
+use DateTimeImmutable;
 
 class RuntimeCache implements DriverInterface
 {
+    /** @var array<string, array{value: mixed, expiry: int}> */
     protected array $cache = [];
 
     protected int $defaultCacheExpiration = 3600;
@@ -86,24 +88,28 @@ class RuntimeCache implements DriverInterface
      */
     public function has(string $key): bool
     {
-        return isset($this->cache[$key]);
+        return isset($this->cache[$key]) && $this->cache[$key]['expiry'] > time();
     }
 
     /**
      * @inheritDoc
      */
-    public function set(string $key, mixed $value, int|DateInterval $ttl = null): bool
+    public function set(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
-        $this->cache[$key] = array(
+        $ttlSeconds = $ttl instanceof DateInterval ? $this->intervalToSeconds($ttl) : ($ttl ?? $this->defaultCacheExpiration);
+
+        $this->cache[$key] = [
             'value' => $value,
-            'expiry' => time() + ($ttl ?? $this->defaultCacheExpiration),
-        );
+            'expiry' => time() + $ttlSeconds,
+        ];
 
         return true;
     }
 
     /**
      * @inheritDoc
+     *
+     * @param iterable<string, mixed> $values
      */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
@@ -112,5 +118,16 @@ class RuntimeCache implements DriverInterface
         }
 
         return true;
+    }
+
+    /**
+     * Convert a DateInterval to total seconds.
+     */
+    private function intervalToSeconds(DateInterval $interval): int
+    {
+        $reference = new DateTimeImmutable();
+        $endTime = $reference->add($interval);
+
+        return $endTime->getTimestamp() - $reference->getTimestamp();
     }
 }

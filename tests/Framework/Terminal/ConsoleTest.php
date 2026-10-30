@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Terminal;
 
 use Exception;
@@ -16,7 +18,7 @@ use Tests\Support\InteractsWithTerminal;
 
 use function Myerscode\Acorn\Foundation\container;
 
-class ConsoleTest extends BaseTestCase
+final class ConsoleTest extends BaseTestCase
 {
     use InteractsWithProcess;
     use InteractsWithTerminal;
@@ -57,7 +59,7 @@ class ConsoleTest extends BaseTestCase
 
     public function testCommand(): void
     {
-        $terminal = (new Terminal())->command('ls -la');
+        $terminal = new Terminal()->command('ls -la');
 
         $this->assertSame('ls -la', $terminal->process()->getCommandLine());
     }
@@ -75,24 +77,24 @@ class ConsoleTest extends BaseTestCase
 
     public function testDontThrow(): void
     {
-        $console = $this->mockedTerminalWithProcess(
+        $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
-            })
+            }),
         );
 
-        $console->dontThrow();
+        $terminal->dontThrow();
 
-        $response = $console->run('ls -la');
+        $terminalResponse = $terminal->run('ls -la');
 
-        $this->assertInstanceOf(FailedResponse::class, $response);
+        $this->assertInstanceOf(FailedResponse::class, $terminalResponse);
     }
 
     public function testIdleTimeout(): void
     {
-        $terminal = (new Terminal())->timeoutWhenOutputIsIdle(10);
+        $terminal = new Terminal()->timeoutWhenOutputIsIdle(10);
 
-        $this->assertSame(10.0, $terminal->process()->getIdleTimeout());
+        $this->assertEqualsWithDelta(10.0, $terminal->process()->getIdleTimeout(), PHP_FLOAT_EPSILON);
 
         $terminal->dontTimeoutWhenOutputIsIdle();
 
@@ -101,7 +103,7 @@ class ConsoleTest extends BaseTestCase
 
     public function testIn(): void
     {
-        $terminal = (new Terminal())->in('my/directory');
+        $terminal = new Terminal()->in('my/directory');
 
         $this->assertSame('my/directory', $terminal->process()->getWorkingDirectory());
     }
@@ -127,13 +129,7 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Command specific to Windows
-            $runCommand = 'echo Hello %APP_NAME%';
-        } else {
-            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
-            $runCommand = 'echo Hello $APP_NAME';
-        }
+        $runCommand = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'echo Hello %APP_NAME%' : 'echo Hello $APP_NAME';
 
         $terminal->run($runCommand, $voidOutput);
 
@@ -141,13 +137,7 @@ class ConsoleTest extends BaseTestCase
 
         $voidOutput = $this->createStreamOutput();
 
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Command specific to Windows
-            $runCommand = 'echo Hello %MY_NAME%';
-        } else {
-            // Command for non-Windows platforms (Unix/Linux, macOS, etc.)
-            $runCommand = 'echo Hello $MY_NAME';
-        }
+        $runCommand = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'echo Hello %MY_NAME%' : 'echo Hello $MY_NAME';
 
         $terminal->withEnvironmentVariables(['MY_NAME' => 'Corgis'])->run($runCommand, $voidOutput);
 
@@ -156,19 +146,41 @@ class ConsoleTest extends BaseTestCase
 
     public function testRetries(): void
     {
-        $console = $this->mockedTerminalWithProcess(
+        $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
                 $mock->shouldReceive('isSuccessful')
                     ->times(4)
                     ->andReturn(false, false, true, true);
-            })
+            }),
         );
 
-        $response = $this->catch(ProcessFailedException::class)->from(static fn(): TerminalResponse => $console->retries(3)->run('ls -la'));
+        $response = $this->catch(ProcessFailedException::class)->from(static fn (): TerminalResponse => $terminal->retries(3)->run('ls -la'));
 
-        $this->assertSame(3, $console->attempts());
+        $this->assertSame(3, $terminal->attempts());
         $this->assertTrue($response->successful());
+    }
+
+    public function testRunSafeDoesNotInterpretShellMetacharacters(): void
+    {
+        $terminal = new Terminal();
+
+        // Shell metacharacters should be treated as literal strings
+        $response = $terminal->runSafe(['echo', '$(whoami) && rm -rf /']);
+
+        $this->assertTrue($response->successful());
+        // The output should contain the literal string, not the result of command substitution
+        $this->assertStringContainsString('$(whoami) && rm -rf /', $response->output());
+    }
+
+    public function testRunSafeExecutesWithoutShellInterpretation(): void
+    {
+        $terminal = new Terminal();
+
+        $response = $terminal->runSafe(['echo', 'Hello Acorn']);
+
+        $this->assertTrue($response->successful());
+        $this->assertStringContainsString('Hello Acorn', $response->output());
     }
 
     public function testSetTty(): void
@@ -177,7 +189,7 @@ class ConsoleTest extends BaseTestCase
         container()->swap(DisplayOutput::class, $output);
         container()->swap('output', $output);
 
-        $console = (new Terminal())->enableTty();
+        $console = new Terminal()->enableTty();
 
         if ($console->process()->isTtySupported()) {
             $this->assertTrue($console->process()->isTty());
@@ -185,53 +197,53 @@ class ConsoleTest extends BaseTestCase
             $this->assertFalse($console->process()->isTty());
         }
 
-        $console = (new Terminal())->disableTty();
+        $console = new Terminal()->disableTty();
         $this->assertFalse($console->process()->isTty());
     }
 
     public function testSleep(): void
     {
-        $terminal = (new Terminal())->sleep(5);
+        $terminal = new Terminal()->sleep(5);
 
         $this->assertSame(5, $terminal->sleepsFor());
     }
 
     public function testSleepsBetweenRetries(): void
     {
-        $console = $this->mockedTerminalWithProcess(
+        $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
                 $mock->shouldReceive('isSuccessful')
                     ->times(3)
                     ->andReturn(false, false, true);
-            })
+            }),
         );
 
-        $terminalResponse = $console->retries(3)->sleep(5)->run('ls -la');
+        $terminalResponse = $terminal->retries(3)->sleep(5)->run('ls -la');
 
         $this->assertSame(10, $terminalResponse->sleptFor());
     }
 
     public function testThrowsExceptionIfCommandFails(): void
     {
-        $console = $this->mockedTerminalWithProcess(
+        $terminal = $this->mockedTerminalWithProcess(
             $this->mockedFailedProcess(static function ($mock): void {
                 $mock->shouldReceive('getCommandLine')->andReturn('ls -la');
-            })
+            }),
         );
 
-        $console->throw();
+        $terminal->throw();
 
         $this->expectException(ProcessFailedException::class);
 
-        $console->run('ls -la');
+        $terminal->run('ls -la');
     }
 
     public function testTimeout(): void
     {
-        $terminal = (new Terminal())->timeout(20);
+        $terminal = new Terminal()->timeout(20);
 
-        $this->assertSame(20.0, $terminal->process()->getTimeout());
+        $this->assertEqualsWithDelta(20.0, $terminal->process()->getTimeout(), PHP_FLOAT_EPSILON);
     }
 
     public function testTtyIsDisabled(): void
@@ -250,6 +262,6 @@ class ConsoleTest extends BaseTestCase
         $terminal->enableTty();
         $terminal->run('echo ');
 
-        $this->assertSame("[WARNING] Tried setting tty on Terminal command - but it is not supported!", $output->output());
+        $this->assertSame('[WARNING] Tried setting tty on Terminal command - but it is not supported!', $output->output());
     }
 }

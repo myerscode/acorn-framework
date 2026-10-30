@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Foundation;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
@@ -23,7 +25,7 @@ use function Myerscode\Acorn\Foundation\input;
 use function Myerscode\Acorn\Foundation\output;
 use function Myerscode\Acorn\Foundation\terminal;
 
-class HelpersTest extends BaseTestCase
+final class HelpersTest extends BaseTestCase
 {
     use InteractsWithContainer;
     use InteractsWithDispatcher;
@@ -73,7 +75,7 @@ class HelpersTest extends BaseTestCase
 
         $counter = 0;
 
-        $dispatcher->addListener('test.event', static function () use (&$counter) : void {
+        $dispatcher->addListener('test.event', static function () use (&$counter): void {
             $counter = 7749;
         });
 

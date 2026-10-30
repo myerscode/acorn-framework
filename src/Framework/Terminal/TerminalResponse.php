@@ -1,27 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException;
 
 abstract class TerminalResponse implements TerminalResponseInterface
 {
-    protected ?ProcessFailedException $exception;
+    protected ?ProcessFailedException $exception = null;
 
     public function __construct(protected Process $process, protected int $attempt, protected int $sleptFor = 0)
     {
     }
-//
-//    /**
-//     * Get the process output.
-//     *
-//     * @return string
-//     */
-//    public function __toString()
-//    {
-//        return $this->output();
-//    }
-//
+
+    //
+    //    /**
+    //     * Get the process output.
+    //     *
+    //     * @return string
+    //     */
+    //    public function __toString()
+    //    {
+    //        return $this->output();
+    //    }
+    //
 
     /**
      * @inheritDoc
@@ -36,7 +39,7 @@ abstract class TerminalResponse implements TerminalResponseInterface
      */
     public function error(): ?ProcessFailedException
     {
-        return (isset($this->exception)) ? $this->exception : null;
+        return $this->exception ?? null;
     }
 
     /**
@@ -64,6 +67,14 @@ abstract class TerminalResponse implements TerminalResponseInterface
     }
 
     /**
+     * Get the underlying process instance.
+     */
+    public function process(): Process
+    {
+        return $this->process;
+    }
+
+    /**
      * @inheritDoc
      */
     public function sleptFor(): int
@@ -87,13 +98,5 @@ abstract class TerminalResponse implements TerminalResponseInterface
         if (!$this->successful()) {
             throw new ProcessFailedException($this->process());
         }
-    }
-
-    /**
-     * Get the underlying process instance.
-     */
-    public function process(): Process
-    {
-        return $this->process;
     }
 }

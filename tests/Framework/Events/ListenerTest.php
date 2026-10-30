@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Events;
 
 use Tests\BaseTestCase;
@@ -8,7 +10,7 @@ use Tests\Resources\TestEvent;
 use Tests\Resources\TestListener;
 use Tests\Resources\TestMultiEventListener;
 
-class ListenerTest extends BaseTestCase
+final class ListenerTest extends BaseTestCase
 {
     public function testListenerReturnsEventsToSubscribeTo(): void
     {

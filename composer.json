@@ -2,36 +2,37 @@
     "name": "myerscode/acorn-framework",
     "description": "A framework for creating powerful PHP CLI applications",
     "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "Fred Myerscough",
             "email": "oniice@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^8.1",
-        "elvanto/litemoji": "^4.3",
-        "league/container": "^3.3",
-        "myerscode/config": "^1.0",
-        "myerscode/package-discovery": "1.0.0",
-        "myerscode/utilities-bags": "^2.0",
-        "myerscode/utilities-files": "^2.0",
-        "myerscode/utilities-strings": "^2.0",
-        "nesbot/carbon": "^2.62",
-        "psr/log": "^1.1",
+        "php": "^8.5",
+        "league/container": "^5.0",
+        "myerscode/config": "^2026",
+        "myerscode/package-discovery": "^2026",
+        "myerscode/utilities-bags": "^2026",
+        "myerscode/utilities-files": "^2026",
+        "myerscode/utilities-strings": "^2026",
+        "nesbot/carbon": "^3.8.5",
+        "psr/log": "^3.0",
         "psr/simple-cache": "^3.0",
-        "symfony/console": "^6.0",
-        "symfony/event-dispatcher": "^6.0",
-        "symfony/filesystem": "^6.0",
-        "symfony/finder": "^6.0",
-        "symfony/process": "^6.3"
+        "symfony/console": "^8.0",
+        "symfony/event-dispatcher": "^8.0",
+        "symfony/filesystem": "^8.0",
+        "symfony/finder": "^8.0",
+        "symfony/process": "^8.0"
     },
     "require-dev": {
+        "laravel/pint": "^1.0",
         "mockery/mockery": "^1.4",
         "myerscode/acorn-testing": "dev-main",
-        "squizlabs/php_codesniffer": "^3.6"
+        "phpstan/phpstan": "^2.0"
     },
     "autoload": {
         "files": [
@@ -52,8 +53,10 @@
         "sort-packages": true
     },
     "scripts": {
+        "lint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
         "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
-        "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
-        "phpcs": "vendor/bin/phpcs src tests --standard=PSR12"
+        "test-coverage": "vendor/bin/phpunit --testdox --colors=always",
+        "security-audit": "@composer audit"
     }
 }

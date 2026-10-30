@@ -2,13 +2,17 @@
 
 namespace Myerscode\Acorn\Foundation\Cache\Driver;
 
+use DateInterval;
 use Myerscode\Acorn\Framework\Cache\DriverInterface;
+use DateTimeImmutable;
 
 class FileCacheDriver implements DriverInterface
 {
     public function __construct(protected readonly string $cacheDir)
     {
-        //
+        if (!is_dir($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
+        }
     }
 
     public function cacheDir(): string
@@ -21,7 +25,7 @@ class FileCacheDriver implements DriverInterface
      */
     public function clear(): bool
     {
-        $cacheFiles = glob($this->cacheDir . '/*');
+        $cacheFiles = glob($this->cacheDir . '/*') ?: [];
         foreach ($cacheFiles as $cacheFile) {
             unlink($cacheFile);
         }
@@ -34,7 +38,7 @@ class FileCacheDriver implements DriverInterface
      */
     public function count(): int
     {
-        $cacheFiles = glob($this->cacheDir . '/*');
+        $cacheFiles = glob($this->cacheDir . '/*') ?: [];
 
         return count($cacheFiles);
     }
@@ -56,6 +60,8 @@ class FileCacheDriver implements DriverInterface
 
     /**
      * @inheritDoc
+     *
+     * @param iterable<string> $keys
      */
     public function deleteMultiple(iterable $keys): bool
     {
@@ -69,14 +75,22 @@ class FileCacheDriver implements DriverInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, $default = null): mixed
+    public function get(string $key, mixed $default = null): mixed
     {
         $cacheFile = $this->getCacheFile($key);
         if (!file_exists($cacheFile)) {
             return $default;
         }
 
-        $data = json_decode(file_get_contents($cacheFile), true);
+        $content = file_get_contents($cacheFile);
+        if ($content === false) {
+            return $default;
+        }
+
+        $data = json_decode($content, true);
+        if (!is_array($data)) {
+            return $default;
+        }
 
         if (time() > $data['expiration']) {
             // Cache is expired, delete it and return the default value
@@ -90,8 +104,11 @@ class FileCacheDriver implements DriverInterface
 
     /**
      * @inheritDoc
+     *
+     * @param iterable<string> $keys
+     * @return array<string, mixed>
      */
-    public function getMultiple(iterable $keys, $default = null): iterable
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $values = [];
         foreach ($keys as $key) {
@@ -108,19 +125,40 @@ class FileCacheDriver implements DriverInterface
     {
         $cacheFile = $this->getCacheFile($key);
 
-        return file_exists($cacheFile);
+        if (!file_exists($cacheFile)) {
+            return false;
+        }
+
+        $content = file_get_contents($cacheFile);
+        if ($content === false) {
+            return false;
+        }
+
+        $data = json_decode($content, true);
+        if (!is_array($data)) {
+            return false;
+        }
+
+        if (time() > $data['expiration']) {
+            unlink($cacheFile);
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * @inheritDoc
      */
-    public function set(string $key, $value, $ttl = null): bool
+    public function set(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
         $cacheFile = $this->getCacheFile($key);
 
+        $ttlSeconds = $ttl instanceof DateInterval ? $this->intervalToSeconds($ttl) : ($ttl ?? PHP_INT_MAX);
+
         $data = [
             'value' => $value,
-            'expiration' => $ttl !== null ? time() + $ttl : PHP_INT_MAX,
+            'expiration' => $ttl !== null ? time() + $ttlSeconds : PHP_INT_MAX,
         ];
 
         file_put_contents($cacheFile, json_encode($data));
@@ -130,11 +168,13 @@ class FileCacheDriver implements DriverInterface
 
     /**
      * @inheritDoc
+     *
+     * @param iterable<string, mixed> $values
      */
-    public function setMultiple(iterable $values, $ttl = null): bool
+    public function setMultiple(iterable $values, int|DateInterval|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
-            $this->set($key, $value, $ttl);
+            $this->set((string) $key, $value, $ttl);
         }
 
         return true;
@@ -146,5 +186,16 @@ class FileCacheDriver implements DriverInterface
     private function getCacheFile(string $key): string
     {
         return $this->cacheDir . '/' . md5($key) . '.cache';
+    }
+
+    /**
+     * Convert a DateInterval to total seconds.
+     */
+    private function intervalToSeconds(DateInterval $interval): int
+    {
+        $reference = new DateTimeImmutable();
+        $endTime = $reference->add($interval);
+
+        return $endTime->getTimestamp() - $reference->getTimestamp();
     }
 }

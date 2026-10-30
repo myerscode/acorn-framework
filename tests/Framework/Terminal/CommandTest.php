@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Terminal;
 
 use Myerscode\Acorn\Framework\Terminal\Command;
 use Tests\BaseTestCase;
 
-class CommandTest extends BaseTestCase
+final class CommandTest extends BaseTestCase
 {
     public function testInstructions(): void
     {

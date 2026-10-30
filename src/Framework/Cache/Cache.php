@@ -20,7 +20,7 @@ class Cache implements CacheInterface
      *
      * @see set
      */
-    public function add(string $key, mixed $value, int|DateInterval $ttl = null): bool
+    public function add(string $key, mixed $value, int|DateInterval|null $ttl = null): bool
     {
         if ($this->has($key)) {
             return false;
@@ -39,6 +39,9 @@ class Cache implements CacheInterface
         return $this->driver->delete($this->namespacedKey($key));
     }
 
+    /**
+     * @param iterable<string> $keys
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         return $this->driver->deleteMultiple($this->namespacedKeys($keys));
@@ -64,9 +67,26 @@ class Cache implements CacheInterface
         return $this->delete($key);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return $this->driver->get($this->namespacedKey($key), $default);
+    }
+
+    /**
+     * @param iterable<string> $keys
+     * @return iterable<string, mixed>
+     */
+    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    {
+        return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
+    }
+
     public function has(string $key): bool
     {
-        return !is_null($this->get($key));
+        return $this->driver->has($this->namespacedKey($key));
     }
 
     public function isMissing(string $key): bool
@@ -85,13 +105,12 @@ class Cache implements CacheInterface
 
     public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $callback): mixed
     {
-        $value = $this->get($key);
-
-        if (!is_null($value)) {
-            return $value;
+        if ($this->has($key)) {
+            return $this->get($key);
         }
 
-        $this->set($key, $value = $callback(), $ttl);
+        $value = $callback();
+        $this->set($key, $value, $ttl);
 
         return $value;
     }
@@ -101,23 +120,23 @@ class Cache implements CacheInterface
      */
     public function set(string $key, mixed $value, DateInterval|DateTimeInterface|int|null $ttl = null): bool
     {
+        if ($ttl instanceof DateTimeInterface) {
+            $seconds = $ttl->getTimestamp() - time();
+            if ($seconds <= 0) {
+                throw new InvalidArgumentException(
+                    sprintf('DateTimeInterface TTL must be in the future, got %s', $ttl->format('Y-m-d H:i:s')),
+                );
+            }
+            $ttl = $seconds;
+        }
+
         return $this->driver->set($this->namespacedKey($key), $value, $ttl);
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @param iterable<string, mixed> $values
      */
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $this->driver->get($this->namespacedKey($key), $default);
-    }
-
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
-    {
-        return $this->driver->getMultiple($this->namespacedKeys($keys), $default);
-    }
-
-    public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
+    public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         return $this->driver->setMultiple($values, $ttl);
     }
@@ -127,10 +146,12 @@ class Cache implements CacheInterface
         return $this->namespace.$key;
     }
 
+    /**
+     * @param iterable<string> $keys
+     * @return array<string, string>
+     */
     protected function namespacedKeys(iterable $keys): array
     {
-        return (new Bag($keys))->map(function ($key) {
-            return $this->namespacedKey($key);
-        })->value();
+        return new Bag($keys)->map(fn (string $key): string => $this->namespacedKey($key))->value();
     }
 }

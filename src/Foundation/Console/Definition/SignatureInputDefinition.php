@@ -9,9 +9,9 @@ class SignatureInputDefinition extends InputDefinition
 {
     public function __construct(string $signature = '')
     {
-        parent::__construct([]);
+        parent::__construct();
 
-        [, $arguments, $options] = (new CommandInterpreter())->parse($signature);
+        [, $arguments, $options] = new CommandInterpreter()->parse($signature);
 
         $this->addArguments($arguments);
         $this->addOptions($options);

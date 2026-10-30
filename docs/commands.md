@@ -1,9 +1,55 @@
 # Commands
 
+Commands are the core building blocks of an Acorn CLI application. Each command extends the base `Command` class and implements a `handle()` method.
+
+## Creating a Command
+
+```php
+<?php
+
+namespace App\Commands;
+
+use Myerscode\Acorn\Framework\Console\Command;
+
+class GreetCommand extends Command
+{
+    protected string $signature = 'greet {name}';
+
+    protected string $description = 'Greet someone by name';
+
+    public function handle(): int
+    {
+        $this->line('Hello ' . $this->argument('name'));
+
+        return 0;
+    }
+}
+```
+
+## Exit Codes
+
+The `handle()` method returns an integer exit code:
+- `0` — success
+- Any non-zero value — failure
+
+```php
+public function handle(): int
+{
+    if (!$this->isValid()) {
+        $this->error('Validation failed');
+        return 1;
+    }
+
+    $this->success('Done');
+    return 0;
+}
+```
+
 ## Signature
+
 Options and Arguments are wrapped in braces, and can be used to create powerful input parameters for commands.
 
-```php 
+```php
 corgi:call {name}
 ```
 
@@ -46,7 +92,7 @@ All options are prefixed by two hyphens `--` and are also defined between `{}`.
 
 #### Boolean options
 
-If an option is passed to the command, the value of the option will be `true`. 
+If an option is passed to the command, the value of the option will be `true`.
 If it is not, the value will be `false`.
 
 ```php
@@ -62,9 +108,22 @@ protected string $signature = 'corgi:action {--fluff=}'
 ```
 
 #### Options with default value
-You may assign default values to options by specifying the default value after the `=` on the option name. 
+You may assign default values to options by specifying the default value after the `=` on the option name.
 If no option value is set when called, the default value will be used!
 ```php
 // an option with a default value
 protected string $signature = 'corgi:action {--fluff=butt}'
+```
+
+## Calling Other Commands
+
+You can call other commands from within a command using the `call()` method:
+
+```php
+public function handle(): int
+{
+    $exitCode = $this->call('other:command', ['arg' => 'value']);
+
+    return $exitCode;
+}
 ```

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Providers;
 
 use Myerscode\Acorn\Foundation\Console\Input\Input;
@@ -8,7 +10,7 @@ use Myerscode\Acorn\Foundation\Providers\ConsoleProvider;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithContainer;
 use Tests\BaseTestCase;
 
-class ConsoleServiceProviderTest extends BaseTestCase
+final class ConsoleServiceProviderTest extends BaseTestCase
 {
     use InteractsWithContainer;
 

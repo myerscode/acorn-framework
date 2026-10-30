@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Console;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,7 +11,7 @@ interface ConsoleInputInterface extends InputInterface
     /**
      * Get all parsed parameters given at input
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function parameters(): array;
 }

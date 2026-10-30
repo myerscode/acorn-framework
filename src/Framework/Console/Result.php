@@ -1,24 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Console;
 
 use Exception;
 
 class Result
 {
-    public function __construct(protected $exitCode, protected ?Exception $exception = null)
+    public function __construct(protected int $exitCode, protected ?Exception $exception = null)
     {
         //
     }
 
-    public function wasSuccessful(): bool
+    public function error(): Exception|null
     {
-        return $this->exitCode === 0;
-    }
-
-    public function failed(): bool
-    {
-        return $this->exitCode !== 0;
+        return $this->exception;
     }
 
     public function exitCode(): int
@@ -26,8 +23,13 @@ class Result
         return $this->exitCode;
     }
 
-    public function error(): Exception|null
+    public function failed(): bool
     {
-        return $this->exception;
+        return $this->exitCode !== 0;
+    }
+
+    public function wasSuccessful(): bool
+    {
+        return $this->exitCode === 0;
     }
 }

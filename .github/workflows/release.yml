@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'CalVer version (e.g. 2026.0.0)'
+        required: true
+        type: string
+  push:
+    tags:
+      - '[0-9][0-9][0-9][0-9].*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: myerscode/workflows/.github/workflows/php-release.yml@v1
+    with:
+      version: ${{ github.event.inputs.version }}
+      scheme: calver
+    secrets:
+      PAT: ${{ secrets.PAT }}

@@ -1,6 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Config;
+
+use Myerscode\Acorn\Foundation\Console\Input\Input;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
+use Myerscode\Acorn\Framework\Log\NullLogger;
+use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
+use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 
 return [
     'root' => '${root}',
@@ -11,12 +19,12 @@ return [
         'listeners' => '${base}/Listeners',
         'providers' => '${base}/Providers',
     ],
-    'input' => \Myerscode\Acorn\Foundation\Console\Input\Input::class,
-    'output' => \Myerscode\Acorn\Foundation\Console\Display\DisplayOutput::class,
-    'logger' => \Myerscode\Acorn\Framework\Log\NullLogger::class,
-    'queue' => \Myerscode\Acorn\Foundation\Queue\SynchronousQueue::class,
+    'input' => Input::class,
+    'output' => DisplayOutput::class,
+    'logger' => NullLogger::class,
+    'queue' => SynchronousQueue::class,
     'cache' => [
-        'driver' => \Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache::class,
+        'driver' => RuntimeCache::class,
         'namespace' => 'acorn',
         'config' => [],
     ],

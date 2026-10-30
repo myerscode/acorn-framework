@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn;
 
 use Exception;
+use RuntimeException;
+use Myerscode\Acorn\Foundation\Exceptions\ExceptionHandler;
 use Myerscode\Acorn\Framework\Config\Manager;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
+use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 
 class Kernel
 {
@@ -19,15 +24,16 @@ class Kernel
 
     protected string $rootPath;
 
+    private ?Application $application = null;
+
+    private bool $booted = false;
+
+    private ?Manager $configManager = null;
+
     private readonly Container $container;
-
-    private readonly Application $application;
-
-    private bool $booted;
 
     public function __construct(string $basePath = '')
     {
-        $this->booted = false;
         $this->container = new Container();
         $this->setBasePath($basePath);
         $this->setRootPath($basePath);
@@ -35,12 +41,12 @@ class Kernel
 
     public function application(): Application
     {
-        return $this->boot()->application;
+        return $this->boot()->application ?? throw new RuntimeException('Application not booted');
     }
 
     public function config(): Manager
     {
-        return new Manager($this->rootPath);
+        return $this->configManager ??= new Manager($this->rootPath);
     }
 
     public function container(): Container
@@ -66,20 +72,33 @@ class Kernel
         try {
             $result = $this->processCommand();
 
-            // TODO if result failed but has no error do something
-            if ($result->failed()) {
+            if ($result->failed() && $result->error() instanceof Exception) {
                 throw $result->error();
             }
 
             return $result->exitCode();
         } catch (CommandNotFoundException $commandNotFoundException) {
-            $this->output()->error($commandNotFoundException->getMessage());
-        } catch (Exception $exception) {
-            $message = empty($exception->getMessage()) ? $exception::class : $exception->getMessage();
-            $this->output()->error($message);
+            $this->exceptionHandler()->report($commandNotFoundException);
+            $this->exceptionHandler()->render($this->output(), $commandNotFoundException);
+        } catch (\Throwable $exception) {
+            $this->exceptionHandler()->report($exception);
+            $this->exceptionHandler()->render($this->output(), $exception);
         }
 
         return 1;
+    }
+
+    /**
+     * Get the exception handler instance.
+     */
+    public function exceptionHandler(): ExceptionHandlerInterface
+    {
+        try {
+            return $this->container->get(ExceptionHandlerInterface::class);
+        } catch (\Throwable) {
+            // Fallback if container isn't ready yet or handler not registered
+            return new ExceptionHandler(new \Myerscode\Acorn\Framework\Log\NullLogger());
+        }
     }
 
     /**
@@ -102,6 +121,9 @@ class Kernel
         return $this;
     }
 
+    /**
+     * @return string[]
+     */
     protected function configLocations(): array
     {
         return [
@@ -126,7 +148,7 @@ class Kernel
 
     protected function processCommand(): Result
     {
-        return $this->boot()->application->handle($this->input(), $this->output());
+        return $this->boot()->application()->handle($this->input(), $this->output());
     }
 
     protected function setBasePath(string $basePath): void

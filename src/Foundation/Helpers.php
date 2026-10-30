@@ -1,5 +1,20 @@
 <?php
 
+/**
+ * Convenience helper functions for Acorn applications.
+ *
+ * WARNING: These functions rely on the global Container singleton (Container::getInstance()).
+ * They are intended as convenience wrappers for userland command code only.
+ *
+ * DO NOT use these functions in framework or library code. For framework internals,
+ * inject dependencies via the constructor. Using these helpers in library code creates:
+ * - Hidden coupling to global state
+ * - Inability to test consumers in isolation
+ * - No support for multiple application instances in the same process
+ *
+ * For testing, use constructor injection and mock the dependencies directly.
+ */
+
 namespace Myerscode\Acorn\Foundation;
 
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
@@ -12,20 +27,19 @@ use Myerscode\Config\Config;
 use Myerscode\Utilities\Bags\DotUtility as BagUtility;
 use Myerscode\Utilities\Files\Utility as FileUtility;
 use Myerscode\Utilities\Strings\Utility as TextUtility;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Get a configuration value from the application
  *
- * @param  string|null  $key
- * @param  null  $default
- *
  * @return array|mixed|null
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
  */
-function config(string $key = null, $default = null)
+function config(?string $key = null, mixed $default = null): mixed
 {
-    /**
-     * @var $config Config
-     */
+    /** @var Config $config */
     $config = Container::getInstance()->get('config');
 
     if ($key) {
@@ -37,10 +51,8 @@ function config(string $key = null, $default = null)
 
 /**
  * Get the available container instance.
- *
- * @param  string|null  $abstract
  */
-function container(string $abstract = null): mixed
+function container(?string $abstract = null): mixed
 {
     if (is_null($abstract)) {
         return Container::getInstance();
@@ -50,21 +62,21 @@ function container(string $abstract = null): mixed
 }
 
 /**
- * @param $event
  *
- * @return mixed
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
  */
 function dispatch(EventInterface $event): void
 {
     Container::getInstance()->get(Dispatcher::class)->dispatch($event);
 }
 
-function emit($eventName, $params = null): void
+function emit(string $eventName, mixed $params = null): void
 {
     Container::getInstance()->get(Dispatcher::class)->emit($eventName, $params);
 }
 
-function file(string|FileUtility $path = ''): FileUtility
+function file(string $path = ''): FileUtility
 {
     return new FileUtility($path);
 }
@@ -74,21 +86,36 @@ function text(string|TextUtility $text = ''): TextUtility
     return new TextUtility($text);
 }
 
+/**
+ * @param array<mixed>|BagUtility $bag
+ */
 function bag(array|BagUtility $bag = []): BagUtility
 {
     return new BagUtility($bag);
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function output(): DisplayOutput
 {
     return Container::getInstance()->get('output');
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function input(): Input
 {
     return Container::getInstance()->get('input');
 }
 
+/**
+ * @throws ContainerExceptionInterface
+ * @throws NotFoundExceptionInterface
+ */
 function terminal(): Terminal
 {
     return Container::getInstance()->get(Terminal::class);

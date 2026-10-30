@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
@@ -7,13 +9,7 @@ use League\Container\ServiceProvider\AbstractServiceProvider;
 abstract class ServiceProvider extends AbstractServiceProvider
 {
     /**
-     * The provided array is a way to let the container
-     * know that a service is provided by this service
-     * provider. Every service that is registered via
-     * this service provider must have an alias added
-     * to this array or it will be ignored.
-     *
-     * @var array
+     * @var string[]
      */
     protected $provides = [];
 
@@ -24,4 +20,9 @@ abstract class ServiceProvider extends AbstractServiceProvider
      * within this method must be declared in the `$provides` array.
      */
     abstract public function register(): void;
+
+    public function provides(string $id): bool
+    {
+        return in_array($id, $this->provides);
+    }
 }

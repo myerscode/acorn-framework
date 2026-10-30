@@ -12,55 +12,10 @@ use function Myerscode\Acorn\Foundation\output;
 
 class Terminal
 {
-
-    /**
-     * Environment variables.
-     *
-     * @var array $environmentVariables
-     */
-    protected array $environmentVariables = [];
-
-    /**
-     * Timeout.
-     */
-    protected int $timeout = 60;
-
-    /**
-     * Number times to try the command
-     */
-    protected int $retries = 0;
-
-    /**
-     * Seconds to sleep between retries
-     */
-    protected int $sleep = 0;
-
-    /**
-     * Current working directory.
-     */
-    protected string $cwd;
-
-    /**
-     * TTY mode.
-     */
-    protected bool $tty = false;
-
-    /**
-     * Should throw an exception if the command fails
-     */
-    protected bool $shouldThrow = true;
-
     /**
      * Number of attempts the terminal has made to run a process
-     *
-     * @var int
      */
     protected int $attempts = 0;
-
-    /**
-     * What to do with the output of the process
-     */
-    protected Closure|DisplayOutput $output;
 
     /**
      * The command that will be executed
@@ -68,23 +23,60 @@ class Terminal
     protected Command|string $command = '';
 
     /**
-     * Determine if a process should execute in the background.
-     *
-     * @var boolean
+     * Current working directory.
      */
-    protected bool $inBackground = false;
+    protected string $cwd;
+
+    /**
+     * Environment variables.
+     *
+     * @var array<string, string>
+     */
+    protected array $environmentVariables = [];
 
     /**
      * Max time since last output.
-     *
-     * @var mixed
      */
     protected ?int $idleTimeout = null;
 
     /**
+     * Determine if a process should execute in the background.
+     */
+    protected bool $inBackground = false;
+
+    /**
+     * What to do with the output of the process
+     */
+    protected Closure|DisplayOutput $output;
+
+    /**
+     * Number times to try the command
+     */
+    protected int $retries = 0;
+
+    /**
+     * Should throw an exception if the command fails
+     */
+    protected bool $shouldThrow = true;
+
+    /**
+     * Seconds to sleep between retries
+     */
+    protected int $sleep = 0;
+
+    /**
+     * Timeout.
+     */
+    protected int $timeout = 60;
+
+    /**
+     * TTY mode.
+     */
+    protected bool $tty = false;
+
+    /**
      * Execute a process in the background.
      *
-     * @return $this
      * @throws ProcessFailedException
      */
     public function async(string|Command $command): TerminalResponse
@@ -100,8 +92,6 @@ class Terminal
      * Number of attempts the terminal has made to run a process
      *
      * Will be 0 before the process is run and is reset every time run() is called
-     *
-     * @return int
      */
     public function attempts(): int
     {
@@ -123,9 +113,7 @@ class Terminal
     /**
      * Set the command to be run
      *
-     * @param  string|Command  $command
      *
-     * @return self
      */
     public function command(string|Command $command): self
     {
@@ -171,6 +159,9 @@ class Terminal
         return $this->tty(true);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function environmentVariables(): array
     {
         return $this->environmentVariables;
@@ -189,9 +180,7 @@ class Terminal
     /**
      * Set current working directory.
      *
-     * @param  string  $cwd
      *
-     * @return Terminal
      */
     public function in(string $cwd): self
     {
@@ -202,8 +191,6 @@ class Terminal
 
     /**
      * Will the process be async or blocking
-     *
-     * @return bool
      */
     public function inBackground(): bool
     {
@@ -212,8 +199,6 @@ class Terminal
 
     /**
      * Is TTY supported on the running platform
-     *
-     * @return bool
      */
     public function isTtySupported(): bool
     {
@@ -223,7 +208,6 @@ class Terminal
     /**
      * Set output handler.
      *
-     * @param  Closure|DisplayOutput  $output
      *
      * @return $this
      */
@@ -236,8 +220,6 @@ class Terminal
 
     /**
      * Create the underlying Symfony Process to run
-     *
-     * @return Process
      */
     public function process(): Process
     {
@@ -253,10 +235,8 @@ class Terminal
 
         if ($this->tty && $this->isTtySupported()) {
             $process->setTty($this->tty);
-        } else {
-            if ($this->tty && !$this->isTtySupported()) {
-                output()->warning("Tried setting tty on Terminal command - but it is not supported!");
-            }
+        } elseif ($this->tty && !$this->isTtySupported()) {
+            output()->warning('Tried setting tty on Terminal command - but it is not supported!');
         }
 
         if (!is_null($this->idleTimeout())) {
@@ -269,7 +249,6 @@ class Terminal
     /**
      * Retry an operation a given number of times.
      *
-     * @param  int  $times
      *
      * @return $this
      */
@@ -283,35 +262,72 @@ class Terminal
     /**
      * Execute a given command.
      *
-     * @param  string|Command  $command
-     * @param  callable|DisplayOutputInterface|null  $output
-     *
-     * @return TerminalResponse
      * @throws ProcessFailedException
      */
-    public function run(string|Command $command, callable|DisplayOutputInterface $output = null): TerminalResponse
+    public function run(string|Command $command, callable|DisplayOutputInterface|null $output = null): TerminalResponse
     {
         $this->command($command);
 
         if (!is_null($output)) {
-            $this->output($output);
+            $this->output = $this->parseCallback($output);
         }
 
         $this->attempts = 0;
 
-        return $this->executeAttempts($this->retries, function (int $attempt, int $sleptFor) {
+        return $this->executeAttempts($this->retries, function (int $attempt, int $sleptFor): TerminalResponse {
             $this->attempts = $attempt;
 
             $process = $this->process();
 
-            $response = $this->executeProcess($process, $attempt, $sleptFor);
+            $terminalResponse = $this->executeProcess($process, $attempt, $sleptFor);
 
-            if ($this->inBackground() || $response->successful()) {
-                return $response;
+            if ($this->inBackground() || $terminalResponse->successful()) {
+                return $terminalResponse;
             }
 
-            throw new ProcessFailedException($response->process());
+            throw new ProcessFailedException($terminalResponse->process());
         }, $this->sleepsFor());
+    }
+
+    /**
+     * Execute a command using an array of arguments (no shell interpretation).
+     *
+     * This is the safe alternative to run() when command arguments may contain
+     * user-controlled values. Arguments are passed directly to the process without
+     * shell interpretation, preventing injection attacks.
+     *
+     * @param string[] $command Array of command and arguments, e.g. ['rm', '-f', $path]
+     * @param callable|DisplayOutputInterface|null $output
+     * @throws ProcessFailedException
+     */
+    public function runSafe(array $command, callable|DisplayOutputInterface|null $output = null): TerminalResponse
+    {
+        $callback = null;
+        if (!is_null($output)) {
+            $callback = $this->parseCallback($output);
+        } elseif (isset($this->output)) {
+            $callback = $this->output;
+        }
+
+        $process = new Process(
+            $command,
+            $this->cwd ?? null,
+            $this->environmentVariables() ?: null,
+            null,
+            $this->timeout,
+        );
+
+        if ($this->tty && $this->isTtySupported()) {
+            $process->setTty($this->tty);
+        }
+
+        if (!is_null($this->idleTimeout())) {
+            $process->setIdleTimeout($this->idleTimeout());
+        }
+
+        $this->attempts = 1;
+
+        return $this->executeProcess($process, 1, 0);
     }
 
     public function shouldThrow(): bool
@@ -322,7 +338,6 @@ class Terminal
     /**
      * Retry an operation a given number of times.
      *
-     * @param  int  $sleep
      *
      * @return $this
      */
@@ -335,8 +350,6 @@ class Terminal
 
     /**
      * How long the terminal sleeps for between a failed operation (in seconds)
-     *
-     * @return int
      */
     public function sleepsFor(): int
     {
@@ -353,7 +366,6 @@ class Terminal
     /**
      * Set Process timeout in seconds.
      *
-     * @param  int  $ttl
      *
      * @return $this
      */
@@ -367,7 +379,6 @@ class Terminal
     /**
      * Set max time since last output.
      *
-     * @param  int|null  $idleTimeout
      *
      * @return $this
      */
@@ -381,6 +392,7 @@ class Terminal
     /**
      * Set environment variables that the process will use.
      *
+     * @param array<string, string> $envVars
      * @return $this
      */
     public function withEnvironmentVariables(array $envVars): self
@@ -391,35 +403,42 @@ class Terminal
     }
 
     /**
-     * @return mixed
      * @throws ProcessFailedException
      */
     protected function executeAttempts(int $times, callable $callback, int $sleep = 0, int $sleptFor = 0): TerminalResponse
     {
         $attempts = 0;
+        $lastException = null;
+        $maxAttempts = $times + 1;
 
-        beginning:
-        $attempts++;
-        $times--;
+        while ($attempts < $maxAttempts) {
+            $attempts++;
 
-        try {
-            return $callback($attempts, $sleptFor);
-        } catch (ProcessFailedException  $e) {
-            if ($times < 1) {
-                if ($this->shouldThrow()) {
-                    throw $e;
+            try {
+                return $callback($attempts, $sleptFor);
+            } catch (ProcessFailedException $processFailedException) {
+                $lastException = $processFailedException;
+
+                if ($attempts >= $maxAttempts) {
+                    if ($this->shouldThrow()) {
+                        throw $processFailedException;
+                    }
+
+                    return new FailedResponse($processFailedException->process, $attempts, $sleptFor);
                 }
 
-                return new FailedResponse($e->process, $attempts, $sleptFor);
+                if ($sleep !== 0) {
+                    $sleptFor += $sleep;
+                    usleep($sleep * 1_000_000);
+                }
             }
-
-            if ($sleep) {
-                $sleptFor += $sleep;
-                usleep($sleep * 1000);
-            }
-
-            goto beginning;
         }
+
+        if ($lastException instanceof \Myerscode\Acorn\Framework\Terminal\Exception\ProcessFailedException) {
+            return new FailedResponse($lastException->process, $attempts, $sleptFor);
+        }
+
+        return new FailedResponse(new Process([]), $attempts, $sleptFor);
     }
 
     protected function executeProcess(Process $process, int $attempt, int $sleptFor): TerminalResponse
@@ -428,9 +447,9 @@ class Terminal
             $callback = $this->output ?? null;
 
             if ($this->inBackground()) {
-                $process->start($callback);
+                $process->start(is_callable($callback) ? $callback : null);
             } else {
-                $process->run($callback);
+                $process->run(is_callable($callback) ? $callback : null);
             }
 
             return new CompletedResponse($process, $attempt, $sleptFor);
@@ -442,19 +461,17 @@ class Terminal
     /**
      * Wrap any given output callback for handling command outputs
      *
-     * @param  callable|DisplayOutputInterface  $output
      *
-     * @return Closure
      */
     protected function parseCallback(callable|DisplayOutputInterface $output): Closure
     {
         if ($output instanceof DisplayOutputInterface) {
-            return function ($type, $data) use ($output) {
-                $output->output->write(trim($data));
+            return function ($type, $data) use ($output): void {
+                $output->write(trim($data));
             };
         }
 
-        return function ($type, $data) use ($output) {
+        return function ($type, $data) use ($output): void {
             $output(trim($data));
         };
     }
@@ -462,7 +479,6 @@ class Terminal
     /**
      * Enable or disable the TTY mode.
      *
-     * @param  bool  $tty
      *
      * @return $this
      */

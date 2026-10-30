@@ -3,27 +3,50 @@
 namespace Myerscode\Acorn\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 trait InteractsWithOutput
 {
-    protected DisplayOutputInterface $output;
+    protected DisplayOutputInterface|OutputInterface $output;
 
     /**
      * Write a very verbose message that is only output when the -vvv is present
+     *
+     * @param string|string[] $message
      */
     public function debug(string|array $message): void
     {
-        $this->output->debug($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->debug($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message), OutputInterface::VERBOSITY_DEBUG);
     }
 
+    /** @param string|string[] $message */
     public function error(string|array $message): void
     {
-        $this->output->error($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->error($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message));
     }
 
+    /** @param string|string[] $message */
     public function info(string|array $message): void
     {
-        $this->output->info($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->info($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message));
     }
 
     /**
@@ -58,19 +81,40 @@ trait InteractsWithOutput
         return $this->output->isVeryVerbose();
     }
 
+    /** @param string|string[] $message */
     public function line(string|array $message): void
     {
-        $this->output->line($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->line($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message));
     }
 
+    /** @param string|string[] $message */
     public function success(string|array $message): void
     {
-        $this->output->success($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->success($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message));
     }
 
+    /** @param string|string[] $message */
     public function verbose(string|array $message): void
     {
-        $this->output->verbose($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->verbose($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message), OutputInterface::VERBOSITY_VERBOSE);
     }
 
     /**
@@ -81,8 +125,26 @@ trait InteractsWithOutput
         return $this->output->getVerbosity();
     }
 
+    /** @param string|string[] $message */
     public function veryVerbose(string|array $message): void
     {
-        $this->output->veryVerbose($message);
+        if ($this->output instanceof DisplayOutputInterface) {
+            $this->output->veryVerbose($message);
+
+            return;
+        }
+
+        $this->output->writeln($this->normalise($message), OutputInterface::VERBOSITY_VERY_VERBOSE);
+    }
+
+    /**
+     * Normalise message to string for plain OutputInterface.
+     *
+     * @param string|string[] $message
+     * @return string|string[]
+     */
+    private function normalise(string|array $message): string|array
+    {
+        return $message;
     }
 }

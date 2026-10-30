@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Pipeline;
 
 use Myerscode\Acorn\Framework\Exceptions\InvalidPipeException;
@@ -10,23 +12,23 @@ use Tests\Resources\AfterPipe;
 use Tests\Resources\BeforePipe;
 use Tests\Resources\PipedObject;
 
-class PipelineTest extends TestCase
+final class PipelineTest extends TestCase
 {
     public function testAddingAnPipelineAndArrayWorks(): void
     {
-        $pipeline1 = (new Pipeline)->pipes([
-            new BeforePipe(1),
-            new AfterPipe(4),
+        $pipeline1 = new Pipeline()->pipes([
+            new BeforePipe('1'),
+            new AfterPipe('4'),
         ]);
 
         $pipeline = new Pipeline([
-            new BeforePipe(3),
-            new AfterPipe(2),
+            new BeforePipe('3'),
+            new AfterPipe('2'),
         ]);
 
         $end = $pipeline1
             ->pipes($pipeline)
-            ->flush(new PipedObject, static function ($object) {
+            ->flush(new PipedObject(), static function ($object) {
                 $object->passedThrough[] = 'core';
 
                 return $object;
@@ -44,12 +46,12 @@ class PipelineTest extends TestCase
     public function testCanAddASinglePipe(): void
     {
         $stdClass = new StdClass();
-        $pipeline = (new Pipeline)->pipes(new BeforePipe)->flush($stdClass);
+        $pipeline = new Pipeline()->pipes(new BeforePipe())->flush($stdClass);
 
         $this->assertSame(['before'], $pipeline->passedThrough);
 
         $stdClass = new StdClass();
-        $pipeline = (new Pipeline(AfterPipe::class))->flush($stdClass);
+        $pipeline = new Pipeline(AfterPipe::class)->flush($stdClass);
 
         $this->assertSame(['after'], $pipeline->passedThrough);
     }
@@ -59,13 +61,14 @@ class PipelineTest extends TestCase
         $stdClass = new StdClass();
 
         $stdClass->runs = [];
+
         $pipeline = new Pipeline();
 
         $end = $pipeline->pipes([
-            new BeforePipe(1),
-            new BeforePipe(2),
-            new AfterPipe(3),
-            new AfterPipe(4),
+            new BeforePipe('1'),
+            new BeforePipe('2'),
+            new AfterPipe('3'),
+            new AfterPipe('4'),
         ])->flush($stdClass);
 
         $this->assertSame([
@@ -88,11 +91,11 @@ class PipelineTest extends TestCase
     {
         $pipeline = new Pipeline();
         $end = $pipeline
-            ->pipes(new BeforePipe(1))
-            ->pipes(new AfterPipe(4))
-            ->pipes(new BeforePipe(3))
-            ->pipes(new AfterPipe(2))
-            ->flush(new PipedObject, static function ($object) {
+            ->pipes(new BeforePipe('1'))
+            ->pipes(new AfterPipe('4'))
+            ->pipes(new BeforePipe('3'))
+            ->pipes(new AfterPipe('2'))
+            ->flush(new PipedObject(), static function ($object) {
                 $object->passedThrough[] = 'core';
 
                 return $object;
@@ -116,9 +119,9 @@ class PipelineTest extends TestCase
         $pipeline = new Pipeline();
 
         $end = $pipeline->pipes([
-            new BeforePipe(1),
-            static fn(): int => 2,
-            new AfterPipe(3),
+            new BeforePipe('1'),
+            static fn (): int => 2,
+            new AfterPipe('3'),
         ])->flush($stdClass);
 
         $this->assertSame([
@@ -131,7 +134,7 @@ class PipelineTest extends TestCase
     {
         $stdClass = new StdClass();
 
-        $pipeline = (new Pipeline)->pipes([
+        $pipeline = new Pipeline()->pipes([
             BeforePipe::class,
             AfterPipe::class,
         ])->flush($stdClass);

@@ -11,7 +11,7 @@ class BeforePipe implements PipeInterface
     {
     }
 
-    public function handle($object, Closure $next)
+    public function handle(mixed $object, Closure $next): mixed
     {
         $object->passedThrough[] = $this->id;
 

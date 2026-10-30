@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Events;
 
 use SplObjectStorage;
@@ -7,9 +9,11 @@ use SplPriorityQueue;
 
 class ListenerQueue
 {
-    protected SplObjectStorage $storage;
-
+    /** @var SplPriorityQueue<int, ListenerInterface> */
     protected SplPriorityQueue $queue;
+
+    /** @var SplObjectStorage<ListenerInterface, int> */
+    protected SplObjectStorage $storage;
 
     public function __construct()
     {
@@ -44,7 +48,6 @@ class ListenerQueue
      */
     public function clear(): void
     {
-        unset($this->storage, $this->queue);
         $this->storage = new SplObjectStorage();
         $this->queue = new SplPriorityQueue();
     }
@@ -54,7 +57,19 @@ class ListenerQueue
      */
     public function contains(ListenerInterface $listener): bool
     {
-        return $this->storage->contains($listener);
+        return $this->storage->offsetExists($listener);
+    }
+
+    /**
+     * Get the priority of a listener, or null if not found.
+     */
+    public function getPriority(ListenerInterface $listener): ?int
+    {
+        if (!$this->storage->offsetExists($listener)) {
+            return null;
+        }
+
+        return $this->storage->offsetGet($listener);
     }
 
     /**
@@ -62,8 +77,23 @@ class ListenerQueue
      */
     public function push(ListenerInterface $listener, int $priority): void
     {
-        $this->storage->attach($listener, $priority);
+        $this->storage->offsetSet($listener, $priority);
         $this->queue->insert($listener, $priority);
+    }
+
+    /**
+     * Removes a listener from the queue.
+     *
+     * Note: This operation is O(n) as it requires rebuilding the SplPriorityQueue
+     * from the SplObjectStorage. For hot paths with frequent listener removal,
+     * consider alternative data structures.
+     */
+    public function remove(ListenerInterface $listener): void
+    {
+        if ($this->storage->offsetExists($listener)) {
+            $this->storage->offsetUnset($listener);
+            $this->refresh();
+        }
     }
 
     /**
@@ -77,17 +107,6 @@ class ListenerQueue
         foreach ($this->storage as $singleStorage) {
             $priority = $this->storage->getInfo();
             $this->queue->insert($singleStorage, $priority);
-        }
-    }
-
-    /**
-     * Removes an listener from the queue.
-     */
-    public function remove(ListenerInterface $listener): void
-    {
-        if ($this->storage->contains($listener)) {
-            $this->storage->detach($listener);
-            $this->refresh();
         }
     }
 }

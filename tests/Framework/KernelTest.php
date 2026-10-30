@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework;
 
 use Exception;
@@ -11,9 +13,8 @@ use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Kernel;
 use Tests\BaseTestCase;
 
-class KernelTest extends BaseTestCase
+final class KernelTest extends BaseTestCase
 {
-
     public function testCanGetConfig(): void
     {
         $legacyMock = $this->mock(Kernel::class, [$this->resourceFilePath('Resources/App')])->makePartial();
@@ -50,7 +51,7 @@ class KernelTest extends BaseTestCase
         $kernel = $this->mock(Kernel::class.'[output,processCommand]', [$this->resourceFilePath('Resources/App')])
             ->shouldAllowMockingProtectedMethods()
             ->allows([
-                'processCommand' => new Result(1, new Exception("Testing errors are handled")),
+                'processCommand' => new Result(1, new Exception('Testing errors are handled')),
                 'output' => $this->createVoidOutput(),
             ])
             ->makePartial();

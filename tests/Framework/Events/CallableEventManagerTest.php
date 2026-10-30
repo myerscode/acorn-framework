@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Events;
 
 use Myerscode\Acorn\Framework\Events\CallableEventManager;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
 
-class CallableEventManagerTest extends BaseTestCase
+final class CallableEventManagerTest extends BaseTestCase
 {
     use InteractsWithDispatcher;
 
     public function testCanClearEvents(): void
     {
-        $this->dispatcher()->addListener('my-special-event', static function () : void {
+        $this->dispatcher()->addListener('my-special-event', static function (): void {
         });
 
         $this->assertNotCount(0, CallableEventManager::listeners());
@@ -28,16 +30,40 @@ class CallableEventManagerTest extends BaseTestCase
 
         $this->assertCount(0, CallableEventManager::listeners());
 
-        $this->dispatcher()->addListener('my-special-event', static function () : void {
+        $this->dispatcher()->addListener('my-special-event', static function (): void {
         });
 
         $this->assertCount(1, CallableEventManager::listeners());
     }
 
+    public function testDispatcherFindCallableListenerReturnsFalseForUnknown(): void
+    {
+        $dispatcher = $this->dispatcher();
+        $dispatcher->clearCallableListeners();
+
+        $result = $dispatcher->findCallableListener(static function (): void {
+        });
+        $this->assertFalse($result);
+    }
+
+    public function testDispatcherInstanceTracksCallableListeners(): void
+    {
+        $dispatcher = $this->dispatcher();
+        $dispatcher->clearCallableListeners();
+        CallableEventManager::clear();
+
+        $callable = static function (): void {
+        };
+        $dispatcher->addListener('test-event', $callable);
+
+        $this->assertCount(1, $dispatcher->callableListeners());
+        $this->assertNotFalse($dispatcher->findCallableListener($callable));
+    }
+
     public function testFindCallable(): void
     {
         $dispatcher = $this->dispatcher();
-        $callable = static function () : void {
+        $callable = static function (): void {
         };
         $dispatcher->addListener('my-special-event', $callable);
         $this->assertEquals($callable, CallableEventManager::findByCallable($callable)->getCallable());

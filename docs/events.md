@@ -1,46 +1,86 @@
 # Events
 
-You probably want to emit events when things happen within your application!
-Acorn has a convenient way to dispatch events within your command controllers.
+Acorn has a unified event system for dispatching and listening to events within your application.
 
-## Dispatch Events
+## Dispatching Events
 
-You can create an event object, and dispatch if for listeners to consume.
+Create an event object and dispatch it for listeners to consume:
 
 ```php
-$event = new AppEvent();
+use function Myerscode\Acorn\Foundation\dispatch;
 
-disaptch($event);
+$event = new AppEvent();
+dispatch($event);
 ```
 
-## Emitting events
+## Emitting Events
 
-Alternatively - if may just want to emit the event, for subscribers to respond too.
+You can emit events by class name or by a custom string name. When emitting by class name, the event will be instantiated automatically:
 
 ```php
+use function Myerscode\Acorn\Foundation\emit;
+
 emit('acorn.build.before');
 
-emit(BeforeBuildEvent:class);
+emit(BeforeBuildEvent::class);
+
+// With parameters passed to the event constructor
+emit(BuildEvent::class, [$buildTarget]);
 ```
 
-## Listening for events
+## Event Classes
 
-## Event Register
+Events extend the base `Event` class:
 
-### Listen for any event
+```php
+<?php
 
-In the case that you want to listen for any event fired, for example if you want to implement some form of tracing or
-logging -
-you can create a listener and give it one of the following keywords `*`, `all`, `any` as an event name.
+namespace App\Events;
 
-This when an any event is fired, it will also be sent to that listener, as well as the ones explicitly told to listen
-for that event.
+use Myerscode\Acorn\Framework\Events\Event;
 
-An example lister
+class BuildCompleted extends Event
+{
+    public function __construct(public readonly string $target)
+    {
+    }
+}
+```
 
-```php 
+## Propagation
+
+Events support propagation stopping. When a listener calls `stopPropagation()`, subsequent listeners for that event will not be called:
+
+```php
+public function handle(EventInterface $event): void
+{
+    $event->stopPropagation();
+}
+```
+
+## Unified Dispatcher
+
+The Acorn Dispatcher implements Symfony's `EventDispatcherInterface`, which means:
+
+- It handles both Symfony Console events and Acorn application events in a single dispatcher
+- No bridging layer is needed between Symfony Console and your application events
+- You can register Symfony event subscribers directly on the Acorn dispatcher
+
+## Listening for Any Event
+
+To listen for any event fired (useful for tracing or logging), use one of the catch-all keywords `*`, `all`, or `any` as the event name:
+
+```php
 class DetailedLoggingListener extends Listener
 {
-    protected string|array $listensFor = '*'
+    public function handle(EventInterface $event): void
+    {
+        // Called for every event
+    }
+
+    public function listensFor(): array|string
+    {
+        return '*';
+    }
 }
 ```

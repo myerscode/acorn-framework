@@ -8,9 +8,9 @@ use Myerscode\Utilities\Files\Utility as FileService;
 
 class Manager implements ManagerInterface
 {
-    protected bool $shouldCacheConfig = true;
-
     protected bool $ignoreCached = false;
+
+    protected bool $shouldCacheConfig = true;
 
     protected bool $usingCachedConfig = false;
 
@@ -20,66 +20,54 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * Where is the cache being stored
+     * Tell the manager to never cache a compiled config file
      *
-     * @return string
+     * @return $this
      */
-    protected function cacheLocation(): string
+    public function doNotCacheConfig(): self
     {
-        return $this->rootPath . '/.acorn/config.php';
+        return $this->setShouldCacheConfig(false);
     }
 
-    protected function buildConfig(array $configLocations, array $data): Config
+    /**
+     * Tell the manager to never ignore the cache
+     *
+     * @return $this
+     */
+    public function doNotIgnoreCache(): self
     {
-        $config = new Config();
-
-        $config->loadData([
-            ...$data,
-            'configLocations' => $configLocations,
-        ]);
-
-        foreach ($configLocations as $configLocation) {
-            try {
-                $configFiles = array_map(fn($file) => $file->getRealPath(), FileService::make($configLocation)->files());
-                $config->loadFilesWithNamespace($configFiles);
-            } catch (NotADirectoryException) {
-                //  TODO add debug output
-            }
-        }
-
-        return $config;
+        return $this->setIgnoreCachedConfig(false);
     }
 
-    protected function cachedConfig(): Config|false
+    /**
+     * Is the manager going to cache the config when loaded
+     */
+    public function isCachingConfig(): bool
     {
-        $config = new Config();
-
-        $cachedConfigLocation = $this->cacheLocation();
-
-        $cachedConfig = FileService::make($cachedConfigLocation);
-
-        if (!$cachedConfig->exists()) {
-            return false;
-        }
-
-        $config->loadFile($cachedConfig->path());
-
-        $config->loadData(['cachedConfig' => 'true', 'cachedConfigLocation' => $cachedConfigLocation]);
-
-        $this->usingCachedConfig = true;
-
-        return $config;
+        return $this->shouldCacheConfig;
     }
 
-    protected function cacheConfig(array $config): void
+    /**
+     * Is the manager ignoring the cache
+     */
+    public function isIgnoringCache(): bool
     {
-        $cachedConfigLocation = $this->cacheLocation();
-
-        $template = "<?php return " . var_export($config, true) . ";";
-
-        FileService::make($cachedConfigLocation)->touch()->setContent($template);
+        return $this->ignoreCached;
     }
 
+    /**
+     * Check if the manager has loaded a configuration from a cache
+     * If the manager has not loaded the configuration yet, it will always return false
+     */
+    public function isUsingCachedConfig(): bool
+    {
+        return $this->usingCachedConfig;
+    }
+
+    /**
+     * @param string[] $configLocations
+     * @param array<string, mixed> $data
+     */
     public function loadConfig(array $configLocations, array $data = []): Config
     {
         $config = false;
@@ -99,36 +87,6 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * Is the manager ignoring the cache
-     *
-     * @return bool
-     */
-    public function isIgnoringCache(): bool
-    {
-        return $this->ignoreCached;
-    }
-
-    /**
-     * Tell the manager to never ignore the cache
-     *
-     * @return $this
-     */
-    public function doNotIgnoreCache(): self
-    {
-        return $this->setIgnoreCachedConfig(false);
-    }
-
-    /**
-     * Tell the manager to ignore the cache, even if one exists
-     *
-     * @return $this
-     */
-    public function shouldIgnoreCache(): self
-    {
-        return $this->setIgnoreCachedConfig(true);
-    }
-
-    /**
      * Set if the manager should ignore the cache
      *
      * @return $this
@@ -141,34 +99,15 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * Check if the manager has loaded a configuration from a cache
-     * If the manager has not loaded the configuration yet, it will always return false
-     *
-     * @return bool
-     */
-    public function isUsingCachedConfig(): bool
-    {
-        return $this->usingCachedConfig;
-    }
-
-    /**
-     * Is the manager going to cache the config when loaded
-     *
-     * @return bool
-     */
-    public function isCachingConfig(): bool
-    {
-        return $this->shouldCacheConfig;
-    }
-
-    /**
-     * Tell the manager to never cache a compiled config file
+     * Set if the manager should cache the config
      *
      * @return $this
      */
-    public function doNotCacheConfig(): self
+    public function setShouldCacheConfig(bool $shouldCacheConfig): self
     {
-        return $this->setShouldCacheConfig(false);
+        $this->shouldCacheConfig = $shouldCacheConfig;
+
+        return $this;
     }
 
     /**
@@ -182,14 +121,94 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * Set if the manager should cache the config
+     * Tell the manager to ignore the cache, even if one exists
      *
      * @return $this
      */
-    public function setShouldCacheConfig(bool $shouldCacheConfig): self
+    public function shouldIgnoreCache(): self
     {
-        $this->shouldCacheConfig = $shouldCacheConfig;
+        return $this->setIgnoreCachedConfig(true);
+    }
 
-        return $this;
+    /**
+     * @param string[] $configLocations
+     * @param array<string, mixed> $data
+     */
+    protected function buildConfig(array $configLocations, array $data): Config
+    {
+        $config = new Config();
+
+        $config->loadData([
+            ...$data,
+            'configLocations' => $configLocations,
+        ]);
+
+        foreach ($configLocations as $configLocation) {
+            try {
+                $configFiles = array_map(fn ($file) => $file->getRealPath(), FileService::make($configLocation)->files());
+                $config->loadFilesWithNamespace($configFiles);
+            } catch (NotADirectoryException) {
+                //  TODO add debug output
+            }
+        }
+
+        return $config;
+    }
+
+    /**
+     * Cache the configuration as a JSON file (data-only, no code execution).
+     *
+     * @param array<string, mixed> $config
+     */
+    protected function cacheConfig(array $config): void
+    {
+        $cachedConfigLocation = $this->cacheLocation();
+
+        $directory = dirname($cachedConfigLocation);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $json = json_encode($config, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        file_put_contents($cachedConfigLocation, $json, LOCK_EX);
+    }
+
+    /**
+     * Load the cached configuration from a JSON file.
+     */
+    protected function cachedConfig(): Config|false
+    {
+        $cachedConfigLocation = $this->cacheLocation();
+
+        if (!file_exists($cachedConfigLocation)) {
+            return false;
+        }
+
+        $contents = file_get_contents($cachedConfigLocation);
+        if ($contents === false) {
+            return false;
+        }
+
+        $data = json_decode($contents, true);
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $config = new Config();
+        $config->loadData($data);
+        $config->loadData(['cachedConfig' => 'true', 'cachedConfigLocation' => $cachedConfigLocation]);
+
+        $this->usingCachedConfig = true;
+
+        return $config;
+    }
+
+    /**
+     * Where is the cache being stored
+     */
+    protected function cacheLocation(): string
+    {
+        return $this->rootPath . '/.acorn/config.json';
     }
 }

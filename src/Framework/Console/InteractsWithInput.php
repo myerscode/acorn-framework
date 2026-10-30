@@ -8,19 +8,15 @@ trait InteractsWithInput
 {
     /**
      * The input interface implementation.
-     *
-     * @var InputInterface
      */
-    protected ConsoleInputInterface $input;
+    protected ConsoleInputInterface|InputInterface $input;
 
     /**
      * Get the value of a command argument.
      *
-     * @param  string|null  $default
-     *
-     * @return string|array|null
+     * @return string|array<mixed>|null
      */
-    public function argument(string $key, string $default = null)
+    public function argument(string $key, ?string $default = null): string|array|null
     {
         if ($this->hasArgument($key)) {
             return $this->input->getArgument($key);
@@ -32,7 +28,7 @@ trait InteractsWithInput
     /**
      * Get all of the arguments passed to the command.
      *
-     * @return mixed[]
+     * @return array<string, mixed>
      */
     public function arguments(): array
     {
@@ -42,7 +38,7 @@ trait InteractsWithInput
     /**
      * Determine if the given argument is present.
      */
-    public function hasArgument(string|int $name): bool
+    public function hasArgument(string $name): bool
     {
         if (!$this->input->hasArgument($name)) {
             return false;
@@ -60,16 +56,13 @@ trait InteractsWithInput
             return false;
         }
 
-        return !empty($this->input->getOption($name));
+        return $this->input->getOption($name) !== null;
     }
 
     /**
      * Get the value of a command option.
-     *
-     * @param  string|null  $key
-     * @param  string|null  $default
      */
-    public function option(string $key, string $default = null): ?string
+    public function option(string $key, ?string $default = null): ?string
     {
         if ($this->hasOption($key)) {
             return $this->input->getOption($key);

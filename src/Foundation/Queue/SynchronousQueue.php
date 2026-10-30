@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Queue;
 
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
@@ -25,6 +27,11 @@ class SynchronousQueue implements QueueInterface
         //
     }
 
+    public function pop(): null|JobInterface
+    {
+        return null;
+    }
+
     /**
      * Insert an listener to the queue.
      */
@@ -39,10 +46,5 @@ class SynchronousQueue implements QueueInterface
     public function remove(JobInterface $job): void
     {
         //
-    }
-
-    public function pop(): null|JobInterface
-    {
-        return null;
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\InteractsWithOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tests\BaseTestCase;
 
-class InteractsWithOutputTest extends BaseTestCase
+final class InteractsWithOutputTest extends BaseTestCase
 {
     public function testDebug(): void
     {
@@ -166,7 +168,7 @@ class InteractsWithOutputTest extends BaseTestCase
 
     private function createTrait(): array
     {
-        $trait = new class {
+        $trait = new class () {
             use InteractsWithOutput;
         };
 

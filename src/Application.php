@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn;
 
+use Override;
 use Exception;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
@@ -33,47 +36,63 @@ use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Exception\CommandNotFoundException as SymfonyCommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
 {
-    /**
-     * @var string
-     */
-    final const APP_NAME = 'Acorn';
+    public const string APP_NAME = 'Acorn';
 
-    /**
-     * @var string
-     */
-    final const APP_VERSION = '1.0.0';
-
-    /**
-     * The logger instance.
-     *
-     * @var LoggerInterface
-     */
-    protected LoggerInterface $logger;
-
-    protected array $discoveredPackages = [];
-
-    protected array $discoveredCommandDirectories = [];
-
-    protected array $discoveredProviders = [];
+    public const string APP_VERSION = '1.0.0';
 
     protected string $defaultCommand = 'list';
 
+    /** @var array<string, string> */
+    protected array $discoveredCommandDirectories = [];
+
+    /** @var array<string, array<string, mixed>> */
+    protected array $discoveredPackages = [];
+
+    /** @var array<string, string> */
+    protected array $discoveredProviders = [];
+
+    /**
+     * The logger instance.
+     */
+    protected LoggerInterface $logger;
+
     public function __construct(private readonly Container $container)
+    {
+        parent::__construct(self::APP_NAME, self::APP_VERSION);
+
+        $this->setCatchExceptions(false);
+        $this->setAutoExit(false);
+
+        $this->bootstrap();
+    }
+
+    #[Override]
+    public function addCommand(SymfonyCommand|callable $symfonyCommand): ?SymfonyCommand
+    {
+        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
+            $symfonyCommand->setLogger($this->logger());
+        }
+
+        return parent::addCommand($symfonyCommand);
+    }
+
+    /**
+     * Bootstrap the application: register providers, discover packages,
+     * bind events, and load commands.
+     *
+     * Extracted from the constructor to make the boot sequence explicit
+     * and testable. Called automatically during construction.
+     */
+    public function bootstrap(): void
     {
         $this->registerFrameworkProviders();
 
         $this->configureConsole();
-
-        // allow command exceptions to bubble up and be handled by the kernel
-        $this->setCatchExceptions(false);
-
-        $this->setAutoExit(false);
 
         $this->discoverPackages();
 
@@ -85,21 +104,12 @@ class Application extends SymfonyApplication
 
         $this->loadCommands();
 
-        parent::__construct(self::APP_NAME, self::APP_VERSION);
-
-        // reset the internal default command, so we can control it from here due to it being private and no accessor
         $this->setDefaultCommand($this->defaultCommand);
     }
 
-    public function add(SymfonyCommand $symfonyCommand): ?SymfonyCommand
-    {
-        if ($symfonyCommand instanceof Command || $symfonyCommand instanceof LoggerAwareInterface) {
-            $symfonyCommand->setLogger($this->logger());
-        }
-
-        return parent::add($symfonyCommand);
-    }
-
+    /**
+     * @return string[]
+     */
     public function commandsDiscoveryDirectories(): array
     {
         return array_filter([
@@ -114,6 +124,9 @@ class Application extends SymfonyApplication
         return $this->container;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function discoveredPackages(): array
     {
         return $this->discoveredPackages;
@@ -124,6 +137,9 @@ class Application extends SymfonyApplication
         return $this->container()->get(Dispatcher::class);
     }
 
+    /**
+     * @return string[]
+     */
     public function eventDiscoveryDirectories(): array
     {
         return array_filter([
@@ -132,13 +148,14 @@ class Application extends SymfonyApplication
         ]);
     }
 
-    public function handle(InputInterface $input = null, OutputInterface $output = null): Result
+    public function handle(?InputInterface $input = null, ?OutputInterface $output = null): Result
     {
         $throwException = null;
 
         try {
             // this happens within the run, but we want to capture the SymfonyCommandNotFoundException and handle it ourselves
-            $this->find($this->getCommandName($input) ?? $this->defaultCommand);
+            $commandName = $input instanceof \Symfony\Component\Console\Input\InputInterface ? ($this->getCommandName($input) ?? $this->defaultCommand) : $this->defaultCommand;
+            $this->find($commandName);
             $exitCode = parent::run($input, $output);
         } catch (SymfonyCommandNotFoundException $e) {
             throw new CommandNotFoundException($e->getMessage(), $e->getAlternatives(), $e->getCode(), $e);
@@ -155,6 +172,9 @@ class Application extends SymfonyApplication
         return $this->container->get('input');
     }
 
+    /**
+     * @return string[]
+     */
     public function loadedServiceProviders(): array
     {
         return $this->container->loadedProviders();
@@ -184,7 +204,6 @@ class Application extends SymfonyApplication
             try {
                 foreach (FileService::make($eventDiscoveryDir)->files() as $file) {
                     $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
-                    /** @var  $file \Symfony\Component\Finder\SplFileInfo */
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
                         if (is_subclass_of($eventRegisterClass, Listener::class)) {
@@ -195,7 +214,10 @@ class Application extends SymfonyApplication
                                 $events = [$listensFor];
                             } elseif (is_array($listensFor)) {
                                 $events = $listensFor;
+                            } else {
+                                $events = [];
                             }
+
                             foreach ($events as $event) {
                                 $this->dispatcher()->addListener($event, $listener);
                             }
@@ -212,23 +234,30 @@ class Application extends SymfonyApplication
         }
     }
 
+    /**
+     * Bind Symfony Console events to the Acorn dispatcher.
+     *
+     * The Acorn Dispatcher implements Symfony's EventDispatcherInterface, so it
+     * can be used directly with Symfony Console. Console events (COMMAND, TERMINATE,
+     * ERROR) are listened for and re-emitted as Acorn events for application listeners.
+     */
     protected function bindCommandEvents(): void
     {
-        $eventDispatcher = new EventDispatcher;
+        $dispatcher = $this->dispatcher();
 
-        $eventDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event): void {
-            $this->dispatcher()->emit(CommandBeforeEvent::class, $event);
+        $dispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $consoleCommandEvent): void {
+            $this->dispatcher()->emit(CommandBeforeEvent::class, $consoleCommandEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event): void {
-            $this->dispatcher()->emit(CommandAfterEvent::class, $event);
+        $dispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $consoleTerminateEvent): void {
+            $this->dispatcher()->emit(CommandAfterEvent::class, $consoleTerminateEvent);
         });
 
-        $eventDispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $event): void {
-            $this->dispatcher()->emit(CommandErrorEvent::class, $event);
+        $dispatcher->addListener(ConsoleEvents::ERROR, function (ConsoleErrorEvent $consoleErrorEvent): void {
+            $this->dispatcher()->emit(CommandErrorEvent::class, $consoleErrorEvent);
         });
 
-        $this->setDispatcher($eventDispatcher);
+        $this->setDispatcher($dispatcher);
     }
 
     protected function configureConsole(): void
@@ -238,51 +267,56 @@ class Application extends SymfonyApplication
 
     /**
      * Look through installed packages and locate packages to load commands and services from
-     *
-     * @return void
      */
     protected function discoverPackages(): void
     {
         $this->output()->debug(sprintf('Looking for packages in %s', config('app.root')));
 
-        $finder = new PackageDiscovery(config('app.root'));
+        $packageDiscovery = new PackageDiscovery(config('app.root'));
 
-        $this->discoveredPackages = $finder->found;
-        $this->discoveredCommandDirectories = $finder->locateCommands();
-        $this->discoveredProviders = $finder->locateProviders();
+        $this->discoveredPackages = $packageDiscovery->found;
+        $this->discoveredCommandDirectories = $packageDiscovery->locateCommands();
+        $this->discoveredProviders = $packageDiscovery->locateProviders();
 
-        foreach ($finder->found as $package => $meta) {
+        foreach (array_keys($packageDiscovery->found) as $package) {
             $this->output()->debug(sprintf('Discovered %s', $package));
         }
     }
 
+    /**
+     * Load commands from discovery directories.
+     *
+     * Performance note: This scans the filesystem and uses ReflectionClass on every boot.
+     * For large applications, consider implementing a manifest cache (acorn:optimize)
+     * that pre-scans and caches discovered class names.
+     */
     protected function loadCommands(): void
     {
         $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
         $this->output()->debug(
-            sprintf('Looking for commands in directories: %s', implode(", ", $commandsDiscoveryDirectories))
+            sprintf('Looking for commands in directories: %s', implode(', ', $commandsDiscoveryDirectories)),
         );
         foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
             $this->output()->debug(
-                sprintf('Looking for commands in %s', $commandDiscoveryDirectory)
+                sprintf('Looking for commands in %s', $commandDiscoveryDirectory),
             );
             try {
                 foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                        if (is_subclass_of($commandClass, Command::class, true) && (new ReflectionClass($commandClass))->isInstantiable()) {
-                            $this->add($this->container->get($commandClass));
+                        if (is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
+                            $this->addCommand($this->container->get($commandClass));
                             $this->output()->debug(
-                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory)
+                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory),
                             );
                         } else {
                             $this->output()->debug(
-                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory)
+                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory),
                             );
                         }
                     } catch (FileFormatExpection|ReflectionException) {
                         $this->output()->debug(
-                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory)
+                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory),
                         );
                     }
                 }
@@ -294,8 +328,6 @@ class Application extends SymfonyApplication
 
     /**
      * Load service providers from user land into the container
-     *
-     * @return void
      */
     protected function loadServiceProviders(): void
     {
@@ -307,7 +339,7 @@ class Application extends SymfonyApplication
     /**
      * Look for userland providers
      *
-     * @return array
+     * @return string[]
      */
     protected function providerDiscoveryDirectories(): array
     {
@@ -320,8 +352,6 @@ class Application extends SymfonyApplication
 
     /**
      * Load service providers from the framework into the container
-     *
-     * @return void
      */
     protected function registerFrameworkProviders(): void
     {
@@ -333,7 +363,7 @@ class Application extends SymfonyApplication
     /**
      * Get list of service providers
      *
-     * @return array
+     * @return string[]
      */
     protected function serviceProviders(): array
     {
@@ -341,16 +371,22 @@ class Application extends SymfonyApplication
 
         $serviceProviders = [];
 
-        foreach ($providerDiscoveryDirectories as $providerDirectory) {
+        foreach ($providerDiscoveryDirectories as $providerDiscoveryDirectory) {
             try {
-                $this->output()->debug(sprintf('Loading providers from %s', $providerDirectory));
-                foreach (FileService::make($providerDirectory)->files() as $file) {
+                $this->output()->debug(sprintf('Loading providers from %s', $providerDiscoveryDirectory));
+                foreach (FileService::make($providerDiscoveryDirectory)->files() as $file) {
                     $providerClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+
+                    if (!class_exists($providerClass) || !is_subclass_of($providerClass, \Myerscode\Acorn\Framework\Providers\ServiceProvider::class)) {
+                        $this->output()->debug(sprintf('Skipping invalid provider class: %s', $providerClass));
+                        continue;
+                    }
+
                     $serviceProviders[] = $providerClass;
                     $this->output()->debug(sprintf('Found Service Provider [%s]', $providerClass));
                 }
             } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDirectory));
+                $this->output()->debug(sprintf('Could not find directory %s to load service providers from', $providerDiscoveryDirectory));
             }
         }
 

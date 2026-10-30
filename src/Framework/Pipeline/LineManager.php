@@ -6,8 +6,6 @@ class LineManager
 {
     /**
      * Thing that will be passed through the pipelines
-     *
-     * @var mixed
      */
     private mixed $object;
 
@@ -15,11 +13,6 @@ class LineManager
      * @var PipeCollection[]
      */
     private array $pipes = [];
-
-    public function setPipeline($name, array $pipes): void
-    {
-        $this->pipes[$name] = new PipeCollection($pipes);
-    }
 
     public function send(mixed $object): static
     {
@@ -29,18 +22,35 @@ class LineManager
     }
 
     /**
-     * @param  string|array  $pipeNames
+     * @param string[] $pipes
+     */
+    public function setPipeline(string $name, array $pipes): void
+    {
+        $this->pipes[$name] = new PipeCollection($pipes);
+    }
+
+    /**
+     * Run the object through one or more named pipelines.
      *
-     * @return mixed
+     * When a single string is passed, the pipes from that pipeline are flattened
+     * and run directly. When an array of names is passed, each named pipeline
+     * runs as a nested pipeline in sequence (first pipeline completes before second starts).
+     *
+     * @param string|string[] $pipeNames A single pipeline name or an array of names to run in sequence
      */
     public function through(string|array $pipeNames): mixed
     {
         if (is_string($pipeNames) && isset($this->pipes[$pipeNames])) {
-            $pipes =  $this->pipes[$pipeNames]->toArray();
+            $pipes = $this->pipes[$pipeNames]->toArray();
         } else {
-            $pipes = array_values(array_filter($this->pipes, fn($name) => in_array($name, $pipeNames), ARRAY_FILTER_USE_KEY));
+            $pipeNamesArray = is_array($pipeNames) ? $pipeNames : [$pipeNames];
+            $pipes = array_values(array_filter(
+                $this->pipes,
+                fn (PipeCollection $collection, string $name): bool => in_array($name, $pipeNamesArray),
+                ARRAY_FILTER_USE_BOTH,
+            ));
         }
 
-        return (new Pipeline($pipes))->flush($this->object);
+        return new Pipeline($pipes)->flush($this->object);
     }
 }

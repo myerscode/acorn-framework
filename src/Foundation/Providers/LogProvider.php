@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Providers;
 
 use Myerscode\Acorn\Framework\Log\NullLogger;
 use Myerscode\Acorn\Framework\Providers\ServiceProvider;
+use Override;
 
 class LogProvider extends ServiceProvider
 {
+    #[Override]
     protected $provides = [
         NullLogger::class,
         'logger',
@@ -15,6 +19,6 @@ class LogProvider extends ServiceProvider
     public function register(): void
     {
         $this->getContainer()->add(NullLogger::class);
-        $this->getContainer()->add('logger', fn() => $this->getContainer()->get(NullLogger::class));
+        $this->getContainer()->add('logger', fn () => $this->getContainer()->get(NullLogger::class));
     }
 }

@@ -2,9 +2,15 @@
 
 namespace Myerscode\Acorn\Framework\Events;
 
+/**
+ * Static registry for callable listeners.
+ *
+ * @deprecated Use Dispatcher::callableListeners() and Dispatcher::findCallableListener() instead.
+ *             This class is retained for backward compatibility but the canonical listener
+ *             registry is now instance-scoped on the Dispatcher.
+ */
 class CallableEventManager
 {
-
     /**
      * Array of callable-listeners.
      *
@@ -20,13 +26,16 @@ class CallableEventManager
         static::$listeners = [];
     }
 
-    public static function create($callable): CallableListener
+    /**
+     * @deprecated Use Dispatcher::createCallableListener() instead.
+     */
+    public static function create(mixed $callable): CallableListener
     {
-        $listener = new CallableListener($callable);
+        $callableListener = new CallableListener($callable);
 
-        self::$listeners[] = $listener;
+        self::$listeners[] = $callableListener;
 
-        return $listener;
+        return $callableListener;
     }
 
     /**
@@ -51,5 +60,13 @@ class CallableEventManager
     public static function listeners(): array
     {
         return static::$listeners;
+    }
+
+    /**
+     * Register a pre-created CallableListener (used by Dispatcher internally).
+     */
+    public static function register(CallableListener $listener): void
+    {
+        self::$listeners[] = $listener;
     }
 }

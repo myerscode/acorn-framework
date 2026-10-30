@@ -2,3 +2,7 @@ vendor
 composer.lock
 .reports
 .phpunit.*
+coverage.xml
+coverage/
+coverage.xml
+coverage/
