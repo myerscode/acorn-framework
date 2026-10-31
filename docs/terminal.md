@@ -11,6 +11,20 @@ use function Myerscode\Acorn\Foundation\terminal;
 terminal()->run('ls -la');
 ```
 
+`run()` executes the command string through the system shell (`/bin/sh -c`),
+so shell features like pipes, redirects and globbing work. `runShell()` is an
+explicit alias for the same behaviour — prefer it at call sites where you want
+the shell semantics (and their risk) to be obvious:
+
+```php
+terminal()->runShell('cat access.log | grep ERROR');
+```
+
+> **Security:** because `run()` / `runShell()` go through the shell,
+> interpolating user-controlled values into the command enables shell
+> injection. For anything built from user input, use `runSafe()` (below), which
+> bypasses the shell entirely.
+
 ## Safe Execution (No Shell Interpretation)
 
 When command arguments may contain user-controlled values, use `runSafe()` to prevent shell injection. Arguments are passed directly to the process without shell interpretation:

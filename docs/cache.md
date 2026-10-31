@@ -76,3 +76,15 @@ $value = $cache->remember('key', 3600, fn () => expensiveOperation());
 // Clear all cached values
 $cache->flush();
 ```
+
+## Key Rules
+
+Cache keys follow PSR-16: a key must be a non-empty string and must not contain
+any of the reserved characters `{}()/\@:`. An invalid key throws
+`Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException`.
+
+```php
+$cache->set('user.rupert', $value);   // ok
+$cache->set('user:rupert', $value);   // throws — ':' is reserved
+$cache->set('', $value);              // throws — empty key
+```

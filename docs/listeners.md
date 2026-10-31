@@ -6,7 +6,7 @@ Creating a listener class in the `Listeners` directory will have it automaticall
 
 ## Creating a Listener
 
-Extend the base listener class and implement the `listensFor()` method to declare which events the listener handles:
+Extend the base listener class and implement the `listensFor()` method to declare which events the listener handles. Put your logic in `handle()`:
 
 ```php
 <?php
@@ -54,6 +54,29 @@ public function listensFor(): array|string
 }
 ```
 
+## `handle()` or `__invoke()`
+
+The dispatcher calls your listener's `handle()` method. For convenience you may
+instead define an `__invoke()` method — the base `Listener::handle()` bridges to
+it when present, so either convention works:
+
+```php
+class SendAlert extends Listener
+{
+    public function __invoke(EventInterface $event): void
+    {
+        // Equivalent to overriding handle()
+    }
+
+    public function listensFor(): array|string
+    {
+        return ErrorEvent::class;
+    }
+}
+```
+
+If you override `handle()`, that takes precedence.
+
 ## Listening for All Events
 
 To listen for every event fired (useful for tracing or logging), return one of the catch-all keywords: `*`, `all`, or `any`:
@@ -96,4 +119,7 @@ class SlowProcessListener extends Listener
 
 ## Exception Isolation
 
-If a listener throws an exception during dispatch, it will not prevent other listeners for the same event from executing. Failed listeners are silently caught to ensure robustness.
+If a listener throws during dispatch, the failure is isolated so the remaining
+listeners for the same event still run. The exception is **logged** (via the
+application logger) rather than swallowed silently, so a broken listener does
+not disappear without a trace.
