@@ -18,7 +18,11 @@ final class InteractsWithOutputTest extends BaseTestCase
 
         $trait->debug('Test Debug');
 
-        $output->assertOutputEquals(':orange_circle: Test Debug');
+        $output->assertOutputEquals('🟠 Test Debug');
+        // Assert against the raw captured stream too: the shortcode must be
+        // translated to an emoji, never printed literally.
+        $this->assertStringContainsString('🟠', $output->output());
+        $this->assertStringNotContainsString(':orange_circle:', $output->output());
     }
 
     public function testError(): void
@@ -44,7 +48,7 @@ final class InteractsWithOutputTest extends BaseTestCase
 
         $trait->info('Test Information');
 
-        $output->assertOutputEquals(':blue_circle: Test Information');
+        $output->assertOutputEquals('🔵 Test Information');
     }
 
     public function testIsDebug(): void
@@ -105,7 +109,7 @@ final class InteractsWithOutputTest extends BaseTestCase
 
         $trait->success('Test Success');
 
-        $output->assertOutputEquals(':green_circle: Test Success');
+        $output->assertOutputEquals('🟢 Test Success');
     }
 
     public function testVerbose(): void

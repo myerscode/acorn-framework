@@ -10,6 +10,22 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 {
+    /**
+     * Emoji shortcodes translated for terminal output. Extend as needed.
+     *
+     * @var array<string, string>
+     */
+    private const array EMOJI_SHORTCODES = [
+        ':blue_circle:' => '🔵',
+        ':orange_circle:' => '🟠',
+        ':green_circle:' => '🟢',
+        ':red_circle:' => '🔴',
+        ':white_check_mark:' => '✅',
+        ':x:' => '❌',
+        ':warning:' => '⚠️',
+        ':information_source:' => 'ℹ️',
+    ];
+
     /** @var array<string, int> */
     protected array $verbosityMap = [
         'v' => OutputInterface::VERBOSITY_VERBOSE,
@@ -244,9 +260,14 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
         return array_map(fn (string $message): string => $this->encodeLine($prefix . $message . $postfix), $messages);
     }
 
+    /**
+     * Translate emoji shortcodes (e.g. :blue_circle:) into their Unicode
+     * characters so they render in the terminal instead of printing the raw
+     * `:name:` text.
+     */
     protected function encodeLine(string $messages): string
     {
-        return $messages;
+        return strtr($messages, self::EMOJI_SHORTCODES);
     }
 
     /**
