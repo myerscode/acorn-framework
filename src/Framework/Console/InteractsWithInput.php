@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Framework\Console;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,6 +38,23 @@ trait InteractsWithInput
     }
 
     /**
+     * Determine whether a boolean flag option (VALUE_NONE) was supplied.
+     *
+     * Unlike hasOption(), which is true for any *defined* option, this
+     * reports the actual truthiness of a switch such as `--force`. A
+     * VALUE_NONE option resolves to true when passed and false otherwise,
+     * so hasOption() can never be used to gate a flag.
+     */
+    public function flag(string $name): bool
+    {
+        if (!$this->input->hasOption($name)) {
+            return false;
+        }
+
+        return $this->input->getOption($name) === true;
+    }
+
+    /**
      * Determine if the given argument is present.
      */
     public function hasArgument(string $name): bool
@@ -65,7 +84,9 @@ trait InteractsWithInput
     public function option(string $key, ?string $default = null): ?string
     {
         if ($this->hasOption($key)) {
-            return $this->input->getOption($key);
+            $value = $this->input->getOption($key);
+
+            return is_string($value) ? $value : $default;
         }
 
         return $default;

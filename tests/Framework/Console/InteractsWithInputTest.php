@@ -48,11 +48,31 @@ final class InteractsWithInputTest extends BaseTestCase
     {
         [$trait] = $this->createTrait();
 
-        $this->assertEquals(true, $trait->option('fluff'));
+        // option() is for value options; a boolean switch is not a string
+        // value, so it yields the default rather than the raw bool.
+        $this->assertNull($trait->option('fluff'));
 
         $this->assertSame('ball', $trait->option('toy'));
 
-        $this->assertEquals(false, $trait->option('dog'));
+        $this->assertNull($trait->option('dog'));
+
+        $this->assertSame('fallback', $trait->option('dog', 'fallback'));
+    }
+
+    public function testFlagReportsSwitchTruthiness(): void
+    {
+        [$trait] = $this->createTrait(
+            ['breed' => 'Corgi', '--fluff' => true],
+            '{breed} {--fluff} {--trim} {--toy=ball}',
+        );
+
+        // Passed switch is true; a defined-but-absent switch is false;
+        // an undefined option is false (never a null-based truthy slip).
+        $this->assertTrue($trait->flag('fluff'));
+
+        $this->assertFalse($trait->flag('trim'));
+
+        $this->assertFalse($trait->flag('undefined'));
     }
 
     public function testOptions(): void
