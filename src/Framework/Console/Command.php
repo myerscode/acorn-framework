@@ -8,8 +8,10 @@ use Override;
 use League\Container\Container;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
+use Myerscode\Acorn\Foundation\Console\Output\VoidOutput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
+use Myerscode\Acorn\Framework\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\InputInterface;
@@ -91,21 +93,19 @@ abstract class Command extends SymfonyCommand
      */
     protected function call(string $commandName, array $parameters = []): int
     {
-        try {
-            $application = $this->getApplication();
-            if (!$application instanceof \Symfony\Component\Console\Application) {
-                throw new SubCommandFailedException('No application available', 0);
-            }
+        return $this->runSubCommand($commandName, $parameters, $this->output);
+    }
 
-            $symfonyCommand = $application->find($commandName);
-
-            $parameters = array_merge($parameters, ['command' => $commandName]);
-            $configInput = new ConfigInput($parameters);
-
-            return $symfonyCommand->run($configInput, $this->output);
-        } catch (ExceptionInterface $exception) {
-            throw new SubCommandFailedException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+    /**
+     * Call another command, suppressing all of its output.
+     *
+     * @param array<string, mixed> $parameters
+     *
+     * @throws SubCommandFailedException
+     */
+    protected function callSilently(string $commandName, array $parameters = []): int
+    {
+        return $this->runSubCommand($commandName, $parameters, new VoidOutput());
     }
 
     protected function configureWithSignature(): void
@@ -125,6 +125,20 @@ abstract class Command extends SymfonyCommand
     }
 
     /**
+     * Immediately fail the command with a message and exit code.
+     *
+     * Throws a CommandFailedException the kernel renders via the exception
+     * handler and uses as the exit status — a convenient way to abort from
+     * anywhere in the command without threading a return value back out.
+     *
+     * @throws CommandFailedException
+     */
+    protected function fail(string $message = '', int $exitCode = 1): never
+    {
+        throw new CommandFailedException($message, $exitCode);
+    }
+
+    /**
      * Initialize the command.
      *
      * @param ConsoleInputInterface $input
@@ -141,6 +155,30 @@ abstract class Command extends SymfonyCommand
         $this->output = $output instanceof DisplayOutputInterface
             ? $output
             : new DisplayOutput($input, $output);
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     *
+     * @throws SubCommandFailedException
+     */
+    private function runSubCommand(string $commandName, array $parameters, OutputInterface $output): int
+    {
+        try {
+            $application = $this->getApplication();
+            if (!$application instanceof \Symfony\Component\Console\Application) {
+                throw new SubCommandFailedException('No application available', 0);
+            }
+
+            $symfonyCommand = $application->find($commandName);
+
+            $parameters = array_merge($parameters, ['command' => $commandName]);
+            $configInput = new ConfigInput($parameters);
+
+            return $symfonyCommand->run($configInput, $output);
+        } catch (ExceptionInterface $exception) {
+            throw new SubCommandFailedException($exception->getMessage(), $exception->getCode(), $exception);
+        }
     }
 
 }

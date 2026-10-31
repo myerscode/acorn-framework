@@ -184,6 +184,17 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     }
 
     /**
+     * Render a title bar above subsequent output.
+     *
+     * @param string $message
+     */
+    #[Override]
+    public function title(string $message): void
+    {
+        parent::title($message);
+    }
+
+    /**
      * Write a verbose message that is only output when the -v is present
      *
      * @param string|string[] $message

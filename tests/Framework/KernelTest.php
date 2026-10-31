@@ -73,6 +73,19 @@ final class KernelTest extends BaseTestCase
         $this->assertSame(0, $kernel->run());
     }
 
+    public function testFailExitCodeIsHonoured(): void
+    {
+        $kernel = $this->mock(Kernel::class.'[output,processCommand]', [$this->resourceFilePath('Resources/App')])
+            ->shouldAllowMockingProtectedMethods()
+            ->allows([
+                'processCommand' => new Result(42, new \Myerscode\Acorn\Framework\Exceptions\CommandFailedException('failed on purpose', 42)),
+                'output' => $this->createVoidOutput(),
+            ])
+            ->makePartial();
+
+        $this->assertSame(42, $kernel->run());
+    }
+
     public function testHandlesErrors(): void
     {
         $kernel = $this->mock(Kernel::class.'[input,output,config]', [$this->resourceFilePath('Resources/App')])

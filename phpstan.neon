@@ -3,3 +3,7 @@ parameters:
     paths:
         - src
     treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # InteractsWithSignals is a consumer-facing mixin: commands `use` it in
+        # userland, so it has no usage within src/ to analyse against.
+        - '#Trait Myerscode\\Acorn\\Framework\\Console\\InteractsWithSignals is used zero times and is not analysed\.#'

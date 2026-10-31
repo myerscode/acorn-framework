@@ -12,6 +12,7 @@ use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Result;
 use Myerscode\Acorn\Framework\Container\Container;
+use Myerscode\Acorn\Framework\Exceptions\CommandFailedException;
 use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
 use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 use Throwable;
@@ -94,6 +95,12 @@ class Kernel
         } catch (CommandNotFoundException $commandNotFoundException) {
             $this->exceptionHandler()->report($commandNotFoundException);
             $this->exceptionHandler()->render($this->output(), $commandNotFoundException);
+        } catch (CommandFailedException $commandFailedException) {
+            // fail() chose its exit code; render the message and honour it.
+            $this->exceptionHandler()->report($commandFailedException);
+            $this->exceptionHandler()->render($this->output(), $commandFailedException);
+
+            return $commandFailedException->exitCode();
         } catch (Throwable $exception) {
             $this->exceptionHandler()->report($exception);
             $this->exceptionHandler()->render($this->output(), $exception);

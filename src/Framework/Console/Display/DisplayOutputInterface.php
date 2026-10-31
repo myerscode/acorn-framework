@@ -71,6 +71,8 @@ interface DisplayOutputInterface extends OutputInterface
     /** @param string|string[] $message */
     public function text(string|array $message): void;
 
+    public function title(string $message): void;
+
     /**
      * Write a verbose message that is only output when the -v is present
      *

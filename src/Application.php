@@ -19,6 +19,7 @@ use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Framework\Events\Dispatcher;
 use Myerscode\Acorn\Framework\Events\Exception\InvalidListenerException;
 use Myerscode\Acorn\Framework\Events\Listener;
+use Myerscode\Acorn\Framework\Exceptions\CommandFailedException;
 use Myerscode\Acorn\Framework\Exceptions\CommandNotFoundException;
 use Myerscode\Acorn\Framework\Log\LogInterface;
 use Myerscode\Utilities\Files\Exceptions\FileFormatExpection;
@@ -209,6 +210,10 @@ class Application extends SymfonyApplication
             $exitCode = parent::run($input, $output);
         } catch (SymfonyCommandNotFoundException $e) {
             throw new CommandNotFoundException($e->getMessage(), $e->getAlternatives(), $e->getCode(), $e);
+        } catch (CommandFailedException $commandFailedException) {
+            // fail() chose the exit code explicitly; honour it.
+            $throwException = $commandFailedException;
+            $exitCode = $commandFailedException->exitCode();
         } catch (Exception $exception) {
             $throwException = $exception;
             $exitCode = 1;

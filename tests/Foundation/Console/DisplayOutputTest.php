@@ -65,4 +65,14 @@ final class DisplayOutputTest extends BaseTestCase
         $this->assertStringContainsString('ID', $rendered);
         $this->assertStringContainsString('Value', $rendered);
     }
+    public function testTitleRendersMessage(): void
+    {
+        $input = new StringInput('');
+        $buffered = new BufferedOutput();
+        $output = new DisplayOutput($input, $buffered);
+
+        $output->title('Corgi Report');
+
+        $this->assertStringContainsString('Corgi Report', $buffered->fetch());
+    }
 }
