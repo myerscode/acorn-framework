@@ -7,6 +7,7 @@ namespace Myerscode\Acorn\Framework\Console;
 use Override;
 use League\Container\Container;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
+use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Myerscode\Acorn\Framework\Console\Exception\SubCommandFailedException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
@@ -41,7 +42,7 @@ abstract class Command extends SymfonyCommand
      */
     protected ?string $name = null;
 
-    protected DisplayOutputInterface|OutputInterface $output;
+    protected DisplayOutputInterface $output;
 
     /**
      * The name and signature of the console command.
@@ -132,7 +133,14 @@ abstract class Command extends SymfonyCommand
     protected function initialize(ConsoleInputInterface|InputInterface $input, DisplayOutputInterface|OutputInterface $output): void
     {
         $this->input = $input;
-        $this->output = $output;
+
+        // Commands always work against a styled DisplayOutputInterface. The app
+        // supplies one directly; the Symfony override contract (and test harness)
+        // can hand us a plain OutputInterface, so wrap it so the property type
+        // holds for every caller.
+        $this->output = $output instanceof DisplayOutputInterface
+            ? $output
+            : new DisplayOutput($input, $output);
     }
 
 }

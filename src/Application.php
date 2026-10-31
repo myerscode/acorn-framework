@@ -390,6 +390,6 @@ class Application extends SymfonyApplication
             }
         }
 
-        return array_filter($serviceProviders);
+        return $serviceProviders;
     }
 }

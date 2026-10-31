@@ -7,7 +7,7 @@ namespace Myerscode\Acorn\Framework\Pipeline;
 use Closure;
 use Myerscode\Acorn\Framework\Exceptions\InvalidPipeException;
 
-class Pipeline
+final class Pipeline
 {
     /**
      * The collection of pipes that a value will be passed through
@@ -132,11 +132,9 @@ class Pipeline
             $pipe = new $pipe();
         }
 
-        if ($pipe instanceof PipeInterface) {
-            return fn ($object): mixed => $pipe->handle($object, $nextLayer);
-        }
-
-        return fn ($object) => $nextLayer($object);
+        // $pipe is now guaranteed to be a PipeInterface: the collection case
+        // returned above, and a non-PipeInterface string also returned above.
+        return fn ($object): mixed => $pipe->handle($object, $nextLayer);
     }
 
 }
