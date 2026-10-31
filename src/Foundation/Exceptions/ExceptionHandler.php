@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Myerscode\Acorn\Foundation\Exceptions;
 
-use Myerscode\Acorn\Framework\Exceptions\ErrorHandler;
 use Myerscode\Acorn\Framework\Exceptions\ExceptionHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;

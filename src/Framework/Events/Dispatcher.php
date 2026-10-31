@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Myerscode\Acorn\Framework\Events;
 
+use Closure;
 use Myerscode\Acorn\Foundation\Queue\Jobs\SynchronousJob;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\QueueInterface;
@@ -89,14 +90,12 @@ class Dispatcher implements SymfonyEventDispatcherInterface
     public function addSubscriber(SymfonyEventSubscriberInterface $subscriber): void
     {
         foreach ($subscriber::getSubscribedEvents() as $eventName => $params) {
-            if (is_string($params)) {
-                $this->addListener($eventName, [$subscriber, $params]);
-            } elseif (is_string($params[0])) {
-                $this->addListener($eventName, [$subscriber, $params[0]], $params[1] ?? 0);
-            } else {
-                foreach ($params as $listener) {
-                    $this->addListener($eventName, [$subscriber, $listener[0]], $listener[1] ?? 0);
-                }
+            foreach ($this->normaliseSubscriberParams($params) as [$method, $priority]) {
+                // [$subscriber, $method] is a valid callable per the Symfony
+                // subscriber contract; the method name is dynamic so PHPStan
+                // cannot prove it statically.
+                /** @phpstan-ignore argument.type */
+                $this->addListener($eventName, Closure::fromCallable([$subscriber, $method]), $priority);
             }
         }
     }
@@ -251,7 +250,7 @@ class Dispatcher implements SymfonyEventDispatcherInterface
     /**
      * Gets all listeners of a specific event or all listeners sorted by descending priority.
      *
-     * @return ($eventName is null ? array<string, list<callable>> : list<callable>)
+     * @return ($eventName is null ? array<string, list<ListenerInterface>> : list<ListenerInterface>)
      */
     public function getListeners(?string $eventName = null): array
     {
@@ -291,17 +290,13 @@ class Dispatcher implements SymfonyEventDispatcherInterface
     {
         $eventName = $event instanceof NamedEventInterface ? $event->eventName() : (is_string($event) ? $event : $event::class);
 
-        if (!is_null($eventName)) {
-            $listensForAnything = $this->getListenersForAnyEvent();
+        $listensForAnything = $this->getListenersForAnyEvent();
 
-            if (in_array($eventName, $this->catchAllEventNames)) {
-                return $listensForAnything;
-            }
-
-            return isset($this->listeners[$eventName]) ? array_merge($this->listeners[$eventName]->all(), $listensForAnything) : $listensForAnything;
+        if (in_array($eventName, $this->catchAllEventNames)) {
+            return $listensForAnything;
         }
 
-        return [];
+        return isset($this->listeners[$eventName]) ? array_merge($this->listeners[$eventName]->all(), $listensForAnything) : $listensForAnything;
     }
 
     public function hasListener(string $eventName, ListenerInterface|callable $listener): bool
@@ -390,15 +385,39 @@ class Dispatcher implements SymfonyEventDispatcherInterface
     public function removeSubscriber(SymfonyEventSubscriberInterface $subscriber): void
     {
         foreach ($subscriber::getSubscribedEvents() as $eventName => $params) {
-            if (is_string($params)) {
-                $this->removeListener($eventName, [$subscriber, $params]);
-            } elseif (is_string($params[0])) {
-                $this->removeListener($eventName, [$subscriber, $params[0]]);
-            } else {
-                foreach ($params as $listener) {
-                    $this->removeListener($eventName, [$subscriber, $listener[0]]);
-                }
+            foreach ($this->normaliseSubscriberParams($params) as [$method]) {
+                // See addSubscriber(): dynamic subscriber method name.
+                /** @phpstan-ignore argument.type */
+                $this->removeListener($eventName, Closure::fromCallable([$subscriber, $method]));
             }
         }
+    }
+
+    /**
+     * Normalise a Symfony getSubscribedEvents() value into a list of
+     * [method, priority] pairs.
+     *
+     * @param string|array{0: string, 1?: int}|list<array{0: string, 1?: int}> $params
+     * @return list<array{0: string, 1: int}>
+     */
+    private function normaliseSubscriberParams(string|array $params): array
+    {
+        if (is_string($params)) {
+            return [[$params, 0]];
+        }
+
+        if (isset($params[0]) && is_string($params[0])) {
+            /** @var array{0: string, 1?: int} $params */
+            return [[$params[0], (int) ($params[1] ?? 0)]];
+        }
+
+        $pairs = [];
+
+        /** @var list<array{0: string, 1?: int}> $params */
+        foreach ($params as $listener) {
+            $pairs[] = [$listener[0], (int) ($listener[1] ?? 0)];
+        }
+
+        return $pairs;
     }
 }

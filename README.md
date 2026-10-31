@@ -2,7 +2,7 @@
 [![Total Downloads](https://poser.pugx.org/myerscode/acorn-framework/downloads)](https://packagist.org/packages/myerscode/acorn-framework)
 [![PHP Version Require](http://poser.pugx.org/myerscode/acorn-framework/require/php)](https://packagist.org/packages/myerscode/acorn-framework)
 [![License](https://poser.pugx.org/myerscode/acorn-framework/license)](https://github.com/myerscode/acorn-framework/blob/main/LICENSE)
-[![Tests](https://github.com/myerscode/acorn-framework/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/myerscode/acorn-framework/actions/workflows/tests.yml)
+[![Tests](https://github.com/myerscode/acorn-framework/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/myerscode/acorn-framework/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/myerscode/acorn-framework/graph/badge.svg)](https://codecov.io/gh/myerscode/acorn-framework)
 
 # Acorn Framework

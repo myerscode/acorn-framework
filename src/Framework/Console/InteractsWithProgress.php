@@ -6,11 +6,10 @@ namespace Myerscode\Acorn\Framework\Console;
 
 use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\OutputInterface;
 
 trait InteractsWithProgress
 {
-    protected DisplayOutputInterface|OutputInterface $output;
+    protected DisplayOutputInterface $output;
 
     /**
      * Create a new progress bar instance.
