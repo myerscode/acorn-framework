@@ -134,4 +134,28 @@ final class ApplicationTest extends BaseTestCase
         $this->assertSame(Application::APP_VERSION, $application->getVersion());
     }
 
+    public function testOptimizeWritesManifestThatCommandClassesReadsBack(): void
+    {
+        $manifestPath = sys_get_temp_dir() . '/acorn_opt_' . uniqid() . '/manifest.json';
+
+        $container = $this->container();
+        $container->get('config')->store()->set('framework.cache.manifest', $manifestPath);
+
+        $application = new Application($container);
+
+        // Scanning finds the real commands; optimize caches them.
+        $scanned = $application->commandClasses();
+        $this->assertNotEmpty($scanned);
+
+        $counts = $application->optimize();
+        $this->assertSame(count($scanned), $counts['commands']);
+        $this->assertFileExists($manifestPath);
+
+        // With the manifest present, commandClasses() returns the cached set.
+        $this->assertSame($scanned, $application->commandClasses());
+
+        $application->discoveryManifest()->delete();
+        @rmdir(dirname($manifestPath));
+    }
+
 }

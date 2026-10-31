@@ -9,6 +9,7 @@ use Exception;
 use Myerscode\Acorn\Foundation\Events\CommandAfterEvent;
 use Myerscode\Acorn\Foundation\Events\CommandBeforeEvent;
 use Myerscode\Acorn\Foundation\Events\CommandErrorEvent;
+use Myerscode\Acorn\Framework\Config\DiscoveryManifest;
 use Myerscode\Acorn\Framework\Config\PackageDiscovery;
 use Myerscode\Acorn\Framework\Console\Command;
 use Myerscode\Acorn\Framework\Console\ConsoleInputInterface;
@@ -108,6 +109,31 @@ class Application extends SymfonyApplication
     }
 
     /**
+     * Resolve the command classes available to the app.
+     *
+     * Uses the cached discovery manifest when one has been written by
+     * `acorn:optimize`, otherwise scans the discovery directories and reflects
+     * each candidate. Returned classes are guaranteed loadable, concrete
+     * Command subclasses.
+     *
+     * @return list<class-string>
+     */
+    public function commandClasses(): array
+    {
+        $cached = $this->discoveryManifest()->read();
+        if ($cached !== null) {
+            return array_values(array_filter(
+                $cached['commands'],
+                static fn (string $class): bool => class_exists($class)
+                    && is_subclass_of($class, Command::class, true)
+                    && new ReflectionClass($class)->isInstantiable(),
+            ));
+        }
+
+        return $this->scanForClasses($this->commandsDiscoveryDirectories(), Command::class, true);
+    }
+
+    /**
      * @return string[]
      */
     public function commandsDiscoveryDirectories(): array
@@ -130,6 +156,20 @@ class Application extends SymfonyApplication
     public function discoveredPackages(): array
     {
         return $this->discoveredPackages;
+    }
+
+    /**
+     * The cached discovery manifest (written by acorn:optimize).
+     */
+    public function discoveryManifest(): DiscoveryManifest
+    {
+        $path = config('framework.cache.manifest');
+
+        if (!is_string($path) || $path === '') {
+            $path = (string) config('app.root', getcwd()) . '/.acorn/manifest.json';
+        }
+
+        return new DiscoveryManifest($path);
     }
 
     public function dispatcher(): Dispatcher
@@ -173,6 +213,16 @@ class Application extends SymfonyApplication
     }
 
     /**
+     * Scan for listener classes in the event discovery directories.
+     *
+     * @return list<class-string>
+     */
+    public function listenerClasses(): array
+    {
+        return $this->scanForClasses($this->eventDiscoveryDirectories(), Listener::class);
+    }
+
+    /**
      * @return string[]
      */
     public function loadedServiceProviders(): array
@@ -188,9 +238,45 @@ class Application extends SymfonyApplication
         return $this->container->get('logger');
     }
 
+    /**
+     * Scan the filesystem once and write the discovery manifest, so later
+     * boots skip the scan. Returns the counts written.
+     *
+     * @return array{commands: int, providers: int, listeners: int}
+     */
+    public function optimize(): array
+    {
+        $manifest = [
+            'commands' => $this->scanForClasses($this->commandsDiscoveryDirectories(), Command::class, true),
+            'providers' => $this->providerClasses(),
+            'listeners' => $this->listenerClasses(),
+        ];
+
+        $this->discoveryManifest()->write($manifest);
+
+        return [
+            'commands' => count($manifest['commands']),
+            'providers' => count($manifest['providers']),
+            'listeners' => count($manifest['listeners']),
+        ];
+    }
+
     public function output(): DisplayOutputInterface
     {
         return $this->container->get('output');
+    }
+
+    /**
+     * Scan for userland service-provider classes.
+     *
+     * @return list<class-string>
+     */
+    public function providerClasses(): array
+    {
+        return $this->scanForClasses(
+            $this->providerDiscoveryDirectories(),
+            \Myerscode\Acorn\Framework\Providers\ServiceProvider::class,
+        );
     }
 
     /**
@@ -284,45 +370,13 @@ class Application extends SymfonyApplication
     }
 
     /**
-     * Load commands from discovery directories.
-     *
-     * Performance note: This scans the filesystem and uses ReflectionClass on every boot.
-     * For large applications, consider implementing a manifest cache (acorn:optimize)
-     * that pre-scans and caches discovered class names.
+     * Load commands from discovery directories (or the cached manifest).
      */
     protected function loadCommands(): void
     {
-        $commandsDiscoveryDirectories = $this->commandsDiscoveryDirectories();
-        $this->output()->debug(
-            sprintf('Looking for commands in directories: %s', implode(', ', $commandsDiscoveryDirectories)),
-        );
-        foreach ($commandsDiscoveryDirectories as $commandDiscoveryDirectory) {
-            $this->output()->debug(
-                sprintf('Looking for commands in %s', $commandDiscoveryDirectory),
-            );
-            try {
-                foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
-                    try {
-                        $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                        if (class_exists($commandClass) && is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
-                            $this->addCommand($this->container->get($commandClass));
-                            $this->output()->debug(
-                                sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory),
-                            );
-                        } else {
-                            $this->output()->debug(
-                                sprintf('Found %s in %s, but did not load as was not a valid Command class', $commandClass, $commandDiscoveryDirectory),
-                            );
-                        }
-                    } catch (FileFormatExpection|ReflectionException) {
-                        $this->output()->debug(
-                            sprintf('Unable to load %s from %s - unable to determine class name', $file->getRealPath(), $commandDiscoveryDirectory),
-                        );
-                    }
-                }
-            } catch (NotADirectoryException) {
-                $this->output()->debug(sprintf('Could not find directory %s to load commands from', $commandDiscoveryDirectory));
-            }
+        foreach ($this->commandClasses() as $commandClass) {
+            $this->addCommand($this->container->get($commandClass));
+            $this->output()->debug(sprintf('Loaded %s.', $commandClass));
         }
     }
 
@@ -358,6 +412,46 @@ class Application extends SymfonyApplication
         foreach (config('framework.providers', []) as $provider) {
             $this->container->addServiceProvider($provider);
         }
+    }
+
+    /**
+     * Scan the given directories for loadable, concrete subclasses of $parent.
+     *
+     * @param string[] $directories
+     * @param class-string $parent
+     * @return list<class-string>
+     */
+    protected function scanForClasses(array $directories, string $parent, bool $mustBeInstantiable = false): array
+    {
+        $classes = [];
+
+        foreach ($directories as $directory) {
+            try {
+                foreach (FileService::make($directory)->files() as $file) {
+                    try {
+                        $class = FileService::make($file->getRealPath())->fullyQualifiedClassname();
+
+                        if (!class_exists($class) || !is_subclass_of($class, $parent, true)) {
+                            continue;
+                        }
+
+                        if ($mustBeInstantiable && !new ReflectionClass($class)->isInstantiable()) {
+                            continue;
+                        }
+
+                        $classes[] = $class;
+                    } catch (FileFormatExpection|ReflectionException) {
+                        $this->output()->debug(
+                            sprintf('Unable to determine class name for %s', $file->getRealPath()),
+                        );
+                    }
+                }
+            } catch (NotADirectoryException) {
+                $this->output()->debug(sprintf('Could not find directory %s to scan', $directory));
+            }
+        }
+
+        return $classes;
     }
 
     /**
