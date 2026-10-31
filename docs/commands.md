@@ -183,15 +183,68 @@ return [
 ];
 ```
 
+## Failing a Command
+
+Return a non-zero exit code from `handle()`, or call `fail()` to abort
+immediately from anywhere in the command. `fail()` renders the message and exits
+with the given code (default `1`):
+
+```php
+public function handle(): int
+{
+    if (! $this->isReady()) {
+        $this->fail('Not ready', 2); // renders "Not ready", process exits 2
+    }
+
+    return 0;
+}
+```
+
 ## Calling Other Commands
 
-You can call other commands from within a command using the `call()` method:
+Call another command with `call()`, or `callSilently()` to suppress its output:
 
 ```php
 public function handle(): int
 {
     $exitCode = $this->call('other:command', ['arg' => 'value']);
 
+    $this->callSilently('cache:warm'); // runs, but prints nothing
+
     return $exitCode;
 }
 ```
+
+## Handling Signals
+
+For long-running commands, trap `SIGINT` (Ctrl-C) / `SIGTERM` for a graceful
+shutdown. Implement `SignalableCommandInterface`, `use InteractsWithSignals`, and
+register handlers with `onSignal()`:
+
+```php
+use Myerscode\Acorn\Framework\Console\Command;
+use Myerscode\Acorn\Framework\Console\InteractsWithSignals;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
+
+class WatchCommand extends Command implements SignalableCommandInterface
+{
+    use InteractsWithSignals;
+
+    protected string $signature = 'watch';
+
+    public function handle(): int
+    {
+        $this->onSignal(SIGINT, function (): int {
+            $this->output->warning('Stopping cleanly...');
+
+            return 0; // exit code; return false to keep running
+        });
+
+        while (true) {
+            // ... long-running work ...
+        }
+    }
+}
+```
+
+Requires the `pcntl` extension; without it the handlers simply never fire.
