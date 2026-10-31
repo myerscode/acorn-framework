@@ -94,6 +94,14 @@ final class TerminalTest extends BaseTestCase
         $this->assertFalse($response->successful());
     }
 
+    public function testRunShellIsAnExplicitAliasForRun(): void
+    {
+        $response = new Terminal()->runShell('echo Gerald');
+
+        $this->assertTrue($response->successful());
+        $this->assertStringContainsString('Gerald', $response->output());
+    }
+
     public function testRunThrowsWhenACommandFailsByDefault(): void
     {
         $this->expectException(ProcessFailedException::class);

@@ -260,7 +260,13 @@ class Terminal
     }
 
     /**
-     * Execute a given command.
+     * Execute a command string through the system shell (/bin/sh -c).
+     *
+     * SECURITY: the command is interpreted by the shell, so interpolating
+     * user-controlled values into it enables shell injection. Only use this
+     * when you specifically need shell features (pipes, redirects, globbing).
+     * For anything involving user input, use runSafe() with an argv array,
+     * which bypasses the shell entirely.
      *
      * @throws ProcessFailedException
      */
@@ -328,6 +334,19 @@ class Terminal
         $this->attempts = 1;
 
         return $this->executeProcess($process, 1, 0);
+    }
+
+    /**
+     * Explicit, clearly-named alias for run(): execute a command string
+     * through the system shell. Prefer this name at call sites so the shell
+     * semantics (and their injection risk) are obvious; use runSafe() for any
+     * command built from user input.
+     *
+     * @throws ProcessFailedException
+     */
+    public function runShell(string|Command $command, callable|DisplayOutputInterface|null $output = null): TerminalResponse
+    {
+        return $this->run($command, $output);
     }
 
     public function shouldThrow(): bool
