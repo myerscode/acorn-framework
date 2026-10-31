@@ -47,6 +47,8 @@ interface DisplayOutputInterface extends OutputInterface
      */
     public function isVeryVerbose(): bool;
 
+    public function json(mixed $data, bool $pretty = true): void;
+
     /**
      * Writes a message to the output and adds a newline at the end.
      *

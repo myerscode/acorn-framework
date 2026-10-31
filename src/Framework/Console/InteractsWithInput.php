@@ -38,6 +38,23 @@ trait InteractsWithInput
     }
 
     /**
+     * Get an argument coerced to a boolean.
+     *
+     * "1", "true", "yes" and "on" (case-insensitive) are true; everything else
+     * is false. Absent arguments return the default.
+     */
+    public function booleanArgument(string $key, bool $default = false): bool
+    {
+        $value = $this->argument($key);
+
+        if ($value === null) {
+            return $default;
+        }
+
+        return in_array(strtolower((string) (is_array($value) ? reset($value) : $value)), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    /**
      * Determine whether a boolean flag option (VALUE_NONE) was supplied.
      *
      * Unlike hasOption(), which is true for any *defined* option, this
@@ -52,6 +69,26 @@ trait InteractsWithInput
         }
 
         return $this->input->getOption($name) === true;
+    }
+
+    /**
+     * Get an argument coerced to a float (null when absent/non-numeric).
+     */
+    public function floatArgument(string $key, ?float $default = null): ?float
+    {
+        $value = $this->argument($key);
+
+        return is_numeric($value) ? (float) $value : $default;
+    }
+
+    /**
+     * Get an option coerced to a float (null when absent/non-numeric).
+     */
+    public function floatOption(string $key, ?float $default = null): ?float
+    {
+        $value = $this->option($key);
+
+        return is_numeric($value) ? (float) $value : $default;
     }
 
     /**
@@ -76,6 +113,26 @@ trait InteractsWithInput
         }
 
         return $this->input->getOption($name) !== null;
+    }
+
+    /**
+     * Get an argument coerced to an integer (null when absent/non-numeric).
+     */
+    public function integerArgument(string $key, ?int $default = null): ?int
+    {
+        $value = $this->argument($key);
+
+        return is_numeric($value) ? (int) $value : $default;
+    }
+
+    /**
+     * Get an option coerced to an integer (null when absent/non-numeric).
+     */
+    public function integerOption(string $key, ?int $default = null): ?int
+    {
+        $value = $this->option($key);
+
+        return is_numeric($value) ? (int) $value : $default;
     }
 
     /**

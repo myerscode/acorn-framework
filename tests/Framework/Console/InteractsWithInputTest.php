@@ -24,6 +24,22 @@ final class InteractsWithInputTest extends BaseTestCase
         $this->assertSame(['breed' => 'Corgi'], $trait->arguments());
     }
 
+    public function testFlagReportsSwitchTruthiness(): void
+    {
+        [$trait] = $this->createTrait(
+            ['breed' => 'Corgi', '--fluff' => true],
+            '{breed} {--fluff} {--trim} {--toy=ball}',
+        );
+
+        // Passed switch is true; a defined-but-absent switch is false;
+        // an undefined option is false (never a null-based truthy slip).
+        $this->assertTrue($trait->flag('fluff'));
+
+        $this->assertFalse($trait->flag('trim'));
+
+        $this->assertFalse($trait->flag('undefined'));
+    }
+
     public function testHasArgument(): void
     {
         [$trait] = $this->createTrait();
@@ -59,22 +75,6 @@ final class InteractsWithInputTest extends BaseTestCase
         $this->assertSame('fallback', $trait->option('dog', 'fallback'));
     }
 
-    public function testFlagReportsSwitchTruthiness(): void
-    {
-        [$trait] = $this->createTrait(
-            ['breed' => 'Corgi', '--fluff' => true],
-            '{breed} {--fluff} {--trim} {--toy=ball}',
-        );
-
-        // Passed switch is true; a defined-but-absent switch is false;
-        // an undefined option is false (never a null-based truthy slip).
-        $this->assertTrue($trait->flag('fluff'));
-
-        $this->assertFalse($trait->flag('trim'));
-
-        $this->assertFalse($trait->flag('undefined'));
-    }
-
     public function testOptions(): void
     {
         [$trait] = $this->createTrait();
@@ -93,6 +93,39 @@ final class InteractsWithInputTest extends BaseTestCase
             'breed' => 'Corgi',
             '--fluff' => true,
         ], $trait->parameters());
+    }
+
+    public function testTypedArgumentAccessors(): void
+    {
+        [$trait] = $this->createTrait(
+            ['count' => '3', 'ratio' => '1.5', 'enabled' => 'yes'],
+            '{count} {ratio} {enabled}',
+        );
+
+        $this->assertSame(3, $trait->integerArgument('count'));
+        $this->assertSame(1.5, $trait->floatArgument('ratio'));
+        $this->assertTrue($trait->booleanArgument('enabled'));
+    }
+
+    public function testTypedArgumentAccessorsFallBackToDefault(): void
+    {
+        [$trait] = $this->createTrait(['count' => 'notanumber'], '{count}');
+
+        $this->assertSame(7, $trait->integerArgument('count', 7));
+        $this->assertNull($trait->floatArgument('missing'));
+        $this->assertFalse($trait->booleanArgument('missing'));
+    }
+
+    public function testTypedOptionAccessors(): void
+    {
+        [$trait] = $this->createTrait(
+            ['breed' => 'Corgi', '--limit' => '10', '--rate' => '2.5'],
+            '{breed} {--limit=} {--rate=}',
+        );
+
+        $this->assertSame(10, $trait->integerOption('limit'));
+        $this->assertSame(2.5, $trait->floatOption('rate'));
+        $this->assertSame(99, $trait->integerOption('missing', 99));
     }
 
     private function createTrait($userInput = [], string $signature = ''): array

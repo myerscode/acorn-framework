@@ -42,8 +42,10 @@ use function Myerscode\Acorn\Foundation\config;
 
 class Application extends SymfonyApplication
 {
+    /** Default name, used when `app.name` config is not set. */
     public const string APP_NAME = 'Acorn';
 
+    /** Default version, used when `app.version` config is not set. */
     public const string APP_VERSION = '1.0.0';
 
     protected string $defaultCommand = 'list';
@@ -64,7 +66,15 @@ class Application extends SymfonyApplication
 
     public function __construct(private readonly Container $container)
     {
-        parent::__construct(self::APP_NAME, self::APP_VERSION);
+        // Name and version are configurable so an app can brand its own CLI;
+        // fall back to the framework defaults when config is absent or unset.
+        $name = config('app.name', self::APP_NAME);
+        $version = config('app.version', self::APP_VERSION);
+
+        parent::__construct(
+            is_string($name) && $name !== '' ? $name : self::APP_NAME,
+            is_string($version) && $version !== '' ? $version : self::APP_VERSION,
+        );
 
         $this->setCatchExceptions(false);
         $this->setAutoExit(false);

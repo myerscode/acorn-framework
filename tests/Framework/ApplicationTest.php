@@ -134,6 +134,32 @@ final class ApplicationTest extends BaseTestCase
         $this->assertSame(Application::APP_VERSION, $application->getVersion());
     }
 
+    public function testNameAndVersionAreConfigurable(): void
+    {
+        $container = $this->container();
+        $config = $container->get('config');
+        $config->store()->set('app.name', 'CorgiCLI');
+        $config->store()->set('app.version', '2026.1.0');
+
+        $application = new Application($container);
+
+        $this->assertSame('CorgiCLI', $application->getName());
+        $this->assertSame('2026.1.0', $application->getVersion());
+    }
+
+    public function testNameAndVersionFallBackToDefaults(): void
+    {
+        $container = $this->container();
+        $config = $container->get('config');
+        $config->store()->set('app.name', '');
+        $config->store()->set('app.version', '');
+
+        $application = new Application($container);
+
+        $this->assertSame(Application::APP_NAME, $application->getName());
+        $this->assertSame(Application::APP_VERSION, $application->getVersion());
+    }
+
     public function testOptimizeWritesManifestThatCommandClassesReadsBack(): void
     {
         $manifestPath = sys_get_temp_dir() . '/acorn_opt_' . uniqid() . '/manifest.json';

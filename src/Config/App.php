@@ -11,6 +11,10 @@ use Myerscode\Acorn\Foundation\Queue\SynchronousQueue;
 use Myerscode\Acorn\Foundation\Cache\Driver\RuntimeCache;
 
 return [
+    // Branding for your CLI. Override these in your app's config to set the
+    // name and version shown by `list` and `--version`.
+    'name' => 'Acorn',
+    'version' => '1.0.0',
     'root' => '${root}',
     'base' => '${base}',
     'dir' => [

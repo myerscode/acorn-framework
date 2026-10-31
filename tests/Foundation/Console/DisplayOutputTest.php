@@ -11,6 +11,31 @@ use Tests\BaseTestCase;
 
 final class DisplayOutputTest extends BaseTestCase
 {
+    public function testJsonCompactWhenNotPretty(): void
+    {
+        $input = new StringInput('');
+        $buffered = new BufferedOutput();
+        $output = new DisplayOutput($input, $buffered);
+
+        $output->json(['name' => 'Arthur'], false);
+
+        $this->assertSame('{"name":"Arthur"}', trim($buffered->fetch()));
+    }
+
+    public function testJsonRendersPrettyByDefault(): void
+    {
+        $input = new StringInput('');
+        $buffered = new BufferedOutput();
+        $output = new DisplayOutput($input, $buffered);
+
+        $output->json(['corgis' => ['Rupert', 'Gerald']]);
+
+        $rendered = $buffered->fetch();
+
+        // Valid JSON, pretty-printed (contains newlines/indentation).
+        $this->assertSame(['corgis' => ['Rupert', 'Gerald']], json_decode(trim($rendered), true));
+        $this->assertStringContainsString("\n", $rendered);
+    }
     public function testTableRendersOutput(): void
     {
         $input = new StringInput('');

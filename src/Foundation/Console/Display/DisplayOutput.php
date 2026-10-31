@@ -108,6 +108,21 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     }
 
     /**
+     * Write data as JSON, for commands that support machine-readable output
+     * (e.g. a `--format=json` flag). Pretty-printed by default; pass
+     * $pretty=false for compact single-line output suitable for piping.
+     */
+    #[Override]
+    public function json(mixed $data, bool $pretty = true): void
+    {
+        $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | ($pretty ? JSON_PRETTY_PRINT : 0);
+
+        // Write the raw JSON with no decoration so the output is valid to pipe
+        // into another tool; bypass the styled writeln formatting.
+        $this->writeln((string) json_encode($data, $flags), OutputInterface::OUTPUT_RAW);
+    }
+
+    /**
      * @param string|string[] $string
      */
     public function line(string|array $string, ?string $style = null, int|string|null $verbosity = null): void

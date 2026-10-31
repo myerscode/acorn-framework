@@ -148,7 +148,9 @@ class Manager implements ManagerInterface
                 $configFiles = array_map(fn ($file) => $file->getRealPath(), FileService::make($configLocation)->files());
                 $config->loadFilesWithNamespace($configFiles);
             } catch (NotADirectoryException) {
-                //  TODO add debug output
+                // A configured location that is not a directory is skipped:
+                // config locations are optional (e.g. an app with no custom
+                // config dir), so a missing directory is expected, not an error.
             }
         }
 
