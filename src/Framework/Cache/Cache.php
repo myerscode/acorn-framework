@@ -136,9 +136,18 @@ class Cache implements CacheInterface
     /**
      * @param iterable<string, mixed> $values
      */
-    public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
+    public function setMultiple(iterable $values, DateInterval|DateTimeInterface|int|null $ttl = null): bool
     {
-        return $this->driver->setMultiple($values, $ttl);
+        $success = true;
+
+        foreach ($values as $key => $value) {
+            // Delegate to set() so keys are namespaced and a DateTimeInterface
+            // TTL is normalised identically to a single set(); writing through
+            // the driver directly skipped both and left values unreadable.
+            $success = $this->set((string) $key, $value, $ttl) && $success;
+        }
+
+        return $success;
     }
 
     protected function namespacedKey(string $key): string

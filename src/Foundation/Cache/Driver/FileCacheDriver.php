@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Myerscode\Acorn\Foundation\Cache\Driver;
 
 use DateInterval;
@@ -11,7 +13,10 @@ class FileCacheDriver implements DriverInterface
     public function __construct(protected readonly string $cacheDir)
     {
         if (!is_dir($this->cacheDir)) {
-            mkdir($this->cacheDir, 0755, true);
+            // 0700: cache entries may hold sensitive application state and
+            // the file names are predictable (md5 of the key), so keep the
+            // directory private to the owner.
+            mkdir($this->cacheDir, 0700, true);
         }
     }
 
@@ -82,13 +87,8 @@ class FileCacheDriver implements DriverInterface
             return $default;
         }
 
-        $content = file_get_contents($cacheFile);
-        if ($content === false) {
-            return $default;
-        }
-
-        $data = json_decode($content, true);
-        if (!is_array($data)) {
+        $data = $this->readEntry($cacheFile);
+        if ($data === null) {
             return $default;
         }
 
@@ -125,22 +125,14 @@ class FileCacheDriver implements DriverInterface
     {
         $cacheFile = $this->getCacheFile($key);
 
-        if (!file_exists($cacheFile)) {
-            return false;
-        }
-
-        $content = file_get_contents($cacheFile);
-        if ($content === false) {
-            return false;
-        }
-
-        $data = json_decode($content, true);
-        if (!is_array($data)) {
+        $data = $this->readEntry($cacheFile);
+        if ($data === null) {
             return false;
         }
 
         if (time() > $data['expiration']) {
             unlink($cacheFile);
+
             return false;
         }
 
@@ -197,5 +189,34 @@ class FileCacheDriver implements DriverInterface
         $endTime = $reference->add($interval);
 
         return $endTime->getTimestamp() - $reference->getTimestamp();
+    }
+
+    /**
+     * Read and validate a cache entry from disk.
+     *
+     * Returns null for a missing, unreadable, non-JSON, or malformed
+     * file rather than trusting its shape; a truncated or externally
+     * written entry must never trigger an undefined-key error or let a
+     * partial payload masquerade as a live value.
+     *
+     * @return array{value: mixed, expiration: int}|null
+     */
+    private function readEntry(string $cacheFile): ?array
+    {
+        if (!file_exists($cacheFile)) {
+            return null;
+        }
+
+        $content = file_get_contents($cacheFile);
+        if ($content === false) {
+            return null;
+        }
+
+        $data = json_decode($content, true);
+        if (!is_array($data) || !array_key_exists('value', $data) || !isset($data['expiration']) || !is_int($data['expiration'])) {
+            return null;
+        }
+
+        return $data;
     }
 }

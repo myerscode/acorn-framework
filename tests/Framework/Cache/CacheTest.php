@@ -257,6 +257,29 @@ final class CacheTest extends BaseTestCase
     }
 
     #[DataProvider('dataProvider')]
+    public function testSetMultipleNamespacesKeys(DriverInterface $driver): void
+    {
+        // With a namespace, setMultiple previously wrote un-namespaced keys
+        // while get() read namespaced ones, so values were never found.
+        $cache = new Cache($driver, 'ns:');
+
+        $this->assertTrue($cache->setMultiple(['key1' => 'value1', 'key2' => 'value2']));
+        $this->assertSame('value1', $cache->get('key1'));
+        $this->assertSame('value2', $cache->get('key2'));
+        $this->assertTrue($cache->has('key1'));
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testSetMultipleWithDateTimeInterfaceTtl(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $future = new DateTimeImmutable('+1 hour');
+        $this->assertTrue($cache->setMultiple(['key1' => 'value1'], $future));
+        $this->assertSame('value1', $cache->get('key1'));
+    }
+
+    #[DataProvider('dataProvider')]
     public function testSetThrowsForPastDateTimeInterfaceTtl(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);
