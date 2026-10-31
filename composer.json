@@ -26,7 +26,8 @@
         "symfony/event-dispatcher": "^8.0",
         "symfony/filesystem": "^8.0",
         "symfony/finder": "^8.0",
-        "symfony/process": "^8.0"
+        "symfony/process": "^8.0",
+        "symfony/yaml": "^8.1.10"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
