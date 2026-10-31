@@ -13,18 +13,104 @@ use RuntimeException;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tests\BaseTestCase;
+use Mockery;
 
 final class ExceptionHandlerTest extends BaseTestCase
 {
-    public function testReportLogsException(): void
+    public function testCatchHandlerDoesNotMatchUnrelatedExceptions(): void
+    {
+        $caught = false;
+
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(InvalidArgumentException::class, function () use (&$caught): bool {
+            $caught = true;
+
+            return true;
+        });
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('wrong type'));
+
+        $this->assertFalse($caught);
+        $this->assertStringContainsString('wrong type', $output->fetch());
+    }
+
+    public function testCatchHandlerMatchesSubclasses(): void
+    {
+        $caught = false;
+
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(Exception::class, function () use (&$caught): bool {
+            $caught = true;
+
+            return true;
+        });
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('subclass'));
+
+        $this->assertTrue($caught);
+    }
+
+    public function testCatchHandlerReceivesException(): void
+    {
+        $caught = null;
+
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(RuntimeException::class, function (RuntimeException $e) use (&$caught): ?bool {
+            $caught = $e;
+
+            return true;
+        });
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('caught it'));
+
+        $this->assertNotNull($caught);
+        $this->assertSame('caught it', $caught->getMessage());
+    }
+
+    public function testCatchHandlerReturningFalseAllowsRendering(): void
+    {
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(RuntimeException::class, fn (): bool => false);
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('should still render'));
+
+        $this->assertStringContainsString('should still render', $output->fetch());
+    }
+
+    public function testCatchHandlerReturningNullAllowsRendering(): void
+    {
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(RuntimeException::class, fn (): null => null);
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('null means continue'));
+
+        $this->assertStringContainsString('null means continue', $output->fetch());
+    }
+
+    public function testCatchHandlerReturningTruePreventsRendering(): void
+    {
+        $handler = new ExceptionHandler(new NullLogger());
+        $handler->catch(RuntimeException::class, fn (): bool => true);
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('should not render'));
+
+        $this->assertSame('', $output->fetch());
+    }
+
+    public function testDontReportMatchesSubclasses(): void
     {
         $logger = $this->mock(LoggerInterface::class);
-        $logger->shouldReceive('error')
-            ->once()
-            ->with('Something broke', \Mockery::type('array'));
+        $logger->shouldNotReceive('error');
 
         $handler = new ExceptionHandler($logger);
-        $handler->report(new RuntimeException('Something broke'));
+        $handler->dontReport(Exception::class);
+        $handler->report(new RuntimeException('Subclass of Exception'));
 
         $this->assertSame(1, 1); // Mockery verifies in tearDown
     }
@@ -41,59 +127,35 @@ final class ExceptionHandlerTest extends BaseTestCase
         $this->assertSame(1, 1); // Mockery verifies in tearDown
     }
 
-    public function testDontReportMatchesSubclasses(): void
+    public function testMultipleCatchHandlersRunInOrder(): void
     {
-        $logger = $this->mock(LoggerInterface::class);
-        $logger->shouldNotReceive('error');
+        $order = [];
 
-        $handler = new ExceptionHandler($logger);
-        $handler->dontReport(Exception::class);
-        $handler->report(new RuntimeException('Subclass of Exception'));
-
-        $this->assertSame(1, 1); // Mockery verifies in tearDown
-    }
-
-    public function testShouldReportReturnsTrueByDefault(): void
-    {
         $handler = new ExceptionHandler(new NullLogger());
 
-        $this->assertTrue($handler->shouldReport(new RuntimeException('test')));
-    }
+        $handler->catch(RuntimeException::class, function () use (&$order): ?bool {
+            $order[] = 'first';
 
-    public function testShouldReportReturnsFalseForSuppressed(): void
-    {
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->dontReport(RuntimeException::class);
-
-        $this->assertFalse($handler->shouldReport(new RuntimeException('test')));
-    }
-
-    public function testReportUsingCallsCustomReporter(): void
-    {
-        $reported = false;
-
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->reportUsing(RuntimeException::class, function (RuntimeException $e) use (&$reported): void {
-            $reported = true;
+            return null;
         });
 
-        $handler->report(new RuntimeException('custom'));
+        $handler->catch(RuntimeException::class, function () use (&$order): bool {
+            $order[] = 'second';
 
-        $this->assertTrue($reported);
-    }
-
-    public function testReportUsingDoesNotMatchUnrelatedExceptions(): void
-    {
-        $reported = false;
-
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->reportUsing(InvalidArgumentException::class, function () use (&$reported): void {
-            $reported = true;
+            return true;
         });
 
-        $handler->report(new RuntimeException('different type'));
+        $handler->catch(RuntimeException::class, function () use (&$order): bool {
+            $order[] = 'third';
 
-        $this->assertFalse($reported);
+            return true;
+        });
+
+        $output = new BufferedOutput();
+        $handler->render($output, new RuntimeException('multi'));
+
+        // Third should not run because second returned true
+        $this->assertSame(['first', 'second'], $order);
     }
 
     public function testRenderOutputsExceptionToConsole(): void
@@ -135,122 +197,60 @@ final class ExceptionHandlerTest extends BaseTestCase
         $this->assertStringNotContainsString('SHOULD NOT APPEAR', $display);
         $this->assertStringContainsString('different', $display);
     }
-
-    public function testCatchHandlerReceivesException(): void
+    public function testReportLogsException(): void
     {
-        $caught = null;
+        $logger = $this->mock(LoggerInterface::class);
+        $logger->shouldReceive('error')
+            ->once()
+            ->with('Something broke', Mockery::type('array'));
 
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(RuntimeException::class, function (RuntimeException $e) use (&$caught): ?bool {
-            $caught = $e;
+        $handler = new ExceptionHandler($logger);
+        $handler->report(new RuntimeException('Something broke'));
 
-            return true;
-        });
-
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('caught it'));
-
-        $this->assertNotNull($caught);
-        $this->assertSame('caught it', $caught->getMessage());
+        $this->assertSame(1, 1); // Mockery verifies in tearDown
     }
 
-    public function testCatchHandlerReturningTruePreventsRendering(): void
+    public function testReportUsingCallsCustomReporter(): void
     {
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(RuntimeException::class, fn (): bool => true);
-
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('should not render'));
-
-        $this->assertSame('', $output->fetch());
-    }
-
-    public function testCatchHandlerReturningFalseAllowsRendering(): void
-    {
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(RuntimeException::class, fn (): bool => false);
-
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('should still render'));
-
-        $this->assertStringContainsString('should still render', $output->fetch());
-    }
-
-    public function testCatchHandlerReturningNullAllowsRendering(): void
-    {
-        $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(RuntimeException::class, fn (): null => null);
-
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('null means continue'));
-
-        $this->assertStringContainsString('null means continue', $output->fetch());
-    }
-
-    public function testMultipleCatchHandlersRunInOrder(): void
-    {
-        $order = [];
+        $reported = false;
 
         $handler = new ExceptionHandler(new NullLogger());
-
-        $handler->catch(RuntimeException::class, function () use (&$order): ?bool {
-            $order[] = 'first';
-
-            return null;
+        $handler->reportUsing(RuntimeException::class, function (RuntimeException $e) use (&$reported): void {
+            $reported = true;
         });
 
-        $handler->catch(RuntimeException::class, function () use (&$order): bool {
-            $order[] = 'second';
+        $handler->report(new RuntimeException('custom'));
 
-            return true;
-        });
-
-        $handler->catch(RuntimeException::class, function () use (&$order): bool {
-            $order[] = 'third';
-
-            return true;
-        });
-
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('multi'));
-
-        // Third should not run because second returned true
-        $this->assertSame(['first', 'second'], $order);
+        $this->assertTrue($reported);
     }
 
-    public function testCatchHandlerDoesNotMatchUnrelatedExceptions(): void
+    public function testReportUsingDoesNotMatchUnrelatedExceptions(): void
     {
-        $caught = false;
+        $reported = false;
 
         $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(InvalidArgumentException::class, function () use (&$caught): bool {
-            $caught = true;
-
-            return true;
+        $handler->reportUsing(InvalidArgumentException::class, function () use (&$reported): void {
+            $reported = true;
         });
 
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('wrong type'));
+        $handler->report(new RuntimeException('different type'));
 
-        $this->assertFalse($caught);
-        $this->assertStringContainsString('wrong type', $output->fetch());
+        $this->assertFalse($reported);
     }
 
-    public function testCatchHandlerMatchesSubclasses(): void
+    public function testShouldReportReturnsFalseForSuppressed(): void
     {
-        $caught = false;
-
         $handler = new ExceptionHandler(new NullLogger());
-        $handler->catch(Exception::class, function () use (&$caught): bool {
-            $caught = true;
+        $handler->dontReport(RuntimeException::class);
 
-            return true;
-        });
+        $this->assertFalse($handler->shouldReport(new RuntimeException('test')));
+    }
 
-        $output = new BufferedOutput();
-        $handler->render($output, new RuntimeException('subclass'));
+    public function testShouldReportReturnsTrueByDefault(): void
+    {
+        $handler = new ExceptionHandler(new NullLogger());
 
-        $this->assertTrue($caught);
+        $this->assertTrue($handler->shouldReport(new RuntimeException('test')));
     }
 
     public function testVerboseRenderIncludesFileAndLine(): void
