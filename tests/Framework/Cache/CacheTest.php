@@ -202,6 +202,26 @@ final class CacheTest extends BaseTestCase
     }
 
     #[DataProvider('dataProvider')]
+    public function testRejectsEmptyKey(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $this->expectException(\Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException::class);
+
+        $cache->get('');
+    }
+
+    #[DataProvider('dataProvider')]
+    public function testRejectsReservedCharactersInKey(DriverInterface $driver): void
+    {
+        $cache = $this->cacheProvider($driver);
+
+        $this->expectException(\Myerscode\Acorn\Framework\Cache\Exception\InvalidArgumentException::class);
+
+        $cache->set('rupert{at}home', 'value');
+    }
+
+    #[DataProvider('dataProvider')]
     public function testRemember(DriverInterface $driver): void
     {
         $cache = $this->cacheProvider($driver);

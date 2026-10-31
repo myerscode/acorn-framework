@@ -152,6 +152,8 @@ class Cache implements CacheInterface
 
     protected function namespacedKey(string $key): string
     {
+        $this->validateKey($key);
+
         return $this->namespace.$key;
     }
 
@@ -162,5 +164,24 @@ class Cache implements CacheInterface
     protected function namespacedKeys(iterable $keys): array
     {
         return new Bag($keys)->map(fn (string $key): string => $this->namespacedKey($key))->value();
+    }
+
+    /**
+     * Validate a cache key against the PSR-16 rules: a non-empty string that
+     * does not contain any of the reserved characters {}()/\@:.
+     *
+     * @throws InvalidArgumentException
+     */
+    protected function validateKey(string $key): void
+    {
+        if ($key === '') {
+            throw new InvalidArgumentException('Cache key must not be an empty string.');
+        }
+
+        if (preg_match('#[{}()/\\\\@:]#', $key) === 1) {
+            throw new InvalidArgumentException(
+                sprintf('Cache key "%s" contains one or more reserved characters {}()/\\@:', $key),
+            );
+        }
     }
 }

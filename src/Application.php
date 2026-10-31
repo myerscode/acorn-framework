@@ -206,7 +206,7 @@ class Application extends SymfonyApplication
                     $this->output()->debug(sprintf('Loading events from %s to load events from', $eventDiscoveryDir));
                     $eventRegisterClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
                     try {
-                        if (is_subclass_of($eventRegisterClass, Listener::class)) {
+                        if (class_exists($eventRegisterClass) && is_subclass_of($eventRegisterClass, Listener::class)) {
                             $listener = $this->container->get($eventRegisterClass);
 
                             $listensFor = $listener->listensFor();
@@ -304,7 +304,7 @@ class Application extends SymfonyApplication
                 foreach (FileService::make($commandDiscoveryDirectory)->files() as $file) {
                     try {
                         $commandClass = FileService::make($file->getRealPath())->fullyQualifiedClassname();
-                        if (is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
+                        if (class_exists($commandClass) && is_subclass_of($commandClass, Command::class, true) && new ReflectionClass($commandClass)->isInstantiable()) {
                             $this->addCommand($this->container->get($commandClass));
                             $this->output()->debug(
                                 sprintf('Loaded %s from %s.', $commandClass, $commandDiscoveryDirectory),
