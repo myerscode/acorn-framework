@@ -7,11 +7,62 @@
 
 # Acorn Framework
 
-> A framework for creating powerful PHP CLI applications
+> A framework for creating powerful PHP CLI applications.
+
+Acorn is the backbone of the Acorn ecosystem: it extends Symfony Console with a
+dependency-injection container, automatic command/provider/listener discovery,
+an event dispatcher, config, cache, queue, pipelines, a process/terminal
+wrapper, a global exception handler, logging, interactive prompts and progress
+bars.
 
 ## Requirements
 
 - PHP 8.5 or higher
+
+## Getting started
+
+Most people start from the [application skeleton](https://github.com/myerscode/acorn):
+
+```bash
+composer create-project myerscode/acorn my-app --remove-vcs
+cd my-app
+php acorn
+```
+
+To use the framework directly:
+
+```bash
+composer require myerscode/acorn-framework
+```
+
+A command extends the base `Command`, declares a `$signature`, and implements
+`handle()`:
+
+```php
+use Myerscode\Acorn\Framework\Console\Command;
+
+class GreetCommand extends Command
+{
+    protected string $signature = 'greet {name} {--loud}';
+
+    protected string $description = 'Greet someone';
+
+    public function handle(): int
+    {
+        $greeting = 'Hello ' . $this->argument('name');
+
+        $this->output->writeln($this->flag('loud') ? strtoupper($greeting) : $greeting);
+
+        return 0;
+    }
+}
+```
+
+## Documentation
+
+Guides for each subsystem live in [`docs/`](docs/): commands, events, listeners,
+cache, logging, pipelines, prompts, progress, terminal, error handling and
+[optimization](docs/optimization.md).
 
 ## Issues
 
