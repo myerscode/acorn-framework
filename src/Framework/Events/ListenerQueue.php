@@ -24,7 +24,7 @@ class ListenerQueue
     /**
      * Gets all listeners.
      *
-     * @return ListenerInterface[]
+     * @return list<ListenerInterface>
      */
     public function all(): array
     {

@@ -88,6 +88,10 @@ trait InteractsWithInput
      */
     public function parameters(): array
     {
-        return $this->input->parameters();
+        // parameters() is Acorn's own extension on ConsoleInputInterface; a
+        // plain Symfony InputInterface (e.g. under the test harness) has none.
+        return $this->input instanceof ConsoleInputInterface
+            ? $this->input->parameters()
+            : [];
     }
 }

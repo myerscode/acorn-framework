@@ -225,6 +225,8 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 
     /**
      * Get the verbosity level in terms of Symfony's OutputInterface level.
+     *
+     * @return int<0, 511>
      */
     protected function parseVerbosity(string|int|null $level = null): int
     {
@@ -234,6 +236,7 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
             $level = $this->verbosityMap['normal'];
         }
 
-        return $level;
+        // Keep within Symfony's valid output-flag range (int<0, 511>).
+        return max(0, min(511, $level));
     }
 }
