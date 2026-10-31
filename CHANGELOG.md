@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- Configurable CLI branding: the application name and version come from the `app.name` / `app.version` config keys (defaulting to the framework's own).
+- Typed input accessors: `integerArgument`, `floatArgument`, `booleanArgument`, `integerOption`, `floatOption` (plus the existing `flag()` for boolean switches).
+- `DisplayOutput::json()` for machine-readable output (pretty by default, compact for piping).
 - `acorn:optimize` / `acorn:clear` commands and a cached discovery manifest, so command, provider and listener discovery can skip the per-boot filesystem scan and reflection.
 - `Terminal::runShell()` as an explicit, clearly-named alias for the shell-based `run()`.
 - Working queue support: a real `Worker` that drains a queue and a deferred in-process `MemoryQueue` (the run-on-push `SynchronousQueue` remains the default).
