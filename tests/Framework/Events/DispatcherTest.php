@@ -11,6 +11,7 @@ use Myerscode\Acorn\Framework\Events\EventPriority;
 use Myerscode\Acorn\Framework\Queue\Jobs\JobInterface;
 use Myerscode\Acorn\Testing\Interactions\InteractsWithDispatcher;
 use Tests\BaseTestCase;
+use Tests\Resources\InvokableListener;
 use Tests\Resources\TestEvent;
 use Tests\Resources\TestListener;
 use Tests\Resources\TestListensForAll;
@@ -20,6 +21,7 @@ use Tests\Resources\TestQueueableListener;
 use Tests\Resources\TestSinglePropertyEvent;
 use Tests\Resources\TestSubscriber;
 use RuntimeException;
+use Stringable;
 
 final class DispatcherTest extends BaseTestCase
 {
@@ -268,6 +270,30 @@ final class DispatcherTest extends BaseTestCase
         $this->assertSame(['first', 'third'], $callOrder);
     }
 
+    public function testFailingListenerIsLoggedNotSwallowedSilently(): void
+    {
+        $logger = new class () extends \Psr\Log\AbstractLogger {
+            /** @var array<int, array{level: mixed, message: string}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = ['level' => $level, 'message' => (string) $message];
+            }
+        };
+
+        $dispatcher = new \Myerscode\Acorn\Framework\Events\Dispatcher(new SynchronousQueue(), $logger);
+
+        $dispatcher->addListener(TestEvent::class, static function (): void {
+            throw new RuntimeException('Rupert tripped over');
+        });
+
+        $dispatcher->dispatch(new TestEvent());
+
+        $this->assertNotEmpty($logger->records, 'A failing listener must be logged, not swallowed silently.');
+        $this->assertStringContainsString('Rupert tripped over', $logger->records[0]['message']);
+    }
+
     public function testGetListeners(): void
     {
         $dispatcher = $this->newDispatcher();
@@ -340,6 +366,17 @@ final class DispatcherTest extends BaseTestCase
     {
         $dispatcher = $this->newDispatcher();
         $this->assertEmpty($dispatcher->getListeners());
+    }
+
+    public function testInvokableListenerIsBridgedThroughHandle(): void
+    {
+        $dispatcher = $this->newDispatcher();
+        $listener = new InvokableListener();
+
+        $dispatcher->addListener(TestEvent::class, $listener);
+        $dispatcher->dispatch(new TestEvent());
+
+        $this->assertTrue($listener->invoked, 'A listener defining __invoke() should fire via handle().');
     }
 
     public function testRemoveAllListeners(): void

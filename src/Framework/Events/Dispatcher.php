@@ -8,6 +8,8 @@ use Closure;
 use Myerscode\Acorn\Foundation\Queue\Jobs\SynchronousJob;
 use Myerscode\Acorn\Framework\Events\Exception\UnknownEventTypeException;
 use Myerscode\Acorn\Framework\Queue\QueueInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface as SymfonyEventSubscriberInterface;
 use Throwable;
@@ -40,8 +42,10 @@ class Dispatcher implements SymfonyEventDispatcherInterface
      */
     protected array $listeners = [];
 
-    public function __construct(protected QueueInterface $queue)
-    {
+    public function __construct(
+        protected QueueInterface $queue,
+        protected LoggerInterface $logger = new NullLogger(),
+    ) {
         //
     }
 
@@ -165,20 +169,22 @@ class Dispatcher implements SymfonyEventDispatcherInterface
                         if ($event instanceof EventInterface) {
                             $this->queue->push(new SynchronousJob($event, $listener));
                         }
-                    } else {
-                        if ($event instanceof EventInterface) {
-                            $listener->handle($event);
-                        } else {
-                            // For non-Acorn events (e.g. Symfony Console events), invoke the
-                            // underlying callable directly if it's a CallableListener
-                            if ($listener instanceof CallableListener) {
-                                call_user_func($listener->getCallable(), $event);
-                            }
-                        }
+                    } elseif ($event instanceof EventInterface) {
+                        $listener->handle($event);
+                    } elseif ($listener instanceof CallableListener) {
+                        // For non-Acorn events (e.g. Symfony Console events), invoke the
+                        // underlying callable directly.
+                        call_user_func($listener->getCallable(), $event);
                     }
                 }
-            } catch (Throwable) {
-                // Isolate listener failures — allow remaining listeners to execute.
+            } catch (Throwable $throwable) {
+                // Isolate listener failures so the remaining listeners still
+                // run, but never swallow them silently: a hidden throw here
+                // masks real bugs (e.g. a listener that never fires).
+                $this->logger->error(
+                    sprintf('Listener [%s] failed handling event [%s]: %s', $listener::class, $eventName, $throwable->getMessage()),
+                    ['exception' => $throwable],
+                );
             }
         }
 

@@ -20,11 +20,17 @@ abstract class Listener implements ListenerInterface
     abstract public function listensFor(): array|string;
 
     /**
-     * Handle the event - subclasses should override this method.
+     * Handle the event.
+     *
+     * Subclasses implement their logic by overriding handle(), or by defining
+     * an __invoke() method (the dispatcher calls handle(), which bridges to
+     * __invoke() when present). Overriding handle() takes precedence.
      */
     public function handle(EventInterface $event): void
     {
-        // Default no-op; subclasses override this
+        if (is_callable($this)) {
+            $this($event);
+        }
     }
 
     /**
