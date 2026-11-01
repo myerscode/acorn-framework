@@ -11,6 +11,18 @@ use Tests\BaseTestCase;
 
 final class DisplayOutputTest extends BaseTestCase
 {
+    public function testCsvRendersRowsWithHeaders(): void
+    {
+        $input = new StringInput('');
+        $buffered = new BufferedOutput();
+        $output = new DisplayOutput($input, $buffered);
+
+        $output->csv([['Rupert', 3], ['Gerald', 5]], ['name', 'age']);
+
+        $rendered = trim($buffered->fetch());
+
+        $this->assertSame("name,age\nRupert,3\nGerald,5", str_replace("\r\n", "\n", $rendered));
+    }
     public function testJsonCompactWhenNotPretty(): void
     {
         $input = new StringInput('');
@@ -65,6 +77,7 @@ final class DisplayOutputTest extends BaseTestCase
         $this->assertStringContainsString('ID', $rendered);
         $this->assertStringContainsString('Value', $rendered);
     }
+
     public function testTitleRendersMessage(): void
     {
         $input = new StringInput('');
@@ -74,5 +87,17 @@ final class DisplayOutputTest extends BaseTestCase
         $output->title('Corgi Report');
 
         $this->assertStringContainsString('Corgi Report', $buffered->fetch());
+    }
+    public function testYamlRendersData(): void
+    {
+        $input = new StringInput('');
+        $buffered = new BufferedOutput();
+        $output = new DisplayOutput($input, $buffered);
+
+        $output->yaml(['corgis' => ['Rupert', 'Gerald']]);
+
+        $rendered = trim($buffered->fetch());
+
+        $this->assertSame(['corgis' => ['Rupert', 'Gerald']], \Symfony\Component\Yaml\Yaml::parse($rendered));
     }
 }

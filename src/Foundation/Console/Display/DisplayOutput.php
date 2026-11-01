@@ -7,6 +7,7 @@ use Myerscode\Acorn\Framework\Console\Display\DisplayOutputInterface;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Yaml\Yaml;
 
 class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
 {
@@ -55,6 +56,36 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     public function comment(array|string $message): void
     {
         parent::comment($message);
+    }
+
+    /**
+     * Write rows as CSV. Each row is an array of scalar cells; an optional
+     * header row is written first. Useful for `--format=csv` output that pipes
+     * into spreadsheets or other tooling.
+     *
+     * @param array<int, array<int|string, scalar|null>> $rows
+     * @param array<int, string> $headers
+     */
+    #[Override]
+    public function csv(array $rows, array $headers = []): void
+    {
+        $handle = fopen('php://temp', 'r+');
+
+        if ($handle === false) {
+            return;
+        }
+
+        if ($headers !== []) {
+            fputcsv($handle, $headers, escape: '');
+        }
+
+        foreach ($rows as $row) {
+            fputcsv($handle, array_map(static fn ($cell): string => (string) $cell, array_values($row)), escape: '');
+        }
+
+        rewind($handle);
+        $this->writeln(rtrim((string) stream_get_contents($handle)), OutputInterface::OUTPUT_RAW);
+        fclose($handle);
     }
 
     /**
@@ -247,6 +278,15 @@ class DisplayOutput extends SymfonyStyle implements DisplayOutputInterface
     public function warning(array|string $message): void
     {
         parent::warning($message);
+    }
+
+    /**
+     * Write data as YAML, for commands that support `--format=yaml` output.
+     */
+    #[Override]
+    public function yaml(mixed $data, int $inline = 4): void
+    {
+        $this->writeln(rtrim(Yaml::dump($data, $inline, 2)), OutputInterface::OUTPUT_RAW);
     }
 
     /**

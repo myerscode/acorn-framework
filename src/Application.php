@@ -90,6 +90,12 @@ class Application extends SymfonyApplication
             $symfonyCommand->setLogger($this->logger());
         }
 
+        if ($symfonyCommand instanceof Command) {
+            // Inject the container so the command can resolve type-hinted
+            // handle() parameters from it.
+            $symfonyCommand->setContainer($this->container);
+        }
+
         return parent::addCommand($symfonyCommand);
     }
 

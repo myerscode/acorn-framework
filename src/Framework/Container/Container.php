@@ -113,6 +113,15 @@ class Container
     }
 
     /**
+     * Whether the container can resolve the given id (an explicit binding or,
+     * via the reflection delegate, an autowireable class).
+     */
+    public function has(string $id): bool
+    {
+        return $this->dependencyManager->has($id);
+    }
+
+    /**
      * Returns a list of service providers that have been added to the container
      *
      * @return string[]

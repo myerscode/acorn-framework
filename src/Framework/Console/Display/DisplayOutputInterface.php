@@ -15,6 +15,12 @@ interface DisplayOutputInterface extends OutputInterface
     public function comment(string|array $message): void;
 
     /**
+     * @param array<int, array<int|string, scalar|null>> $rows
+     * @param array<int, string> $headers
+     */
+    public function csv(array $rows, array $headers = []): void;
+
+    /**
      * Write a very verbose message that is only output when the -vvv is present
      *
      * @param string|string[] $message
@@ -94,4 +100,6 @@ interface DisplayOutputInterface extends OutputInterface
 
     /** @param string|string[] $message */
     public function warning(string|array $message): void;
+
+    public function yaml(mixed $data, int $inline = 4): void;
 }

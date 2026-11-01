@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Myerscode\Acorn\Framework\Console;
 
 use Override;
-use League\Container\Container;
+use Myerscode\Acorn\Framework\Container\Container;
 use Myerscode\Acorn\Foundation\Console\Input\ConfigInput;
 use Myerscode\Acorn\Foundation\Console\Display\DisplayOutput;
 use Myerscode\Acorn\Foundation\Console\Output\VoidOutput;
@@ -82,6 +82,14 @@ abstract class Command extends SymfonyCommand
     }
 
     /**
+     * Inject the container so handle() parameters can be resolved from it.
+     */
+    public function setContainer(Container $container): void
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Call other command.
      *
      * @param  string  $commandName  Command name
@@ -155,6 +163,31 @@ abstract class Command extends SymfonyCommand
         $this->output = $output instanceof DisplayOutputInterface
             ? $output
             : new DisplayOutput($input, $output);
+    }
+
+    /**
+     * Resolve a dependency from the container by id/class name.
+     *
+     * Lets a command pull collaborators inside handle() without wiring a
+     * constructor:
+     *
+     *   public function handle(): int
+     *   {
+     *       $reporter = $this->resolve(Reporter::class);
+     *       // ...
+     *   }
+     *
+     * @template T of object
+     * @param class-string<T>|string $id
+     * @return ($id is class-string<T> ? T : mixed)
+     */
+    protected function resolve(string $id): mixed
+    {
+        if (!isset($this->container)) {
+            throw new SubCommandFailedException(sprintf('No container available to resolve [%s].', $id));
+        }
+
+        return $this->container->get($id);
     }
 
     /**

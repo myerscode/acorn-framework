@@ -37,6 +37,17 @@ final class CommandFeaturesTest extends BaseTestCase
         $this->assertStringNotContainsString('Gerald', $output);
     }
 
+    public function testConstructorInjectionWorksForDiscoveredCommands(): void
+    {
+        // A command that declares a dependency in its constructor is autowired
+        // when the container builds it (as discovery does via container->get).
+        $command = $this->application()->container()->get(\Tests\Resources\App\Commands\ServiceBackedCommand::class);
+
+        $output = $this->call($command);
+
+        $this->assertStringContainsString('Rupert', $output);
+    }
+
     public function testFailThrowsWithChosenExitCode(): void
     {
         $command = new class () extends Command {
@@ -55,6 +66,29 @@ final class CommandFeaturesTest extends BaseTestCase
             $this->assertSame('Rupert chewed the cable', $commandFailedException->getMessage());
             $this->assertSame(42, $commandFailedException->exitCode());
         }
+    }
+
+    public function testResolvePullsADependencyFromTheContainer(): void
+    {
+        $command = new class () extends Command {
+            public ?object $injected = null;
+
+            protected string $signature = 'resolve-me';
+
+            public function handle(): int
+            {
+                $service = $this->resolve(\Tests\Resources\CorgiService::class);
+                $this->injected = $service;
+                $this->output->writeln($service->name());
+
+                return 0;
+            }
+        };
+
+        $output = $this->call($command);
+
+        $this->assertInstanceOf(\Tests\Resources\CorgiService::class, $command->injected);
+        $this->assertStringContainsString('Rupert', $output);
     }
 
     public function testSignalHandlerDefaultsToTerminateWhenNoneRegistered(): void
