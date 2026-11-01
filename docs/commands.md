@@ -170,6 +170,56 @@ public function handle(): int
 
 Pass `$pretty = false` for compact single-line JSON suitable for piping.
 
+### Output formats
+
+Alongside `json()`, the output supports `yaml()` and `csv()` for machine-readable
+output:
+
+```php
+$this->output->yaml(['corgis' => ['Rupert', 'Gerald']]);
+
+$this->output->csv(
+    [['Rupert', 3], ['Gerald', 5]],  // rows
+    ['name', 'age'],                  // optional header row
+);
+```
+
+## Dependencies
+
+Commands are resolved from the container, so you can inject collaborators via
+the constructor (remember to call `parent::__construct()`):
+
+```php
+class ReportCommand extends Command
+{
+    protected string $signature = 'report';
+
+    public function __construct(private readonly Reporter $reporter)
+    {
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
+        $this->reporter->run();
+
+        return 0;
+    }
+}
+```
+
+Or pull one on demand inside `handle()` with `resolve()`:
+
+```php
+public function handle(): int
+{
+    $reporter = $this->resolve(Reporter::class);
+    $reporter->run();
+
+    return 0;
+}
+```
+
 ## Branding
 
 The CLI's name and version (shown by `list` and `--version`) come from the

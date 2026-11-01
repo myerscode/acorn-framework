@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
+- Dependency resolution for commands: `$this->resolve(Service::class)` and constructor injection (the container autowires discovered commands); `Container::has()`.
+- `DisplayOutput::yaml()` and `DisplayOutput::csv()` output formatters alongside `json()`.
 - `Command::fail()` to abort a command with a chosen exit code, `callSilently()` to run a sub-command with output suppressed, and an `InteractsWithSignals` trait for graceful SIGINT/SIGTERM handling of long-running commands.
 - `DisplayOutput::title()` for a title bar.
 - Configurable CLI branding: the application name and version come from the `app.name` / `app.version` config keys (defaulting to the framework's own).
